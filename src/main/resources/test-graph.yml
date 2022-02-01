@@ -1,0 +1,44 @@
+graphId: 2345
+graphName: graph_name
+graphDesc: 图的描述
+startNode: nodeA
+nodes:
+  - nodeConfig:
+      uniqueId: nodeAId
+      name: nodeA
+      component: #全局类名:方法名
+      desc: 节点描述
+      inputParam:
+      type: METHOD
+      subFlows:
+        - subFlow:
+            graphId: graphsub1
+            startNode: startNode1
+            endNode: endNode1
+        - subFlow:
+            graphId: graphsub2
+            startNode: startNode2
+            endNode: endNode2
+      next: next
+      pre: pre
+      preHandler: #全局类名:方法名
+      afterHandler: #全局类名:方法名
+  - nodeConfig:
+      id: nodeAId
+      name: nodeA
+      component: #全局类名:方法名
+      desc: 节点描述
+      type: METHOD
+      subFlows:
+        - subFlow:
+            graphId: graphsub1
+            startNode: startNode1
+            endNode: endNode1
+        - subFlow:
+            graphId: graphsub2
+            startNode: startNode2
+            endNode: endNode2
+      next: next
+      pre: pre
+      preHandler: #全局类名:方法名
+      afterHandler: #全局类名:方法名

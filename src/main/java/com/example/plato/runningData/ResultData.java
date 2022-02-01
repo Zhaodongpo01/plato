@@ -1,0 +1,47 @@
+package com.example.plato.runningData;
+
+import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * @author zhaodongpo
+ * @version 1.0
+ * @date 2022/1/23 11:02 上午
+ */
+@Data
+public class ResultData<R> {
+
+    private R data = null;
+
+    private boolean success = false;
+
+    private String mes = StringUtils.EMPTY;
+
+    private NodeResultStatus nodeResultStatus = NodeResultStatus.INIT;
+
+    public static <R> ResultData<R> build(R result, NodeResultStatus resultStatus, String mes) {
+        ResultData<R> resultData = new ResultData<>();
+        resultData.setData(result);
+        resultData.setNodeResultStatus(resultStatus);
+        resultData.setMes(mes);
+        resultData.setSuccess(NodeResultStatus.ERROR.equals(resultStatus) ? false : true);
+        return resultData;
+    }
+
+    public static <R> ResultData getSuccess(R data, String mes, NodeResultStatus nodeResultStatus) {
+        ResultData<Object> objectResultData = new ResultData<>();
+        objectResultData.setData(data);
+        objectResultData.setNodeResultStatus(nodeResultStatus);
+        objectResultData.setMes(mes);
+        objectResultData.setSuccess(true);
+        return objectResultData;
+    }
+
+    public static <Void> ResultData getFail(String mes, NodeResultStatus nodeResultStatus) {
+        ResultData<Object> objectResultData = new ResultData<>();
+        objectResultData.setNodeResultStatus(nodeResultStatus);
+        objectResultData.setMes(mes);
+        objectResultData.setSuccess(false);
+        return objectResultData;
+    }
+}
