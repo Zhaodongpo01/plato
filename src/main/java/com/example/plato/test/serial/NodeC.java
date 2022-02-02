@@ -18,7 +18,7 @@ public class NodeC implements INodeWork<TestModel, FirstModel> {
     @Override
     public FirstModel work(TestModel testModel) throws InterruptedException {
         log.info("NodeC参数#testModel:{}", PlatoJsonUtil.toJson(testModel));
-        Thread.sleep(5000L);
+        //Thread.sleep(5000L);
         FirstModel firstModel = new FirstModel();
         firstModel.setName("赵东坡");
         firstModel.setIdf(19000L);

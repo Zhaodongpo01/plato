@@ -2,7 +2,9 @@ package com.example.plato.test.serial;
 
 import com.example.plato.element.INodeWork;
 import com.example.plato.runningData.ResultData;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -17,6 +19,7 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
 
     @Override
     public Boolean work(List<Integer> integers) {
+        int a = 10 / 0;
         log.info("NodeB参数:{}", integers);
         return CollectionUtils.isEmpty(integers);
     }

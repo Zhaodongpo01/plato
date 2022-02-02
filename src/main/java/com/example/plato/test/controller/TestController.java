@@ -12,7 +12,9 @@ import com.example.plato.test.serial.NodeC;
 import com.example.plato.test.serial.NodeD;
 import com.example.plato.util.PlatoJsonUtil;
 import com.google.common.collect.Lists;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,11 +37,13 @@ public class TestController {
 
     @RequestMapping("serial")
     public String testSerial() {
-        NodeBeanBuilder<String, Long> nodeBeanBuilderA = NodeBeanBuilder.get().firstSetNodeBuilder("graphId", "uniqueIdA", "123333", new NodeA());
-        NodeBeanBuilder<List<Integer>, Boolean> nodeBeanBuilderB = NodeBeanBuilder.get().setNodeBuilder("uniqueIdB", new NodeB());
-        NodeBeanBuilder<TestModel, FirstModel> nodeBeanBuilderC = NodeBeanBuilder.get().setNodeBuilder("uniqueIdC", new NodeC());
+        NodeBeanBuilder<String, Long> nodeBeanBuilderA =
+                NodeBeanBuilder.get().firstSetNodeBuilder("graphId", "uniqueIdA", "123333", new NodeA());
+        NodeBeanBuilder<List<Integer>, Boolean> nodeBeanBuilderB =
+                NodeBeanBuilder.get().setNodeBuilder("uniqueIdB", new NodeB());
+        NodeBeanBuilder<TestModel, FirstModel> nodeBeanBuilderC =
+                NodeBeanBuilder.get().setNodeBuilder("uniqueIdC", new NodeC());
         NodeBeanBuilder<Void, String> nodeBeanBuilderD = NodeBeanBuilder.get().setNodeBuilder("uniqueIdD", new NodeD());
-
         nodeBeanBuilderB.setPreHandler(new PreHandler<List<Integer>>() {
             @Override
             public List<Integer> paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -53,26 +57,23 @@ public class TestController {
                 return (Long) uniqueIdA.getResultData().getData() > 100;
             }
         });
-
         nodeBeanBuilderC.setPreHandler((PreHandler<TestModel>) graphRunningInfo -> {
             TestModel testModel = new TestModel();
-            //Boolean resultB = (Boolean) graphRunningInfo.getNodeRunningInfo("uniqueIdB").getResultData().getData();
             testModel.setAge(100);
             testModel.setId(103_87_87_838L);
             testModel.setUsername("zhao");
             return testModel;
         });
-
         nodeBeanBuilderD.setPreHandler(PreHandler.VOID_PRE_HANDLER);
 
         NodeManager nodeManager = NodeManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
-                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD);
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
+                .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
         GraphRunningInfo graphRunningInfo = nodeManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
         return "success";
     }
-
 }

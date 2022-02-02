@@ -1,6 +1,7 @@
 package com.example.plato.runningData;
 
 import lombok.Data;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -37,7 +38,7 @@ public class ResultData<R> {
         return objectResultData;
     }
 
-    public static <Void> ResultData getFail(String mes, NodeResultStatus nodeResultStatus) {
+    public static ResultData getFail(String mes, NodeResultStatus nodeResultStatus) {
         ResultData<Object> objectResultData = new ResultData<>();
         objectResultData.setNodeResultStatus(nodeResultStatus);
         objectResultData.setMes(mes);

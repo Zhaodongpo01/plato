@@ -5,6 +5,7 @@ import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.holder.GraphHolder;
 import com.example.plato.runningData.GraphRunningInfo;
+import com.example.plato.runningData.MessageEnum;
 import com.example.plato.runningData.NodeResultStatus;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -55,8 +57,9 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
     @Override
     public void run(AbstractNode comingNode, ExecutorService executorService) {
         traceId = TraceUtil.getRandomTraceId();
-        run(comingNode);
-        runNext(executorService);
+        if (run(comingNode)) {
+            runNext(executorService);
+        }
     }
 
     @Override
@@ -79,43 +82,89 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         INodeWork<P, R> iNodeWork = nodeLoadByBean.getINodeWork();
         R result = null;
-        ResultData<R> resultData;
+        ResultData<R> resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
         try {
             result = iNodeWork.work(p);
             changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
             resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success");
         } catch (Exception e) {
+            log.error(String.format("%s\t{}", MessageEnum.CLIENT_ERROR), nodeLoadByBean.getUniqueId(), e);
             changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.ERROR);
             resultData = ResultData.build(result, NodeResultStatus.ERROR, "fail");
+            return false;
+        } finally {
+            NodeRunningInfo<R> nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
+                    nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
+            nodeRunningInfo.build();
+            iNodeWork.hook(p, resultData);
         }
-        NodeRunningInfo<R> nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
-                nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
-        nodeRunningInfo.build();
-        iNodeWork.hook(p, resultData);
         return true;
     }
 
     boolean checkShouldRun(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
-        if (checkCurrentNodeRunEnable(graphRunningInfo)
-                && checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo)
-                && !checkPreNodes(graphRunningInfo)) {
-            return true;
-        }
-        changeStatus(NodeResultStatus.INIT, NodeResultStatus.LIMIT_RUN);
-        ResultData<R> resultData = new ResultData<>();
-        resultData.setNodeResultStatus(NodeResultStatus.LIMIT_RUN);
-        resultData.setMes("限制执行");
-        new NodeRunningInfo(graphTraceId, traceId, nodeLoadByBean.getGraphId(),
-                nodeLoadByBean.getUniqueId(), resultData).build();
-        return false;
-    }
-
-    private boolean checkCurrentNodeRunEnable(GraphRunningInfo graphRunningInfo) {
-        PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
-        if (Optional.ofNullable(preHandler).isPresent()) {
-            return preHandler.runEnable(graphRunningInfo);
+        String limitMes;
+        if (StringUtils.isNotBlank(limitMes = checkCurrentNodeRunEnable(graphRunningInfo))
+                || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo))
+                || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo))
+                || StringUtils.isNotBlank(limitMes = checkNextHasResult())) {
+            changeStatus(NodeResultStatus.INIT, NodeResultStatus.LIMIT_RUN);
+            ResultData<R> resultData = new ResultData<>();
+            resultData.setNodeResultStatus(NodeResultStatus.LIMIT_RUN);
+            resultData.setMes(limitMes);
+            new NodeRunningInfo(graphTraceId, traceId, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(),
+                    resultData).build();
+            return false;
         }
         return true;
+    }
+
+    private String checkNextHasResult() {
+        List<NodeLoadByBean<?, ?>> nextNodes = nodeLoadByBean.getNextNodes();
+        if (CollectionUtils.isEmpty(nextNodes) && !nodeLoadByBean.isCheckNextHasResult()) {
+            return StringUtils.EMPTY;
+        }
+        Optional<NodeLoadByBean<?, ?>> first = nextNodes.stream().filter(temp -> {
+            boolean contains = temp.getPreNodes().contains(nodeLoadByBean.getUniqueId());
+            NodeRunningInfo nodeRunningInfo =
+                    GraphHolder.getNodeRunningInfo(nodeLoadByBean.getGraphId(), graphTraceId, temp.getUniqueId());
+            return contains && Objects.nonNull(nodeRunningInfo);
+        }).findFirst();
+        return first.isPresent() ? MessageEnum.NEXT_NODE_HAS_RESULT.getMes() : StringUtils.EMPTY;
+    }
+
+    private String checkCurrentNodeRunEnable(GraphRunningInfo graphRunningInfo) {
+        PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
+        return Objects.isNull(preHandler) || preHandler.runEnable(graphRunningInfo)
+               ? StringUtils.EMPTY
+               : MessageEnum.CURRENT_LIMIT_RUN.getMes();
+    }
+
+    private String checkPreNodes(GraphRunningInfo graphRunningInfo) {
+        List<String> preNodes = nodeLoadByBean.getPreNodes();
+        Optional<String> firstUnique = preNodes.stream().filter(uniqueId -> {
+            NodeRunningInfo<?> nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(uniqueId);
+            if (Objects.isNull(nodeRunningInfo)) {
+                return true;
+            }
+            NodeResultStatus nodeResultStatus = nodeRunningInfo.getResultData().getNodeResultStatus();
+            if (NodeResultStatus.getExceptionStatus().contains(nodeResultStatus)) {
+                return true;
+            }
+            ResultData<?> resultData = nodeRunningInfo.getResultData();
+            return resultData == null || !NodeResultStatus.EXECUTED.equals(resultData.getNodeResultStatus());
+        }).findFirst();
+        return firstUnique.isPresent() ? MessageEnum.PRE_NOT_HAS_RESULT.getMes() : StringUtils.EMPTY;
+    }
+
+    private String checkComingNodeAfter(NodeLoadByBean<?, ?> comingNodeLoadByBean, GraphRunningInfo graphRunningInfo) {
+        AfterHandler afterHandler = comingNodeLoadByBean.getAfterHandler();
+        if (Optional.ofNullable(afterHandler).isPresent()) {
+            Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
+            return !CollectionUtils.isNotEmpty(notShouldRunNodes)
+                           || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId())
+                   ? StringUtils.EMPTY : MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes();
+        }
+        return StringUtils.EMPTY;
     }
 
     @Override
@@ -139,36 +188,6 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
         }
     }
 
-    /**
-     * A和B并行到C。初始编排C强依赖于A和B。当A到C时，C由于还没有B的结果暂时不能执行。
-     * 然后B此时执行完之后根据结果是不让C执行。那么此时应考虑继续AC链路继续执行。
-     */
-    private boolean checkPreNodes(GraphRunningInfo graphRunningInfo) {
-        List<String> preNodes = nodeLoadByBean.getPreNodes();
-        Optional<String> firstUnique = preNodes.stream().filter(uniqueId -> {
-            NodeRunningInfo<?> nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(uniqueId);
-            if (Objects.isNull(nodeRunningInfo)) {
-                return true;
-            }
-            NodeResultStatus nodeResultStatus = nodeRunningInfo.getResultData().getNodeResultStatus();
-            if (NodeResultStatus.getExceptionStatus().contains(nodeResultStatus)) {
-                return true;
-            }
-            ResultData<?> resultData = nodeRunningInfo.getResultData();
-            return resultData == null || !NodeResultStatus.EXECUTED.equals(resultData.getNodeResultStatus());
-        }).findFirst();
-        return firstUnique.isPresent();
-    }
-
-    private boolean checkComingNodeAfter(NodeLoadByBean<?, ?> comingNodeLoadByBean, GraphRunningInfo graphRunningInfo) {
-        AfterHandler afterHandler = comingNodeLoadByBean.getAfterHandler();
-        if (Optional.ofNullable(afterHandler).isPresent()) {
-            Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
-            return !CollectionUtils.isNotEmpty(notShouldRunNodes)
-                    || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId());
-        }
-        return true;
-    }
 
     private P paramHandle(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();

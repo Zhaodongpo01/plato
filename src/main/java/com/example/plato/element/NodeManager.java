@@ -70,12 +70,12 @@ public class NodeManager {
     }
 
     /**
-     * 连接过程不给客户端来实现。代避免码太繁琐。
+     * append 只需要传一个，多个会取第一个。默认值true
      */
     public NodeManager linkNodes(NodeBeanBuilder<?, ?> nodeBeanBuilder, NodeBeanBuilder<?, ?> nextNodeBeanBuilder,
-            Boolean... notAppends) {
-        List<Boolean> appendList = Arrays.stream(notAppends).collect(Collectors.toList());
-        if (ObjectUtils.anyNull(nodeBeanBuilder, nextNodeBeanBuilder) || appendList.size() > 1) {
+            Boolean... append) {
+        List<Boolean> appendList = Arrays.stream(append).collect(Collectors.toList());
+        if (ObjectUtils.anyNull(nodeBeanBuilder, nextNodeBeanBuilder)) {
             throw new PlatoException("linkNodes param error");
         }
         nodeBeanBuilder.addNextBuilderNodes(nextNodeBeanBuilder);
@@ -89,26 +89,5 @@ public class NodeManager {
         firstNodeBeanBuilderMap.remove(nextNodeBeanBuilder.getUniqueId());
         return this;
     }
-
-
-    /*private void runSubFlow(NodeBeanProxy<?, ?> comingNode) {
-        if (comingNode.getNodeLoadByBean().getSubNodes() == null) {
-            return;
-        }
-        NodeLoadByBean.SubNodes subNodes = comingNode.getSubNodes().check();
-        subNodes.setGraphId(String.format("%s_%s_%s", this.getGraphId(), subNodes.getGraphId(), UUID.randomUUID()));
-        if (Optional.ofNullable(GraphHolder.getGraph(subNodes.getGraphId())).isPresent()) {
-            throw new PlatoException("runSubFlow subNodes graphId error");
-        }
-        GraphHolder.putGraph(Graph.getGraphInstance(subNodes.getGraphId()));
-        this.getNextNodes().add((NodeLoadByBean<?, ?>) subNodes.getSubStartNode());
-
-        if (CollectionUtils.isNotEmpty(this.preNodes)) {
-            this.preNodes.add((NodeLoadByBean<?, ?>) subNodes.getSubEndNode());
-        } else {
-            this.preNodes = Lists.newArrayList((NodeLoadByBean<?, ?>) subNodes.getSubEndNode());
-        }
-        subNodes.subStartNode.run(comingNode, ForkJoinPool.commonPool());
-    }*/
 }
 

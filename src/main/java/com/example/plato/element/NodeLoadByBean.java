@@ -33,28 +33,13 @@ public class NodeLoadByBean<P, R> {
     private PreHandler<P> preHandler;
     private AfterHandler afterHandler;
     private INodeWork<P, R> iNodeWork;
+    //当并发时，后面的节点不强依赖此节点，是否要求此节点在运行之前进行校验，后面的节点有结果了就不执行
+    private boolean checkNextHasResult = false;
     private final List<NodeLoadByBean<?, ?>> nextNodes = new ArrayList<>();
     private final List<String> preNodes = new ArrayList<>();
 
-    /*
-    * TODO bean的方式暂时不支持 subFlow的结构
-    @Data
-    static class SubNodes {
-        Node subStartNode;
-        Node subEndNode;
-        boolean mustNext = false;
-        String graphId;
-
-        SubNodes check() {
-            if (ObjectUtils.anyNull(this.subStartNode, this.subEndNode)
-                    || StringUtils.isBlank(this.graphId)) throw new PlatoException("SubNodes error");
-            return this;
-        }
-    }*/
-
     @Data
     public static class NodeBeanBuilder<P, R> extends NodeLoadByBean {
-
         private List<NodeBeanBuilder<?, ?>> nextBuilderNodes = new ArrayList<>();
 
         NodeLoadByBean<P, R> build() {
@@ -81,7 +66,7 @@ public class NodeLoadByBean<P, R> {
         }
 
         private Collection<? extends NodeLoadByBean<?, ?>> convertBuild2Bean(
-                List<NodeBeanBuilder<?, ?>> nextBuilderNodes, String graphId) {
+                List<NodeBeanBuilder<?, ?>> nextBuilderNodes, final String graphId) {
             return nextBuilderNodes.stream().map(temp -> {
                 temp.setGraphId(graphId);
                 return temp.build();
@@ -154,6 +139,11 @@ public class NodeLoadByBean<P, R> {
             if (Optional.ofNullable(iNodeWork).isPresent()) {
                 super.iNodeWork = iNodeWork;
             }
+            return this;
+        }
+
+        public NodeBeanBuilder<P, R> setCheckNextHasResult(boolean checkNextHasResult) {
+            super.checkNextHasResult = checkNextHasResult;
             return this;
         }
 
