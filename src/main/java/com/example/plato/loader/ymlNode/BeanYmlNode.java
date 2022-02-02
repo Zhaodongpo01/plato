@@ -6,7 +6,7 @@ package com.example.plato.loader.ymlNode;
  * @date 2022/2/2 2:46 下午
  * 他妈 类 类型Node
  */
-public class BeanNode implements INode {
+public class BeanYmlNode implements IYmlNode {
 
 
 

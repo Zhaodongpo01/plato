@@ -5,6 +5,6 @@ package com.example.plato.loader.ymlNode;
  * @version 1.0
  * @date 2022/2/2 2:45 下午
  */
-public interface INode {
+public interface IYmlNode {
 
 }

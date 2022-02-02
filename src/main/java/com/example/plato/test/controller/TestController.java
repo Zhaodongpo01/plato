@@ -1,6 +1,6 @@
 package com.example.plato.test.controller;
 
-import com.example.plato.element.NodeManager;
+import com.example.plato.element.GraphManager;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.loader.YmlRegistry;
 import com.example.plato.loader.config.GraphConfig;
@@ -76,12 +76,12 @@ public class TestController {
         });
         nodeBeanBuilderD.setPreHandler(PreHandler.VOID_PRE_HANDLER);
 
-        NodeManager nodeManager = NodeManager.getManager()
+        GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
                 .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
                 .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
-        GraphRunningInfo graphRunningInfo = nodeManager.run(100000L, TimeUnit.MILLISECONDS);
+        GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
         return "success";

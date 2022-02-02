@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.example.plato.exception.PlatoException;
 import com.example.plato.runningData.NodeResultStatus;
+import com.example.plato.util.TraceUtil;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -35,7 +36,10 @@ public class NodeYmlProxy<P, R> extends AbstractNode {
 
     @Override
     void run(AbstractNode comingNode, ExecutorService executorService) {
-
+        traceId = TraceUtil.getRandomTraceId();
+        if (run(comingNode)) {
+            runNext(executorService);
+        }
     }
 
     @Override
