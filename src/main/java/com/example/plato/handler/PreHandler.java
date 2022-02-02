@@ -15,11 +15,8 @@ public interface PreHandler<P> {
 
     P paramHandle(GraphRunningInfo graphRunningInfo);
 
-    /**
-     * 通过前面的节点结果。判断当前节点是否要执行
-     */
-    default boolean runEnable(GraphRunningInfo graphRunningInfo) {
-        return true;
+    default boolean suicide(GraphRunningInfo graphRunningInfo) {
+        return false;
     }
 
 }

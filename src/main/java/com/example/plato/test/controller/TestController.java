@@ -2,6 +2,8 @@ package com.example.plato.test.controller;
 
 import com.example.plato.element.NodeManager;
 import com.example.plato.handler.PreHandler;
+import com.example.plato.loader.YmlRegistry;
+import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.test.model.FirstModel;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * @author zhaodongpo
  * @version 1.0
@@ -34,6 +35,15 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/graph")
 @Slf4j
 public class TestController {
+
+    @RequestMapping("yml")
+    public String yml() {
+        YmlRegistry ymlRegistry = new YmlRegistry();
+        Map<String, GraphConfig> registry = ymlRegistry.registry();
+        log.info("ymlymlyml:{}", PlatoJsonUtil.toJson(registry));
+        return "success";
+    }
+
 
     @RequestMapping("serial")
     public String testSerial() {
@@ -52,16 +62,16 @@ public class TestController {
             }
 
             @Override
-            public boolean runEnable(GraphRunningInfo graphRunningInfo) {
+            public boolean suicide(GraphRunningInfo graphRunningInfo) {
                 NodeRunningInfo uniqueIdA = graphRunningInfo.getNodeRunningInfo("uniqueIdA");
-                return (Long) uniqueIdA.getResultData().getData() > 100;
+                return (Long) uniqueIdA.getResultData().getData() < 100;
             }
         });
         nodeBeanBuilderC.setPreHandler((PreHandler<TestModel>) graphRunningInfo -> {
             TestModel testModel = new TestModel();
-            testModel.setAge(100);
+            testModel.setAge(10);
             testModel.setId(103_87_87_838L);
-            testModel.setUsername("zhao");
+            testModel.setUsername("wb_liuyanmei");
             return testModel;
         });
         nodeBeanBuilderD.setPreHandler(PreHandler.VOID_PRE_HANDLER);

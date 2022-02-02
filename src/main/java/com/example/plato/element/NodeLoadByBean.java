@@ -67,10 +67,7 @@ public class NodeLoadByBean<P, R> {
 
         private Collection<? extends NodeLoadByBean<?, ?>> convertBuild2Bean(
                 List<NodeBeanBuilder<?, ?>> nextBuilderNodes, final String graphId) {
-            return nextBuilderNodes.stream().map(temp -> {
-                temp.setGraphId(graphId);
-                return temp.build();
-            }).collect(Collectors.toList());
+            return nextBuilderNodes.stream().map(temp -> temp.setGraphId(graphId).build()).collect(Collectors.toList());
         }
 
         public static NodeBeanBuilder get() {

@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Slf4j
 public class NodeB implements INodeWork<List<Integer>, Boolean> {
-
+    
     @Override
     public Boolean work(List<Integer> integers) {
         int a = 10 / 0;

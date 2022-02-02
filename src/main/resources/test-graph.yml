@@ -1,7 +1,6 @@
 graphId: 2345
 graphName: graph_name
 graphDesc: 图的描述
-startNode: nodeA
 nodes:
   - nodeConfig:
       uniqueId: nodeAId
@@ -24,7 +23,7 @@ nodes:
       preHandler: #全局类名:方法名
       afterHandler: #全局类名:方法名
   - nodeConfig:
-      id: nodeAId
+      uniqueId: nodeAId
       name: nodeA
       component: #全局类名:方法名
       desc: 节点描述

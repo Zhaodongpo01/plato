@@ -103,7 +103,7 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
 
     boolean checkShouldRun(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         String limitMes;
-        if (StringUtils.isNotBlank(limitMes = checkCurrentNodeRunEnable(graphRunningInfo))
+        if (StringUtils.isNotBlank(limitMes = checkSuicide(graphRunningInfo))
                 || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo))
                 || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo))
                 || StringUtils.isNotBlank(limitMes = checkNextHasResult())) {
@@ -132,11 +132,10 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
         return first.isPresent() ? MessageEnum.NEXT_NODE_HAS_RESULT.getMes() : StringUtils.EMPTY;
     }
 
-    private String checkCurrentNodeRunEnable(GraphRunningInfo graphRunningInfo) {
+    private String checkSuicide(GraphRunningInfo graphRunningInfo) {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
-        return Objects.isNull(preHandler) || preHandler.runEnable(graphRunningInfo)
-               ? StringUtils.EMPTY
-               : MessageEnum.CURRENT_LIMIT_RUN.getMes();
+        return Objects.isNull(preHandler) || !preHandler.suicide(graphRunningInfo)
+               ? StringUtils.EMPTY : MessageEnum.SUICIDE.getMes();
     }
 
     private String checkPreNodes(GraphRunningInfo graphRunningInfo) {

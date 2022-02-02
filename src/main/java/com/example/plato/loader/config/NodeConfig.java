@@ -22,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 public class NodeConfig extends PlatoConfig {
 
-    private String id;
+    private String uniqueId;
 
     private String graphId;
 
@@ -42,15 +42,13 @@ public class NodeConfig extends PlatoConfig {
 
     private String pre;
 
-    private String depend;
-
     private String preHandler;
 
     private String afterHandler;
 
     @Override
     void validate() {
-        if (StringUtils.isBlank(id)) {
+        if (StringUtils.isBlank(uniqueId)) {
             throw new PlatoException("NodeConfig id is empty");
         }
         if (StringUtils.isBlank(name)) {
