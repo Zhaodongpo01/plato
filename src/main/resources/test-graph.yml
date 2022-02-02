@@ -1,13 +1,14 @@
-graphId: 2345
-graphName: graph_name
-graphDesc: 图的描述
+graphId: 12345
+graphName: 柏拉图
+graphDesc: 柏拉图的描述
+scanPackage: 需要扫描的包路径
 nodes:
   - nodeConfig:
       uniqueId: nodeAId
       name: nodeA
-      component: #全局类名:方法名
+      component: 全局类名:方法名
       desc: 节点描述
-      inputParam:
+      inputParam: component的参数实体路径,逗号分隔
       type: METHOD
       subFlows:
         - subFlow:

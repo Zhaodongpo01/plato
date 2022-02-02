@@ -20,9 +20,7 @@ public abstract class PlatoConfig {
             nodeConfig.validate();
             List<SubFlow> subFlows = nodeConfig.getSubFlows();
             if (CollectionUtils.isNotEmpty(subFlows)) {
-                subFlows.parallelStream().forEach(subFlow -> {
-                    subFlow.validate();
-                });
+                subFlows.parallelStream().forEach(subFlow -> subFlow.validate());
             }
         });
     }

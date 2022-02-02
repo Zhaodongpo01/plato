@@ -5,7 +5,9 @@ import com.example.plato.util.PlatoJsonUtil;
 import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.loader.config.SubFlow;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.config.YamlMapFactoryBean;
 import org.springframework.core.io.Resource;
@@ -19,7 +21,6 @@ import java.util.*;
  * @author zhaodongpo
  * @version 1.0
  * @date 2022/1/21 3:24 下午
- * 通过yml的方式加载图的机构信息
  */
 @Slf4j
 public class YmlRegistry implements GraphRegistry {
@@ -41,6 +42,8 @@ public class YmlRegistry implements GraphRegistry {
     private static final String GRAPH_DESC = "graphDesc";
 
     private static final String START_NODE = "startNode";
+
+    private static final String SCAN_PACKAGE = "scanPackage";
 
     @Override
     public Map<String, GraphConfig> registry() {
@@ -74,7 +77,9 @@ public class YmlRegistry implements GraphRegistry {
         GraphConfig graphConfig = GraphConfig.builder().graphId(String.valueOf(objectMap.get(GRAPH_ID)))
                 .graphDesc(String.valueOf(objectMap.get(GRAPH_DESC)))
                 .graphName(String.valueOf(objectMap.get(GRAPH_NAME)))
-                .startNode(String.valueOf(objectMap.get(START_NODE))).build();
+                .startNode(String.valueOf(objectMap.get(START_NODE)))
+                .scanPackage(String.valueOf(objectMap.get(SCAN_PACKAGE)))
+                .build();
         List nodeObjects = (List) objectMap.get(NODES);
         List<NodeConfig> nodes = new ArrayList<>();
         nodeObjects.stream().filter(Objects::nonNull).forEach(NodeConfigTemp -> {
