@@ -12,7 +12,7 @@ public interface INodeWork<P, R> {
     /**
      * 回调方法
      */
-    R work(P p);
+    R work(P p) throws InterruptedException;
 
     /**
      * 实现hook方法

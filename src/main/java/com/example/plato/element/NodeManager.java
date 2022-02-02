@@ -29,7 +29,7 @@ public class NodeManager {
 
     private static ExecutorService threadPoolExecutor = ForkJoinPool.commonPool();
 
-    private Map<String, NodeBeanBuilder> firstNodeBeanBuilderMap = new ConcurrentHashMap<>();
+    private final Map<String, NodeBeanBuilder> firstNodeBeanBuilderMap = new ConcurrentHashMap<>();
 
     private NodeBeanBuilder getFirstNodeBeanBuilder() {
         if (MapUtils.isEmpty(firstNodeBeanBuilderMap) || firstNodeBeanBuilderMap.values().size() != 1) {
@@ -48,7 +48,7 @@ public class NodeManager {
         }
     }
 
-    public <P> GraphRunningInfo run(long timeOut, TimeUnit timeUnit) {
+    public GraphRunningInfo run(long timeOut, TimeUnit timeUnit) {
         NodeLoadByBean firstNodeLoadByBean = getFirstNodeBeanBuilder().build();
         if (Objects.isNull(firstNodeLoadByBean)
                 || StringUtils.isBlank(firstNodeLoadByBean.getGraphId())
@@ -57,9 +57,9 @@ public class NodeManager {
         }
         String graphTraceId = TraceUtil.getRandomTraceId();
         GraphHolder.putGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId, new GraphRunningInfo());
-        NodeBeanProxy fistNodeBeanProxy = new NodeBeanProxy(firstNodeLoadByBean, graphTraceId);
-        CompletableFuture completableFuture =
-                CompletableFuture.runAsync(() -> fistNodeBeanProxy.run(null, threadPoolExecutor));
+        CompletableFuture<Void> completableFuture =
+                CompletableFuture.runAsync(
+                        () -> new NodeBeanProxy(firstNodeLoadByBean, graphTraceId).run(null, threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -72,7 +72,7 @@ public class NodeManager {
     /**
      * 连接过程不给客户端来实现。代避免码太繁琐。
      */
-    public NodeManager linkNodes(NodeBeanBuilder nodeBeanBuilder, NodeBeanBuilder nextNodeBeanBuilder,
+    public NodeManager linkNodes(NodeBeanBuilder<?, ?> nodeBeanBuilder, NodeBeanBuilder<?, ?> nextNodeBeanBuilder,
             Boolean... notAppends) {
         List<Boolean> appendList = Arrays.stream(notAppends).collect(Collectors.toList());
         if (ObjectUtils.anyNull(nodeBeanBuilder, nextNodeBeanBuilder) || appendList.size() > 1) {

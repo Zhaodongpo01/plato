@@ -50,7 +50,7 @@ public class TestController {
             @Override
             public boolean runEnable(GraphRunningInfo graphRunningInfo) {
                 NodeRunningInfo uniqueIdA = graphRunningInfo.getNodeRunningInfo("uniqueIdA");
-                return (Long) uniqueIdA.getResultData().getData() < 100;
+                return (Long) uniqueIdA.getResultData().getData() > 100;
             }
         });
 
@@ -68,7 +68,7 @@ public class TestController {
         NodeManager nodeManager = NodeManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
-                .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD);
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD);
         GraphRunningInfo graphRunningInfo = nodeManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
