@@ -18,13 +18,16 @@ public class ResultData<R> {
 
     private String mes = StringUtils.EMPTY;
 
+    private long costTime = 0L;
+
     private NodeResultStatus nodeResultStatus = NodeResultStatus.INIT;
 
-    public static <R> ResultData<R> build(R result, NodeResultStatus resultStatus, String mes) {
+    public static <R> ResultData<R> build(R result, NodeResultStatus resultStatus, String mes, long costTime) {
         ResultData<R> resultData = new ResultData<>();
         resultData.setData(result);
         resultData.setNodeResultStatus(resultStatus);
         resultData.setMes(mes);
+        resultData.setCostTime(costTime);
         resultData.setSuccess(NodeResultStatus.ERROR.equals(resultStatus) ? false : true);
         return resultData;
     }
