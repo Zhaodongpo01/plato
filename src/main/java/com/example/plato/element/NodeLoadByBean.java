@@ -34,7 +34,6 @@ public class NodeLoadByBean<P, R> {
     private PreHandler<P> preHandler;
     private AfterHandler afterHandler;
     private INodeWork<P, R> iNodeWork;
-    //当并发时，后面的节点不强依赖此节点，是否要求此节点在运行之前进行校验，后面的节点有结果了就不执行
     private boolean checkNextHasResult = false;
     private final List<NodeLoadByBean<?, ?>> nextNodes = new ArrayList<>();
     private final List<String> preNodes = new ArrayList<>();
@@ -93,7 +92,6 @@ public class NodeLoadByBean<P, R> {
         public NodeBeanBuilder<P, R> setGraphId(String graphId) {
             if (StringUtils.isNotBlank(graphId)) {
                 super.graphId = graphId;
-                Graph.getGraphInstance(graphId);
             }
             return this;
         }

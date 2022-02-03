@@ -1,6 +1,5 @@
 package com.example.plato.holder;
 
-import com.example.plato.element.Graph;
 import com.example.plato.exception.PlatoException;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
@@ -25,26 +24,24 @@ public class GraphHolder {
     /**
      * completableFuture所以没有使用ThreadLocal  <graphId : <graphTraceId,GraphRunningInfo>>
      */
-    private static final Map<String, Map<String, GraphRunningInfo>> graphRunningInfoHolderMap =
-            new ConcurrentHashMap<>();
-    private static final Map<String, Graph> graphMap = new ConcurrentHashMap<>();
+    private static final Map<String, Map<String, GraphRunningInfo>> GRAPH_RUNNING_INFO_MAP = new ConcurrentHashMap<>();
 
     public static GraphRunningInfo getGraphRunningInfo(String graphId, String graphTraceId) {
         if (StringUtils.isAnyBlank(graphId, graphTraceId)
-                || !graphRunningInfoHolderMap.containsKey(graphId)
-                || !graphRunningInfoHolderMap.get(graphId).containsKey(graphTraceId)) {
+                || !GRAPH_RUNNING_INFO_MAP.containsKey(graphId)
+                || !GRAPH_RUNNING_INFO_MAP.get(graphId).containsKey(graphTraceId)) {
             throw new PlatoException("getGraphRunningInfo error");
         }
-        return graphRunningInfoHolderMap.get(graphId).get(graphTraceId);
+        return GRAPH_RUNNING_INFO_MAP.get(graphId).get(graphTraceId);
     }
 
     public static GraphRunningInfo removeGraphRunningInfo(String graphId, String graphTraceId) {
         if (StringUtils.isAnyBlank(graphId, graphTraceId)
-                || !graphRunningInfoHolderMap.containsKey(graphId)
-                || !graphRunningInfoHolderMap.get(graphId).containsKey(graphTraceId)) {
+                || !GRAPH_RUNNING_INFO_MAP.containsKey(graphId)
+                || !GRAPH_RUNNING_INFO_MAP.get(graphId).containsKey(graphTraceId)) {
             throw new PlatoException("removeGraphTrace error");
         }
-        return graphRunningInfoHolderMap.get(graphId).remove(graphTraceId);
+        return GRAPH_RUNNING_INFO_MAP.get(graphId).remove(graphTraceId);
     }
 
     public static GraphRunningInfo putGraphRunningInfo(String graphId, String graphTraceId,
@@ -53,12 +50,12 @@ public class GraphHolder {
                 || !Optional.ofNullable(graphRunningInfo).isPresent()) {
             return null;
         }
-        if (graphRunningInfoHolderMap.containsKey(graphId)) {
-            return graphRunningInfoHolderMap.get(graphId).put(graphTraceId, graphRunningInfo);
+        if (GRAPH_RUNNING_INFO_MAP.containsKey(graphId)) {
+            return GRAPH_RUNNING_INFO_MAP.get(graphId).put(graphTraceId, graphRunningInfo);
         }
         ConcurrentHashMap<String, GraphRunningInfo> concurrentHashMap = new ConcurrentHashMap<>();
         concurrentHashMap.put(graphTraceId, graphRunningInfo);
-        graphRunningInfoHolderMap.put(graphId, concurrentHashMap);
+        GRAPH_RUNNING_INFO_MAP.put(graphId, concurrentHashMap);
         return graphRunningInfo;
     }
 
@@ -66,8 +63,8 @@ public class GraphHolder {
         Map<String, NodeRunningInfo> nodeRunningInfoMap = new ConcurrentHashMap<>();
         GraphRunningInfo graphRunningInfo;
         if (StringUtils.isAnyBlank(graphId, graphTraceId)
-                || !graphRunningInfoHolderMap.containsKey(graphId)
-                || (graphRunningInfo = graphRunningInfoHolderMap.get(graphId).get(graphTraceId)) == null) {
+                || !GRAPH_RUNNING_INFO_MAP.containsKey(graphId)
+                || (graphRunningInfo = GRAPH_RUNNING_INFO_MAP.get(graphId).get(graphTraceId)) == null) {
             return nodeRunningInfoMap;
         }
         return graphRunningInfo.getNodeRunningInfoMap();
@@ -86,24 +83,9 @@ public class GraphHolder {
             String graphTraceId,
             String uniqueId,
             NodeRunningInfo<R> nodeRunningInfo) {
-        GraphRunningInfo graphRunningInfo = graphRunningInfoHolderMap.get(graphId).get(graphTraceId);
+        GraphRunningInfo graphRunningInfo = GRAPH_RUNNING_INFO_MAP.get(graphId).get(graphTraceId);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
         return nodeRunningInfo;
-    }
-
-    public static Graph putGraph(Graph graph) {
-        if (graphMap.containsKey(graph.getGraphId())) {
-            log.info("graphMap exists graphId{} please do not put again", graph.getGraphId());
-            return graphMap.get(graph.getGraphId());
-        }
-        return graphMap.put(graph.getGraphId(), graph);
-    }
-
-    public static Graph getGraph(String graphId) {
-        if (StringUtils.isBlank(graphId)) {
-            return null;
-        }
-        return graphMap.get(graphId);
     }
 }
