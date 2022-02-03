@@ -45,6 +45,9 @@ public class YmlRegistry implements GraphRegistry {
 
     private static final String SCAN_PACKAGE = "scanPackage";
 
+    /**
+     * graphId:GraphConfig
+     * */
     @Override
     public Map<String, GraphConfig> registry() {
         Map<String, GraphConfig> resultMap;
@@ -81,7 +84,7 @@ public class YmlRegistry implements GraphRegistry {
                 .scanPackage(String.valueOf(objectMap.get(SCAN_PACKAGE)))
                 .build();
         List nodeObjects = (List) objectMap.get(NODES);
-        List<NodeConfig> nodes = new ArrayList<>();
+        LinkedList<NodeConfig> nodes = new LinkedList<>();
         nodeObjects.stream().filter(Objects::nonNull).forEach(NodeConfigTemp -> {
             Map<String, Object> nodeConfigMap = PlatoJsonUtil.fromJson(PlatoJsonUtil.toJson(NodeConfigTemp));
             if (MapUtils.isEmpty(nodeConfigMap) || !nodeConfigMap.containsKey(NODE_CONFIG)) {

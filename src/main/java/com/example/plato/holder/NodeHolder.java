@@ -1,7 +1,9 @@
 package com.example.plato.holder;
 
-import com.example.plato.element.NodeLoadByBean;
+import com.example.plato.element.AbstractNodeDefine;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -20,25 +22,26 @@ public class NodeHolder {
     /**
      * <graphId:<uniqueId,NodeLoadByBean>>
      */
-    private static Map<String, Map<String, NodeLoadByBean>> nodeMap = new ConcurrentHashMap<>();
+    private static Map<String, Map<String, AbstractNodeDefine>> nodeMap = new ConcurrentHashMap<>();
 
-    public static NodeLoadByBean getNodeLoadByBean(String graphId, String uniqueId) {
+    public static AbstractNodeDefine getNode(String graphId, String uniqueId) {
         if (StringUtils.isAnyBlank(graphId, uniqueId) || !nodeMap.containsKey(graphId)) {
             return null;
         }
         return nodeMap.get(uniqueId).get(uniqueId);
     }
 
-    public static NodeLoadByBean putNodeLoadByBean(String graphId, String uniqueId, NodeLoadByBean nodeLoadByBean) {
-        if (StringUtils.isAnyBlank(graphId, uniqueId) || !Optional.ofNullable(nodeLoadByBean).isPresent()) {
+    public static AbstractNodeDefine putNode(String graphId, String uniqueId,
+            AbstractNodeDefine abstractNodeDefine) {
+        if (StringUtils.isAnyBlank(graphId, uniqueId) || !Optional.ofNullable(abstractNodeDefine).isPresent()) {
             return null;
         }
         if (nodeMap.containsKey(graphId)) {
-            return nodeMap.get(graphId).put(uniqueId, nodeLoadByBean);
+            return nodeMap.get(graphId).put(uniqueId, abstractNodeDefine);
         }
-        ConcurrentHashMap<String, NodeLoadByBean> concurrentHashMap = new ConcurrentHashMap<>();
-        concurrentHashMap.put(uniqueId, nodeLoadByBean);
+        ConcurrentHashMap<String, AbstractNodeDefine> concurrentHashMap = new ConcurrentHashMap<>();
+        concurrentHashMap.put(uniqueId, abstractNodeDefine);
         nodeMap.put(uniqueId, concurrentHashMap);
-        return nodeLoadByBean;
+        return abstractNodeDefine;
     }
 }

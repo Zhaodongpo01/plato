@@ -7,4 +7,6 @@ package com.example.plato.loader.ymlNode;
  */
 public interface IYmlNode {
 
+    IYmlNode getInstance(String scanPackage);
+
 }

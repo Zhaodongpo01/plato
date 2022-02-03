@@ -15,17 +15,16 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Getter
-public class NodeLoadByYml<P, R> {
+public class NodeLoadByYml<P, R> extends AbstractNodeDefine {
 
     private String uniqueId;
     private String graphId;
-    private final List<IYmlNode> nextYmlNodes = new ArrayList<>();
+    private IYmlNode iYmlNode;
+    private final List<IYmlNode> nextNodes = new ArrayList<>();
+    private final List<String> preNodes = new ArrayList<>();
 
     private NodeLoadByYml() {
 
-    }
-
-    public static class NodeYmlBuilder<P, R> extends NodeLoadByYml {
     }
 
 }

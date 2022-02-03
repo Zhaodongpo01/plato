@@ -12,16 +12,20 @@ import com.example.plato.test.serial.NodeA;
 import com.example.plato.test.serial.NodeB;
 import com.example.plato.test.serial.NodeC;
 import com.example.plato.test.serial.NodeD;
+import com.example.plato.util.ParserString2CodeUtil;
 import com.example.plato.util.PlatoJsonUtil;
+import com.example.plato.test.service.TestService;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.plato.element.NodeLoadByBean.NodeBeanBuilder;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -36,12 +40,25 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TestController {
 
+    @Autowired
+    private TestService testService;
+
     @RequestMapping("yml")
     public String yml() {
         YmlRegistry ymlRegistry = new YmlRegistry();
         Map<String, GraphConfig> registry = ymlRegistry.registry();
         log.info("ymlymlyml:{}", PlatoJsonUtil.toJson(registry));
         return "success";
+    }
+
+    @RequestMapping("expression")
+    public String expression() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("testService", testService);
+        map.put("var", "zhaodongpo");
+        String expression = "testService.save(var)";
+        ParserString2CodeUtil.parserString2Code(expression, map);
+        return "";
     }
 
 

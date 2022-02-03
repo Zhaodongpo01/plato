@@ -23,7 +23,7 @@ public class NodeYmlProxy<P, R> extends AbstractNode {
 
     private String traceId;
     private String graphTraceId;
-    private NodeLoadByBean<P, R> nodeLoadByBean;
+    private NodeLoadByYml<P, R> nodeLoadByYml;
     private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {

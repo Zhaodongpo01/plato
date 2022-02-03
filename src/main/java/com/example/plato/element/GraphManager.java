@@ -42,10 +42,8 @@ public class GraphManager {
         return new GraphManager();
     }
 
-    public void setThreadPoolExecutor(ExecutorService executorService) {
-        if (executorService != null) {
-            threadPoolExecutor = executorService;
-        }
+    public void buildThreadPoolExecutor(ExecutorService executorService) {
+        threadPoolExecutor = Objects.isNull(executorService) ? threadPoolExecutor : executorService;
     }
 
     public GraphRunningInfo run(long timeOut, TimeUnit timeUnit) {
@@ -65,13 +63,11 @@ public class GraphManager {
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             log.error("NodeManager run error {} ", e.getMessage(), e);
             throw new PlatoException("NodeManager run error");
+        } finally {
+            return GraphHolder.removeGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId);
         }
-        return GraphHolder.removeGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId);
     }
 
-    /**
-     * append 只需要传一个，多个会取第一个。默认值true
-     */
     public GraphManager linkNodes(NodeBeanBuilder<?, ?> nodeBeanBuilder, NodeBeanBuilder<?, ?> nextNodeBeanBuilder,
             Boolean... append) {
         List<Boolean> appendList = Arrays.stream(append).collect(Collectors.toList());
@@ -89,8 +85,6 @@ public class GraphManager {
         firstNodeBeanBuilderMap.remove(nextNodeBeanBuilder.getUniqueId());
         return this;
     }
-
-
 
 
 }

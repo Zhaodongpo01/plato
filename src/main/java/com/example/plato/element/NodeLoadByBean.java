@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @date 2022/1/30 14:56
  */
 @Getter
-public class NodeLoadByBean<P, R> {
+public class NodeLoadByBean<P, R> extends AbstractNodeDefine {
 
     private NodeLoadByBean() {
     }
@@ -44,19 +44,20 @@ public class NodeLoadByBean<P, R> {
         private List<NodeBeanBuilder<?, ?>> nextBuilderNodes = new ArrayList<>();
 
         NodeLoadByBean<P, R> build() {
-            if (NodeHolder.getNodeLoadByBean(this.getGraphId(), this.getUniqueId()) == null) {
+            if (NodeHolder.getNode(this.getGraphId(), this.getUniqueId()) == null) {
                 synchronized (NodeLoadByBean.class) {
-                    if (NodeHolder.getNodeLoadByBean(this.getGraphId(), this.getUniqueId()) == null) {
+                    if (NodeHolder.getNode(this.getGraphId(), this.getUniqueId()) == null) {
                         NodeLoadByBean<P, R> nodeLoadByBean = (NodeLoadByBean<P, R>) check();
                         if (CollectionUtils.isNotEmpty(this.getNextBuilderNodes())) {
                             nodeLoadByBean.getNextNodes()
                                     .addAll(convertBuild2Bean(this.getNextBuilderNodes(), this.getGraphId()));
                         }
-                        return NodeHolder.putNodeLoadByBean(this.getGraphId(), this.getUniqueId(), nodeLoadByBean);
+                        return (NodeLoadByBean<P, R>) NodeHolder.putNode(this.getGraphId(),
+                                this.getUniqueId(), nodeLoadByBean);
                     }
                 }
             }
-            return NodeHolder.getNodeLoadByBean(this.getGraphId(), this.getUniqueId());
+            return (NodeLoadByBean<P, R>) NodeHolder.getNode(this.getGraphId(), this.getUniqueId());
         }
 
         private NodeBeanBuilder<P, R> check() {
