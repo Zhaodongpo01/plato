@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author zhaodongpo
@@ -33,7 +33,7 @@ public class GraphConfig extends PlatoConfig {
 
     private String scanPackage;
 
-    private LinkedList<NodeConfig> nodes;
+    private List<NodeConfig> nodes;
 
     @Override
     void validate() {

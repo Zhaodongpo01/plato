@@ -1,7 +1,8 @@
-package com.example.plato.loader.ymlNode;
+package com.example.plato.element.ymlNode;
 
 import org.reflections.Reflections;
 
+import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.util.PackageScanner;
 
 /**
@@ -10,13 +11,12 @@ import com.example.plato.util.PackageScanner;
  * @date 2022/2/2 2:46 下午
  * 类 类型Node
  */
-public class BeanYmlNode extends AbstractYmlNode {
-
-    private String inputParam;
+public class BeanNode extends AbstractYmlNode {
 
     @Override
-    public IYmlNode getInstance(String scanPackage) {
+    public IYmlNode getInstance(String scanPackage, NodeConfig nodeConfig) {
         Reflections reflections = PackageScanner.scna(scanPackage);
+
         return null;
     }
 }

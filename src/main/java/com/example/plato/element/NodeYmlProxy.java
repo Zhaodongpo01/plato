@@ -3,6 +3,7 @@ package com.example.plato.element;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.example.plato.element.ymlNode.IYmlNode;
 import com.example.plato.exception.PlatoException;
 import com.example.plato.runningData.NodeResultStatus;
 import com.example.plato.util.TraceUtil;
@@ -19,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class NodeYmlProxy<P, R> extends AbstractNode {
+public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
 
     private String traceId;
     private String graphTraceId;
-    private NodeLoadByYml<P, R> nodeLoadByYml;
+    private IYmlNode ymlNode;
     private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {
@@ -34,8 +35,13 @@ public class NodeYmlProxy<P, R> extends AbstractNode {
         return this.statusAtomicReference.compareAndSet(expect, update);
     }
 
+    public NodeYmlProxy(IYmlNode ymlNode, String graphTraceId) {
+        this.ymlNode = ymlNode;
+        this.graphTraceId = graphTraceId;
+    }
+
     @Override
-    void run(AbstractNode comingNode, ExecutorService executorService) {
+    void run(AbstractNodeProxy comingNode, ExecutorService executorService) {
         traceId = TraceUtil.getRandomTraceId();
         if (run(comingNode)) {
             runNext(executorService);
@@ -43,7 +49,8 @@ public class NodeYmlProxy<P, R> extends AbstractNode {
     }
 
     @Override
-    boolean run(AbstractNode comingNode) {
+    boolean run(AbstractNodeProxy comingNode) {
+
         return false;
     }
 
@@ -51,4 +58,5 @@ public class NodeYmlProxy<P, R> extends AbstractNode {
     void runNext(ExecutorService executorService) {
 
     }
+
 }

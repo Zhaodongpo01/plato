@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @date 2022/1/30 14:56
  */
 @Getter
-public class NodeLoadByBean<P, R> extends AbstractNodeDefine {
+public class NodeLoadByBean<P, R> {
 
     private NodeLoadByBean() {
     }
@@ -52,12 +52,11 @@ public class NodeLoadByBean<P, R> extends AbstractNodeDefine {
                             nodeLoadByBean.getNextNodes()
                                     .addAll(convertBuild2Bean(this.getNextBuilderNodes(), this.getGraphId()));
                         }
-                        return (NodeLoadByBean<P, R>) NodeHolder.putNode(this.getGraphId(),
-                                this.getUniqueId(), nodeLoadByBean);
+                        return NodeHolder.putNode(this.getGraphId(), this.getUniqueId(), nodeLoadByBean);
                     }
                 }
             }
-            return (NodeLoadByBean<P, R>) NodeHolder.getNode(this.getGraphId(), this.getUniqueId());
+            return NodeHolder.getNode(this.getGraphId(), this.getUniqueId());
         }
 
         private NodeBeanBuilder<P, R> check() {

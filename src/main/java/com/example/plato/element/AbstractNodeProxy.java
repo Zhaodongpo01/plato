@@ -10,13 +10,13 @@ import java.util.concurrent.ExecutorService;
  * @date 2022/1/23 11:04 上午
  */
 @Slf4j
-public abstract class AbstractNode {
+public abstract class AbstractNodeProxy {
 
     public static final Long DEFAULT_TIME_OUT = 60_000L;
 
-    abstract void run(AbstractNode comingNode, ExecutorService executorService);
+    abstract void run(AbstractNodeProxy comingNode, ExecutorService executorService);
 
-    abstract boolean run(AbstractNode comingNode);
+    abstract boolean run(AbstractNodeProxy comingNode);
 
     abstract void runNext(ExecutorService executorService);
 

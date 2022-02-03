@@ -45,46 +45,49 @@ public class YmlRegistry implements GraphRegistry {
 
     private static final String SCAN_PACKAGE = "scanPackage";
 
+    private static Map<String, GraphConfig> resultMap = new HashMap<>();
+
     /**
      * graphId:GraphConfig
-     * */
+     */
     @Override
     public Map<String, GraphConfig> registry() {
-        Map<String, GraphConfig> resultMap;
         try {
-            resultMap = getGraphConfigList();
+            getGraphConfigs();
         } catch (IOException e) {
             throw new PlatoException("registry get graph config error");
         }
         return resultMap;
     }
 
-    private Map<String, GraphConfig> getGraphConfigList() throws IOException {
-        Map<String, GraphConfig> graphConfigMap = new HashMap<>();
+    private void getGraphConfigs() throws IOException {
         Resource[] resources = getResource(GRAPH_CONFIG_PATH);
         Arrays.stream(resources).forEach(resource -> {
             YamlMapFactoryBean yamlMapFactoryBean = new YamlMapFactoryBean();
             yamlMapFactoryBean.setResources(resource);
             yamlMapFactoryBean.afterPropertiesSet();
             Map<String, Object> objectMap = yamlMapFactoryBean.getObject();
-            buildGraphConfig(graphConfigMap, objectMap);
+            buildGraphConfig(resultMap, objectMap);
         });
-        log.info("getGraphConfigList#graphConfigMap:{}", PlatoJsonUtil.toJson(graphConfigMap));
-        return graphConfigMap;
+        log.info("getGraphConfigs#resultMap:{}", PlatoJsonUtil.toJson(resultMap));
     }
 
     private void buildGraphConfig(Map<String, GraphConfig> graphConfigMap, Map<String, Object> objectMap) {
         if (MapUtils.isEmpty(objectMap) || !objectMap.containsKey(NODES)) {
             return;
         }
-        GraphConfig graphConfig = GraphConfig.builder().graphId(String.valueOf(objectMap.get(GRAPH_ID)))
+        String graphId = String.valueOf(objectMap.get(GRAPH_ID));
+        if (resultMap.containsKey(graphId)) {
+            return;
+        }
+        GraphConfig graphConfig = GraphConfig.builder().graphId(graphId)
                 .graphDesc(String.valueOf(objectMap.get(GRAPH_DESC)))
                 .graphName(String.valueOf(objectMap.get(GRAPH_NAME)))
                 .startNode(String.valueOf(objectMap.get(START_NODE)))
                 .scanPackage(String.valueOf(objectMap.get(SCAN_PACKAGE)))
                 .build();
         List nodeObjects = (List) objectMap.get(NODES);
-        LinkedList<NodeConfig> nodes = new LinkedList<>();
+        List<NodeConfig> nodes = new ArrayList<>();
         nodeObjects.stream().filter(Objects::nonNull).forEach(NodeConfigTemp -> {
             Map<String, Object> nodeConfigMap = PlatoJsonUtil.fromJson(PlatoJsonUtil.toJson(NodeConfigTemp));
             if (MapUtils.isEmpty(nodeConfigMap) || !nodeConfigMap.containsKey(NODE_CONFIG)) {

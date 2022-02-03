@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class NodeBeanProxy<P, R> extends AbstractNode {
+public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
 
     private String traceId;
     private String graphTraceId;
@@ -57,7 +57,7 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
      * 这个方法是否可以放到,抽象类里面去
      */
     @Override
-    public void run(AbstractNode comingNode, ExecutorService executorService) {
+    public void run(AbstractNodeProxy comingNode, ExecutorService executorService) {
         traceId = TraceUtil.getRandomTraceId();
         if (run(comingNode)) {
             runNext(executorService);
@@ -65,7 +65,7 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
     }
 
     @Override
-    boolean run(AbstractNode comingNode) {
+    boolean run(AbstractNodeProxy comingNode) {
         P p;
         if (Objects.nonNull(comingNode)) {
             NodeLoadByBean<?, ?> comingNodeLoadByBean = ((NodeBeanProxy<?, ?>) comingNode).getNodeLoadByBean();
