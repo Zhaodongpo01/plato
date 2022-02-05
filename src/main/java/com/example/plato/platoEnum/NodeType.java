@@ -8,7 +8,5 @@ package com.example.plato.platoEnum;
 public enum NodeType {
     METHOD,
     BEAN,
-    CONDITION,
-    SUBFLOW,
     ;
 }

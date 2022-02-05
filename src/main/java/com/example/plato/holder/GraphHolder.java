@@ -71,7 +71,7 @@ public class GraphHolder {
     }
 
     public static NodeRunningInfo getNodeRunningInfo(String graphId, String graphTraceId, String uniqueId) {
-        Map<String, NodeRunningInfo> nodeRunningInfoMap = new ConcurrentHashMap<>();
+        Map<String, NodeRunningInfo> nodeRunningInfoMap;
         if (StringUtils.isBlank(uniqueId)
                 || MapUtils.isEmpty((nodeRunningInfoMap = getNodeRunningInfoMap(graphId, graphTraceId)))) {
             return null;

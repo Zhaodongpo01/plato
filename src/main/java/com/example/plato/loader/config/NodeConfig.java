@@ -3,10 +3,12 @@ package com.example.plato.loader.config;
 import com.example.plato.exception.PlatoException;
 import com.example.plato.platoEnum.NodeType;
 import com.google.common.collect.Sets;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -59,6 +61,9 @@ public class NodeConfig extends PlatoConfig {
         }
         if (StringUtils.isBlank(graphId)) {
             throw new PlatoException("NodeConfig graphId is empty");
+        }
+        if (StringUtils.isBlank(component) || !component.contains(":")) {
+            throw new PlatoException("NodeConfig component is empty");
         }
     }
 }

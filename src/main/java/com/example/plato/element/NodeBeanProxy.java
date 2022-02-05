@@ -84,7 +84,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         INodeWork<P, R> iNodeWork = nodeLoadByBean.getINodeWork();
         R result = null;
-        ResultData<R> resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
+        ResultData resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
         long startTime = SystemClock.now();
         long endTime = SystemClock.now();
         try {
@@ -100,7 +100,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
             return false;
         } finally {
             log.info("{}\t执行耗时{}", nodeLoadByBean.getUniqueId(), endTime - startTime);
-            NodeRunningInfo<R> nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
                     nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
             nodeRunningInfo.build();
             iNodeWork.hook(p, resultData);

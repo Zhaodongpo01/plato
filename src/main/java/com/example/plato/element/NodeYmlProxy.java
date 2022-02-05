@@ -1,10 +1,12 @@
 package com.example.plato.element;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.example.plato.element.ymlNode.IYmlNode;
 import com.example.plato.exception.PlatoException;
+import com.example.plato.loader.ymlNode.AbstractYmlNode;
 import com.example.plato.runningData.NodeResultStatus;
 import com.example.plato.util.TraceUtil;
 
@@ -24,7 +26,8 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
 
     private String traceId;
     private String graphTraceId;
-    private IYmlNode ymlNode;
+    private AbstractYmlNode<P, R> abstractYmlNode;
+    private P p;
     private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {
@@ -35,9 +38,10 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         return this.statusAtomicReference.compareAndSet(expect, update);
     }
 
-    public NodeYmlProxy(IYmlNode ymlNode, String graphTraceId) {
-        this.ymlNode = ymlNode;
+    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId, P p) {
+        this.abstractYmlNode = abstractYmlNode;
         this.graphTraceId = graphTraceId;
+        this.p = p;
     }
 
     @Override
@@ -50,8 +54,20 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
 
     @Override
     boolean run(AbstractNodeProxy comingNode) {
+        p = Objects.isNull(comingNode) ? p : paramHandle((NodeYmlProxy<?, ?>) comingNode);
+        try {
+            R work = abstractYmlNode.work(p);
+        } catch (InterruptedException e) {
+            log.error("NodeYmlProxy run error", e);
+            return false;
+        }
+        return true;
+    }
 
-        return false;
+    private P paramHandle(NodeYmlProxy<?, ?> comingNode) {
+        AbstractYmlNode<?, ?> abstractYmlNode = comingNode.getAbstractYmlNode();
+
+        return null;
     }
 
     @Override

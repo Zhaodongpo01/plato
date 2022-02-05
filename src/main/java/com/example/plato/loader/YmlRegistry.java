@@ -25,7 +25,7 @@ import java.util.*;
 @Slf4j
 public class YmlRegistry implements GraphRegistry {
 
-    private static final String GRAPH_CONFIG_PATH = "*-graph.yml";
+    private static final String GRAPH_CONFIG_PATH = "graph/*-graph.yml";
 
     private static final String NODES = "nodes";
 
