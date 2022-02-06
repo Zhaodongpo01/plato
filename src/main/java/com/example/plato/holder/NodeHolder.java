@@ -68,17 +68,21 @@ public class NodeHolder {
 
     public static void getYmlNodeMap() {
         Map<String, GraphConfig> registryMap = new YmlRegistry().registry();
-        registryMap.forEach(((graphIdTemp, graphConfig) -> {
-            Map<String, AbstractYmlNode> abstractYmlNodeMap = NODE_YML_MAP.containsKey(graphIdTemp)
-                    ? NODE_YML_MAP.get(graphIdTemp) : new HashMap<>();
-            List<NodeConfig> nodeConfigs = graphConfig.getNodes();
-            nodeConfigs.parallelStream().forEach(nodeConfig -> {
-                AbstractYmlNode abstractYmlNode = NodeYmlFactory.getIYmlNode(nodeConfig, graphConfig.getScanPackage());
-                abstractYmlNodeMap.put(nodeConfig.getUniqueId(), abstractYmlNode);
-                if (graphConfig.getStartNode().equals(nodeConfig.getUniqueId())) {
-                    START_NODE_MAP.putIfAbsent(graphIdTemp, abstractYmlNode);
+        for (String graphIdTemp : registryMap.keySet()) {
+            synchronized (NodeHolder.class) {
+                GraphConfig graphConfig = registryMap.get(graphIdTemp);
+                final Map<String, AbstractYmlNode> abstractYmlNodeMap = NODE_YML_MAP.containsKey(graphIdTemp)
+                        ? NODE_YML_MAP.get(graphIdTemp)
+                        : new HashMap<>();
+                List<NodeConfig> nodeConfigs = graphConfig.getNodes();
+                for (NodeConfig nodeConfig : nodeConfigs) {
+                    AbstractYmlNode abstractYmlNode = NodeYmlFactory.getIYmlNode(nodeConfig, graphConfig.getScanPackage());
+                    abstractYmlNodeMap.put(nodeConfig.getUniqueId(), abstractYmlNode);
+                    if (graphConfig.getStartNode().equals(nodeConfig.getUniqueId())) {
+                        START_NODE_MAP.putIfAbsent(graphIdTemp, abstractYmlNode);
+                    }
                 }
-            });
-        }));
+            }
+        }
     }
 }

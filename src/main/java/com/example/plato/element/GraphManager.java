@@ -27,21 +27,27 @@ import java.util.stream.Collectors;
  * @date 2022/1/30 15:04
  */
 @Slf4j
-public class GraphManager {
+public class GraphManager<P, R> {
 
-    private static ExecutorService threadPoolExecutor = ForkJoinPool.commonPool();
+    private static ExecutorService threadPoolExecutor = new ThreadPoolExecutor(
+            Runtime.getRuntime().availableProcessors()
+            , 1000
+            , 1000_0L
+            , TimeUnit.MILLISECONDS
+            , new LinkedBlockingQueue<>(500)
+            , new ThreadPoolExecutor.AbortPolicy());
 
-    private final Map<String, NodeBeanBuilder> firstNodeBeanBuilderMap = new ConcurrentHashMap<>();
+    private final Map<String, NodeBeanBuilder<?, ?>> firstNodeBeanBuilderMap = new ConcurrentHashMap<>();
 
-    private NodeBeanBuilder getFirstNodeBeanBuilder() {
+    private NodeBeanBuilder<?, ?> getFirstNodeBeanBuilder() {
         if (MapUtils.isEmpty(firstNodeBeanBuilderMap) || firstNodeBeanBuilderMap.values().size() != 1) {
             throw new PlatoException("NodeManager getFirstNodeBeanBuilder error");
         }
         return Lists.newArrayList(firstNodeBeanBuilderMap.values()).get(0);
     }
 
-    public static GraphManager getManager() {
-        return new GraphManager();
+    public static <P, R> GraphManager<P, R> getManager() {
+        return new GraphManager<>();
     }
 
     public void buildThreadPoolExecutor(ExecutorService executorService) {
@@ -52,7 +58,7 @@ public class GraphManager {
      * 代码方式启动run方法
      */
     public GraphRunningInfo run(long timeOut, TimeUnit timeUnit) {
-        NodeLoadByBean firstNodeLoadByBean = getFirstNodeBeanBuilder().build();
+        NodeLoadByBean<?, ?> firstNodeLoadByBean = getFirstNodeBeanBuilder().build();
         if (Objects.isNull(firstNodeLoadByBean)
                 || StringUtils.isBlank(firstNodeLoadByBean.getGraphId())
                 || CollectionUtils.isNotEmpty(firstNodeLoadByBean.getPreNodes())) {
@@ -61,7 +67,7 @@ public class GraphManager {
         String graphTraceId = TraceUtil.getRandomTraceId();
         GraphHolder.putGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId, new GraphRunningInfo());
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeBeanProxy(firstNodeLoadByBean, graphTraceId).run(null, threadPoolExecutor));
+                () -> new NodeBeanProxy<>(firstNodeLoadByBean, graphTraceId).run(null, threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
             return GraphHolder.removeGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId);
@@ -75,16 +81,17 @@ public class GraphManager {
     /**
      * yml方式启动run方法
      */
-    public <P> GraphRunningInfo runByYml(P p, String graphId, long timeOut, TimeUnit timeUnit) {
+    public GraphRunningInfo runByYml(P p, String graphId, long timeOut, TimeUnit timeUnit) {
         Map<String, AbstractYmlNode> startNodeMap = NodeHolder.getStartNodeMap();
         if (MapUtils.isEmpty(startNodeMap)) {
             return null;
         }
-        AbstractYmlNode abstractYmlNode = startNodeMap.get(graphId);
+        AbstractYmlNode<?, ?> abstractYmlNode = startNodeMap.get(graphId);
         String graphTraceId = TraceUtil.getRandomTraceId();
         GraphHolder.putGraphRunningInfo(graphId, graphTraceId, new GraphRunningInfo());
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeYmlProxy<>(abstractYmlNode, graphTraceId, p).run(null, threadPoolExecutor));
+                () -> new NodeYmlProxy(abstractYmlNode, graphTraceId, p)
+                        .run(null, threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
             return GraphHolder.removeGraphRunningInfo(graphId, graphTraceId);

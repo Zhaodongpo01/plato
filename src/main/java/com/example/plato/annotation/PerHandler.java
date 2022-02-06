@@ -20,7 +20,4 @@ import org.springframework.stereotype.Service;
 @Service
 public @interface PerHandler {
 
-    @AliasFor(annotation = Service.class)
-    String value() default "";
-
 }

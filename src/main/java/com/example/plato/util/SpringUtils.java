@@ -8,12 +8,14 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 /**
  * @author zhaodongpo
  * @version 1.0
  * @date 2022/2/3 2:26 下午
  */
+@Component
 public class SpringUtils implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;

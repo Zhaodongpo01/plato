@@ -3,8 +3,11 @@ package com.example.plato.util;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import com.example.plato.test.model.FirstModel;
+import com.example.plato.test.yml.FirstTestYmlService;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -18,9 +21,10 @@ public class ClassUtil {
 
     /**
      * 创建新的实例对象
+     *
      * @param className 类名
-     * @param expected 转换目标对象
-     * @param params 请求参数
+     * @param expected  转换目标对象
+     * @param params    请求参数
      * @param <E>
      * @return
      */
@@ -31,6 +35,7 @@ public class ClassUtil {
 
     /**
      * 根据类名映射类
+     *
      * @param className 类名
      * @return
      */
@@ -44,9 +49,10 @@ public class ClassUtil {
 
     /**
      * 创建新的实例对象
-     * @param clazz 类名
+     *
+     * @param clazz    类名
      * @param expected 转换目标对象
-     * @param params 请求参数
+     * @param params   请求参数
      * @param <E>
      * @return
      */
@@ -89,7 +95,8 @@ public class ClassUtil {
 
     /**
      * 根据类名获取方法的个数
-     * @param className 类名
+     *
+     * @param className  类名
      * @param methodName 方法名
      * @return
      */
@@ -100,7 +107,8 @@ public class ClassUtil {
 
     /**
      * 判断是否有该方法
-     * @param className 类名
+     *
+     * @param className  类名
      * @param methodName 方法名
      * @param paramTypes 参数
      * @return
@@ -112,9 +120,10 @@ public class ClassUtil {
 
     /**
      * 方法调用
-     * @param className 类名
+     *
+     * @param className  类名
      * @param methodName 方法名
-     * @param params 参数
+     * @param params     参数
      * @param <T>
      * @return
      */
@@ -131,9 +140,10 @@ public class ClassUtil {
 
     /**
      * 方法调用
-     * @param target 类名
+     *
+     * @param target     类名
      * @param methodName 方法名
-     * @param params 参数
+     * @param params     参数   是List类型会有问题
      * @param <T>
      * @return
      */

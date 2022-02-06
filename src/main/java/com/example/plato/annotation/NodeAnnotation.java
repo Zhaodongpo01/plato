@@ -1,5 +1,9 @@
 package com.example.plato.annotation;
 
+import org.springframework.core.annotation.AliasFor;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,8 +18,12 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Node {
+@Component
+public @interface NodeAnnotation {
 
+    @AliasFor(
+            annotation = Component.class
+    )
     String uniqueId() default "";
 
 }

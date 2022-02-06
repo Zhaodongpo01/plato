@@ -45,9 +45,10 @@ public class TestController {
 
     @RequestMapping("yml")
     public String yml() {
-        YmlRegistry ymlRegistry = new YmlRegistry();
-        Map<String, GraphConfig> registry = ymlRegistry.registry();
-        log.info("ymlymlyml:{}", PlatoJsonUtil.toJson(registry));
+        FirstModel firstModel = new FirstModel();
+        firstModel.setIdf(1000L);
+        firstModel.setName("zhaodongpo");
+        GraphManager.getManager().runByYml(firstModel, "9527", 10000L, TimeUnit.SECONDS);
         return "success";
     }
 
@@ -96,7 +97,7 @@ public class TestController {
         GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
-                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD,false)
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD, false)
                 .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
         GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
