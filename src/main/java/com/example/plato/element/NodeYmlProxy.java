@@ -1,18 +1,25 @@
 package com.example.plato.element;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.*;
 
 import com.example.plato.exception.PlatoException;
+import com.example.plato.holder.GraphHolder;
+import com.example.plato.holder.NodeHolder;
+import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.loader.ymlNode.AbstractYmlNode;
-import com.example.plato.runningData.NodeResultStatus;
+import com.example.plato.runningData.*;
+import com.example.plato.util.SystemClock;
 import com.example.plato.util.TraceUtil;
 
+import com.google.common.base.Splitter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * @author zhaodongpo
@@ -28,20 +35,19 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
     private String graphTraceId;
     private AbstractYmlNode<P, R> abstractYmlNode;
     private P p;
-    private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {
         throw new PlatoException("private 禁止调用");
     }
 
-    public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
-        return this.statusAtomicReference.compareAndSet(expect, update);
+    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId, P p) {
+        this(abstractYmlNode, graphTraceId);
+        this.p = p;
     }
 
-    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId, P p) {
+    private NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId) {
         this.abstractYmlNode = abstractYmlNode;
         this.graphTraceId = graphTraceId;
-        this.p = p;
     }
 
     @Override
@@ -54,25 +60,92 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
 
     @Override
     boolean run(AbstractNodeProxy comingNode) {
-        p = Objects.isNull(comingNode) ? p : paramHandle((NodeYmlProxy<?, ?>) comingNode);
+        NodeConfig currentNodeConfig = abstractYmlNode.getNodeConfig();
+        if (Optional.ofNullable(comingNode).isPresent()) {
+            Pair<NodeConfig, GraphRunningInfo> perData = getPerData(comingNode);
+            NodeConfig nodeConfig = perData.getLeft();
+            GraphRunningInfo graphRunningInfo = perData.getRight();
+            if (!checkShouldRun(nodeConfig, graphRunningInfo)) {
+                return false;
+            }
+            p = paramHandle((NodeYmlProxy<?, ?>) comingNode);
+        }
+        changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
+        R result = null;
+        ResultData resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
+        long startTime = SystemClock.now();
+        long endTime = SystemClock.now();
         try {
-            R work = abstractYmlNode.work(p);
+            result = abstractYmlNode.work(p);
+            endTime = SystemClock.now();
+            changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
+            resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
         } catch (InterruptedException e) {
+            endTime = SystemClock.now();
+            log.error(String.format("%s\t{}", MessageEnum.CLIENT_ERROR), abstractYmlNode.getNodeConfig().getUniqueId(), e);
+            changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.ERROR);
+            resultData = ResultData.build(result, NodeResultStatus.ERROR, "fail", endTime - startTime);
             log.error("NodeYmlProxy run error", e);
             return false;
+        } finally {
+            log.info("{}\t执行耗时{}", currentNodeConfig.getUniqueId(), endTime - startTime);
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
+                    currentNodeConfig.getGraphId(), currentNodeConfig.getUniqueId(), resultData);
+            nodeRunningInfo.build();
         }
         return true;
     }
 
+    private boolean checkShouldRun(NodeConfig nodeConfig, GraphRunningInfo graphRunningInfo) {
+        return true;
+    }
+
+    private Pair<NodeConfig, GraphRunningInfo> getPerData(AbstractNodeProxy comingNode) {
+        NodeConfig nodeConfig = ((NodeYmlProxy<?, ?>) comingNode).getAbstractYmlNode().getNodeConfig();
+        if (Objects.isNull(nodeConfig)) {
+            log.error("NodeYmlProxy nodeConfig error");
+            return null;
+        }
+        GraphRunningInfo graphRunningInfo = GraphHolder.getGraphRunningInfo(nodeConfig.getGraphId(), graphTraceId);
+        if (Objects.isNull(graphRunningInfo)) {
+            throw new PlatoException("checkShouldRun graphRunningInfo error");
+        }
+        return Pair.of(nodeConfig, graphRunningInfo);
+    }
+
     private P paramHandle(NodeYmlProxy<?, ?> comingNode) {
         AbstractYmlNode<?, ?> abstractYmlNode = comingNode.getAbstractYmlNode();
-
+        if (abstractYmlNode == null) {
+            return null;
+        }
+        NodeConfig nodeConfig = abstractYmlNode.getNodeConfig();
+        String uniqueId = nodeConfig.getUniqueId();
+        GraphRunningInfo graphRunningInfo = GraphHolder.getGraphRunningInfo(nodeConfig.getGraphId(), graphTraceId);
+        NodeRunningInfo nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(uniqueId);
+        ResultData resultData = nodeRunningInfo.getResultData();
+        Object data = resultData.getData();
         return null;
     }
 
     @Override
     void runNext(ExecutorService executorService) {
-
+        NodeConfig nodeConfig = abstractYmlNode.getNodeConfig();
+        if (Objects.isNull(nodeConfig) || StringUtils.isBlank(nodeConfig.getNext())) {
+            return;
+        }
+        List<String> nextNodes = Splitter.on(",").trimResults().splitToList(nodeConfig.getNext());
+        CompletableFuture[] completableFutures = new CompletableFuture[nextNodes.size()];
+        for (int i = 0; i < nextNodes.size(); i++) {
+            final int finalI = i;
+            AbstractYmlNode nextAbstractYmlNode = NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodes.get(finalI));
+            completableFutures[finalI] = CompletableFuture.runAsync(
+                    () -> new NodeYmlProxy(nextAbstractYmlNode, graphTraceId).run(this, executorService), executorService);
+        }
+        try {
+            CompletableFuture.allOf(completableFutures).get(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+            log.error("runNext异常le{}", e.getMessage(), e);
+            throw new PlatoException("runNext异常le");
+        }
     }
-
 }

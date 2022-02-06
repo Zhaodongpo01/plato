@@ -1,0 +1,53 @@
+graphId: 9527
+graphName: 柏拉图
+graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
+scanPackage: com.example.plato.test
+startNode: nodeAId
+nodes:
+  - nodeConfig:
+      uniqueId: nodeAId
+      name: nodeA
+      component: beanName:save
+      desc: 方法类型的Node节点
+      type: METHOD
+      next: nodeBId
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
+  - nodeConfig:
+      uniqueId: nodeBId
+      name: nodeB
+      component: beanName
+      desc: Bean类型的Node节点
+      type: BEAN
+      next: nodeCId
+      pre: nodeAId
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
+  - nodeConfig:
+      uniqueId: nodeCId
+      name: nodeC
+      component: #如果是子流程类型节点可以component可以不填写任何东西
+      desc: 子流程类型的Node节点
+      type: SUBFLOW
+      subFlows:
+        - subFlow:
+            graphId: 123456
+            startNode: node1Id
+            endNode: node3Id
+        - subFlow:
+            graphId: 910JQKA
+            startNode: node1Id2
+            endNode: node3Id2
+      next: nodeDId
+      pre: nodeBId
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
+  - nodeConfig:
+      uniqueId: nodeDId
+      name: nodeD
+      component: beanName
+      desc: Bean类型的Node节点
+      type: BEAN
+      pre: nodeCId
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler

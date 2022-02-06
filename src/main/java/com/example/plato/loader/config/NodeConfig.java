@@ -2,6 +2,7 @@ package com.example.plato.loader.config;
 
 import com.example.plato.exception.PlatoException;
 import com.example.plato.platoEnum.NodeType;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 
 import lombok.AllArgsConstructor;
@@ -64,6 +65,13 @@ public class NodeConfig extends PlatoConfig {
         }
         if (StringUtils.isBlank(component) || !component.contains(":")) {
             throw new PlatoException("NodeConfig component is empty");
+        }
+        if (StringUtils.isNotBlank(next)) {
+            try {
+                Splitter.on(",").trimResults().splitToList(next);
+            } catch (Exception e) {
+                throw new PlatoException("NodeConfig next error");
+            }
         }
     }
 }

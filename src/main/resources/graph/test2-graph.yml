@@ -1,0 +1,34 @@
+graphId: 123456
+graphName: 柏拉图测试子流程
+graphDesc: 柏拉图测试子流程，柏拉图测试子流程
+scanPackage: com.example.plato.test
+startNode: node1Id
+nodes:
+  - nodeConfig:
+      uniqueId: node1Id
+      name: node1
+      component: beanName:node1
+      desc: 方法类型的Node节点
+      type: METHOD
+      next: node2Id
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
+  - nodeConfig:
+      uniqueId: node2Id
+      name: node2
+      component: beanName
+      desc: Bean类型的Node节点
+      type: BEAN
+      next: node3Id
+      pre: node3Id
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
+  - nodeConfig:
+      uniqueId: node3Id
+      name: node3
+      component: beanName
+      desc: Bean类型的Node节点
+      type: BEAN
+      pre: node2Id
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler

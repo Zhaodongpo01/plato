@@ -3,7 +3,7 @@ package com.example.plato.element;
 import com.example.plato.element.NodeLoadByBean.NodeBeanBuilder;
 import com.example.plato.exception.PlatoException;
 import com.example.plato.holder.GraphHolder;
-import com.example.plato.loader.factory.NodeYmlFactory;
+import com.example.plato.holder.NodeHolder;
 import com.example.plato.loader.ymlNode.AbstractYmlNode;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.util.TraceUtil;
@@ -76,7 +76,7 @@ public class GraphManager {
      * yml方式启动run方法
      */
     public <P> GraphRunningInfo runByYml(P p, String graphId, long timeOut, TimeUnit timeUnit) {
-        Map<String, AbstractYmlNode> startNodeMap = NodeYmlFactory.getStartNodeMap();
+        Map<String, AbstractYmlNode> startNodeMap = NodeHolder.getStartNodeMap();
         if (MapUtils.isEmpty(startNodeMap)) {
             return null;
         }
@@ -112,7 +112,5 @@ public class GraphManager {
         firstNodeBeanBuilderMap.remove(nextNodeBeanBuilder.getUniqueId());
         return this;
     }
-
-
 }
 
