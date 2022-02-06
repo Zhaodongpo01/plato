@@ -9,19 +9,20 @@ import com.example.plato.runningData.ResultData;
  * @date 2022/2/2 2:46 下午
  * 方法类型Node
  */
-public class MethodYmlNode extends AbstractYmlNode {
+public class MethodYmlNode<P, R> extends AbstractYmlNode<P, R> {
 
     public MethodYmlNode(NodeConfig nodeConfig, String scanPackage) {
         super(nodeConfig, scanPackage);
     }
 
+
     @Override
-    public Object work(Object o) throws InterruptedException {
+    public R work(P p) throws InterruptedException {
         return null;
     }
 
     @Override
-    public void hook(Object o, ResultData resultData) {
+    public void hook(P p, ResultData<R> resultData) {
 
     }
 }

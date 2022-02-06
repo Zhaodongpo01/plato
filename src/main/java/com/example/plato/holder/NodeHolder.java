@@ -1,6 +1,6 @@
 package com.example.plato.holder;
 
-import com.example.plato.loader.YmlRegistry;
+import com.example.plato.loader.registry.YmlRegistry;
 import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.loader.factory.NodeYmlFactory;

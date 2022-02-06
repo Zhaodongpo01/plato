@@ -1,4 +1,4 @@
-package com.example.plato.loader;
+package com.example.plato.loader.registry;
 
 import com.example.plato.loader.config.GraphConfig;
 

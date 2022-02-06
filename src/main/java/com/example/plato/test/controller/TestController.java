@@ -2,7 +2,7 @@ package com.example.plato.test.controller;
 
 import com.example.plato.element.GraphManager;
 import com.example.plato.handler.PreHandler;
-import com.example.plato.loader.YmlRegistry;
+import com.example.plato.loader.registry.YmlRegistry;
 import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
