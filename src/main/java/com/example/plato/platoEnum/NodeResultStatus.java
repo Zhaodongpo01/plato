@@ -1,4 +1,4 @@
-package com.example.plato.runningData;
+package com.example.plato.platoEnum;
 
 import com.google.common.collect.Sets;
 

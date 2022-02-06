@@ -1,4 +1,4 @@
-package com.example.plato.runningData;
+package com.example.plato.platoEnum;
 
 import lombok.Getter;
 

@@ -10,7 +10,7 @@ import org.reflections.util.ConfigurationBuilder;
  */
 public class PackageScanner {
 
-    public static Reflections scna(String packageName) {
+    public static Reflections scan(String packageName) {
         return new Reflections(new ConfigurationBuilder().forPackages(packageName));
     }
 

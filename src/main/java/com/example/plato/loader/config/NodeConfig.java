@@ -35,7 +35,7 @@ public class NodeConfig extends PlatoConfig {
 
     private String desc;
 
-    private String inputParam;
+    //private String inputParam;
 
     private NodeType type;
 
@@ -71,6 +71,13 @@ public class NodeConfig extends PlatoConfig {
                 Splitter.on(",").trimResults().splitToList(next);
             } catch (Exception e) {
                 throw new PlatoException("NodeConfig next error");
+            }
+        }
+        if (StringUtils.isNotBlank(pre)) {
+            try {
+                Splitter.on(",").trimResults().splitToList(pre);
+            } catch (Exception e) {
+                throw new PlatoException("NodeConfig pre error");
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.example.plato.element;
 
 import com.example.plato.exception.PlatoException;
-import com.example.plato.runningData.NodeResultStatus;
+import com.example.plato.platoEnum.NodeResultStatus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ExecutorService;
