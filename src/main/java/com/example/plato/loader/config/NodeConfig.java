@@ -37,8 +37,6 @@ public class NodeConfig extends PlatoConfig {
 
     private String desc;
 
-    //private String inputParam;
-
     private NodeType type = NodeType.BEAN;
 
     private List<SubFlow> subFlows;

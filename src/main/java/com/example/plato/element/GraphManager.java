@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @date 2022/1/30 15:04
  */
 @Slf4j
-public class GraphManager<P, R> {
+public class GraphManager<P> {
 
     private static ExecutorService threadPoolExecutor = new ThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors()
@@ -46,7 +46,7 @@ public class GraphManager<P, R> {
         return Lists.newArrayList(firstNodeBeanBuilderMap.values()).get(0);
     }
 
-    public static <P, R> GraphManager<P, R> getManager() {
+    public static <P> GraphManager<P> getManager() {
         return new GraphManager<>();
     }
 

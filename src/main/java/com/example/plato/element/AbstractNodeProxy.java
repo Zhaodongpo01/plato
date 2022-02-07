@@ -2,6 +2,7 @@ package com.example.plato.element;
 
 import com.example.plato.exception.PlatoException;
 import com.example.plato.platoEnum.NodeResultStatus;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ExecutorService;
@@ -13,17 +14,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * @date 2022/1/23 11:04 上午
  */
 @Slf4j
-public abstract class AbstractNodeProxy {
+public abstract class AbstractNodeProxy implements INodeProxy {
 
     public static final Long DEFAULT_TIME_OUT = 60_000L;
 
     private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
 
-    abstract void run(AbstractNodeProxy comingNode, ExecutorService executorService);
-
-    abstract boolean run(AbstractNodeProxy comingNode);
-
-    abstract void runNext(ExecutorService executorService);
+    private void setStatusAtomicReference() {
+        throw new PlatoException("private 禁止调用");
+    }
 
     public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
         return this.statusAtomicReference.compareAndSet(expect, update);

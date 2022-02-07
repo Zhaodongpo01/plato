@@ -39,10 +39,6 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
     private String graphTraceId;
     private NodeLoadByBean<P, R> nodeLoadByBean;
 
-    private void setStatusAtomicReference() {
-        throw new PlatoException("private 禁止调用");
-    }
-
     public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId) {
         this.nodeLoadByBean = nodeLoadByBean;
         this.graphTraceId = graphTraceId;
@@ -70,7 +66,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
     }
 
     @Override
-    boolean run(AbstractNodeProxy comingNode) {
+    public boolean run(AbstractNodeProxy comingNode) {
         P p;
         if (Objects.nonNull(comingNode)) {
             Pair<NodeLoadByBean<?, ?>, GraphRunningInfo> perData = getPerData(comingNode);
@@ -179,7 +175,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
     }
 
     @Override
-    void runNext(ExecutorService executorService) {
+    public void runNext(ExecutorService executorService) {
         List<NodeLoadByBean<?, ?>> nextNodes = nodeLoadByBean.getNextNodes();
         if (CollectionUtils.isEmpty(nextNodes)) {
             return;

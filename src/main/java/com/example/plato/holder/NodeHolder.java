@@ -5,6 +5,7 @@ import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.loader.factory.NodeYmlFactory;
 import com.example.plato.loader.ymlNode.AbstractYmlNode;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,17 +67,21 @@ public class NodeHolder {
         return NODE_YML_MAP.get(graphIdTemp).get(uniqueId);
     }
 
-    public static void getYmlNodeMap() {
+    public static Map<String, Map<String, AbstractYmlNode>> getYmlNodeMap() {
         Map<String, GraphConfig> registryMap = new YmlRegistry().registry();
         for (String graphIdTemp : registryMap.keySet()) {
             synchronized (NodeHolder.class) {
                 GraphConfig graphConfig = registryMap.get(graphIdTemp);
-                final Map<String, AbstractYmlNode> abstractYmlNodeMap = NODE_YML_MAP.containsKey(graphIdTemp)
-                        ? NODE_YML_MAP.get(graphIdTemp)
-                        : new HashMap<>();
+                Map<String, AbstractYmlNode> abstractYmlNodeMap = new HashMap<>();
+                if (NODE_YML_MAP.containsKey(graphIdTemp)) {
+                    abstractYmlNodeMap = NODE_YML_MAP.get(graphIdTemp);
+                } else {
+                    NODE_YML_MAP.put(graphIdTemp, abstractYmlNodeMap);
+                }
                 List<NodeConfig> nodeConfigs = graphConfig.getNodes();
                 for (NodeConfig nodeConfig : nodeConfigs) {
-                    AbstractYmlNode abstractYmlNode = NodeYmlFactory.getIYmlNode(nodeConfig, graphConfig.getScanPackage());
+                    AbstractYmlNode abstractYmlNode =
+                            NodeYmlFactory.getIYmlNode(nodeConfig, graphConfig.getScanPackage());
                     abstractYmlNodeMap.put(nodeConfig.getUniqueId(), abstractYmlNode);
                     if (graphConfig.getStartNode().equals(nodeConfig.getUniqueId())) {
                         START_NODE_MAP.putIfAbsent(graphIdTemp, abstractYmlNode);
@@ -84,5 +89,6 @@ public class NodeHolder {
                 }
             }
         }
+        return NODE_YML_MAP;
     }
 }

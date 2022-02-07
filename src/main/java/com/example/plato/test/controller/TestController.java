@@ -48,7 +48,9 @@ public class TestController {
         FirstModel firstModel = new FirstModel();
         firstModel.setIdf(1000L);
         firstModel.setName("zhaodongpo");
-        GraphManager.getManager().runByYml(firstModel, "9527", 10000L, TimeUnit.SECONDS);
+        GraphRunningInfo graphRunningInfo =
+                GraphManager.getManager().runByYml(firstModel, "9527", 10000L, TimeUnit.SECONDS);
+        log.info("yml#GraphRunningInfo:{}", PlatoJsonUtil.toJson(graphRunningInfo));
         return "success";
     }
 
@@ -61,7 +63,6 @@ public class TestController {
         ParserString2CodeUtil.parserString2Code(expression, map);
         return "";
     }
-
 
     @RequestMapping("serial")
     public String testSerial() {
@@ -97,7 +98,7 @@ public class TestController {
         GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
-                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD, false)
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
                 .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
         GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();

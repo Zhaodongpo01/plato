@@ -19,7 +19,7 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
     
     @Override
     public Boolean work(List<Integer> integers) {
-        int a = 10 / 0;
+        //int a = 10 / 0;
         log.info("NodeB参数:{}", integers);
         return CollectionUtils.isEmpty(integers);
     }

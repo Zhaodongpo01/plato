@@ -4,8 +4,6 @@ import com.example.plato.test.model.FirstModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 /**
  * @author zhaodongpo
  * @version 1.0
