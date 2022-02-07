@@ -1,6 +1,11 @@
 package com.example.plato.test.afterHandler;
 
+import java.util.Set;
+
 import org.springframework.stereotype.Service;
+
+import com.example.plato.handler.AfterHandler;
+import com.example.plato.runningData.GraphRunningInfo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,12 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FirstServiceAfterHandler {
 
-    public void afterHandler1() {
+    public AfterHandler afterHandler1() {
         log.info("FirstServiceAfterHandler#afterHandler1");
-    }
-
-
-    public void afterHandler2() {
-        log.info("FirstServiceAfterHandler#afterHandler2");
+        return new AfterHandler() {
+            @Override
+            public Set<String> notShouldRunNodes(GraphRunningInfo graphRunningInfo) {
+                return AfterHandler.super.notShouldRunNodes(graphRunningInfo);
+            }
+        };
     }
 }

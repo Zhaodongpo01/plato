@@ -17,8 +17,8 @@ import java.util.Optional;
 @Slf4j
 public class BeanYmlNode<P, R> extends AbstractYmlNode<P, R> {
 
-    public BeanYmlNode(NodeConfig nodeConfig, String scanPackage) {
-        super(nodeConfig, scanPackage);
+    public BeanYmlNode(NodeConfig nodeConfig) {
+        super(nodeConfig);
     }
 
     @Override

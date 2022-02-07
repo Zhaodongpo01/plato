@@ -10,13 +10,13 @@ nodes:
       invokeElement: firstTestYmlService:testMethod1
       desc: 测试方法testMethod1
       next: uniqueIdB
-      preHandler: firstServicePerHandler:perhandler1
-      afterHandler: firstServiceAfterHandler:afterHandler1
+      #preHandler: firstServicePerHandler:perhandler1
+      #afterHandler: firstServiceAfterHandler:afterHandler1
   - nodeConfig:
       uniqueId: uniqueIdB
       name: nodeB
       invokeElement: firstTestYmlService:testMethod2
       desc: 测试方法testMethod2
-      pre: nodeAId
-      preHandler: firstServicePerHandler:perhandler2
-      afterHandler: firstServiceAfterHandler:afterHandler2
+      pre: uniqueIdA
+      preHandler: firstServicePerHandler:perhandler1
+      #afterHandler: firstServiceAfterHandler:afterHandler2

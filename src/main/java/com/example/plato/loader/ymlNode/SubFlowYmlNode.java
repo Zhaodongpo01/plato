@@ -10,8 +10,8 @@ import com.example.plato.runningData.ResultData;
  */
 public class SubFlowYmlNode<P, R> extends AbstractYmlNode<P, R> {
 
-    public SubFlowYmlNode(NodeConfig nodeConfig, String scanPackage) {
-        super(nodeConfig, scanPackage);
+    public SubFlowYmlNode(NodeConfig nodeConfig) {
+        super(nodeConfig);
     }
 
     @Override

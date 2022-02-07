@@ -14,11 +14,10 @@ public abstract class AbstractYmlNode<P, R> implements INodeWork<P, R> {
 
     private NodeConfig nodeConfig;
 
-    private String scanPackage;
 
-    public AbstractYmlNode(NodeConfig nodeConfig, String scanPackage) {
+    public AbstractYmlNode(NodeConfig nodeConfig) {
         this.nodeConfig = nodeConfig;
-        this.scanPackage = scanPackage;
     }
+
     private AbstractYmlNode(){}
 }

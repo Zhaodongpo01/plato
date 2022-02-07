@@ -1,6 +1,9 @@
 package com.example.plato;
 
+import com.example.plato.holder.HandlerHolder;
 import com.example.plato.holder.NodeHolder;
+import com.example.plato.loader.ymlHandler.YmlAfterHandler;
+import com.example.plato.loader.ymlHandler.YmlPreHandler;
 import com.example.plato.loader.ymlNode.AbstractYmlNode;
 import com.example.plato.util.PlatoJsonUtil;
 
@@ -22,15 +25,8 @@ public class ContextRefreshedListener implements ApplicationListener<ContextRefr
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (event.getApplicationContext().getParent() == null) {
-            /**
-             * Map<String, Object> afterHandlerMap = event.getApplicationContext().getBeansWithAnnotation(AfterHandler
-            .class);
-            Map<String, Object> nodeMap = event.getApplicationContext().getBeansWithAnnotation(NodeAnnotation.class);
-            Map<String, Object> perHandlerMap = event.getApplicationContext().getBeansWithAnnotation(PerHandler
-            .class);
-             */
-            Map<String, Map<String, AbstractYmlNode>> ymlNodeMap = NodeHolder.getYmlNodeMap();
-            log.info("ContextRefreshedListener#ymlNodeMap:{}", PlatoJsonUtil.toJson(ymlNodeMap));
+            Map<String, Map<String, AbstractYmlNode>> ymlNodeMap = NodeHolder.initYmlNodeMap();
+            log.info("加载完毕ymlNodeMap:{}", PlatoJsonUtil.toJson(ymlNodeMap));
         }
     }
 }

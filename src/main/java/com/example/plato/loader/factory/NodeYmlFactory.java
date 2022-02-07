@@ -14,11 +14,11 @@ import com.example.plato.platoEnum.NodeType;
  */
 public class NodeYmlFactory {
 
-    public static AbstractYmlNode getIYmlNode(NodeConfig nodeConfig, String scanPackage) {
+    public static AbstractYmlNode getIYmlNode(NodeConfig nodeConfig) {
         if (NodeType.BEAN.equals(nodeConfig.getType())) {
-            return new BeanYmlNode(nodeConfig, scanPackage);
+            return new BeanYmlNode(nodeConfig);
         } else if (NodeType.SUBFLOW.equals(nodeConfig.getType())) {
-            return new SubFlowYmlNode(nodeConfig, scanPackage);
+            return new SubFlowYmlNode(nodeConfig);
         } else {
             throw new PlatoException("NodeType error");
         }

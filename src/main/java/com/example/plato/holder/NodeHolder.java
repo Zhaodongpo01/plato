@@ -1,9 +1,11 @@
 package com.example.plato.holder;
 
+import com.example.plato.loader.factory.NodeYmlFactory;
 import com.example.plato.loader.registry.YmlRegistry;
 import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.loader.config.NodeConfig;
-import com.example.plato.loader.factory.NodeYmlFactory;
+import com.example.plato.loader.ymlHandler.YmlAfterHandler;
+import com.example.plato.loader.ymlHandler.YmlPreHandler;
 import com.example.plato.loader.ymlNode.AbstractYmlNode;
 
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +69,7 @@ public class NodeHolder {
         return NODE_YML_MAP.get(graphIdTemp).get(uniqueId);
     }
 
-    public static Map<String, Map<String, AbstractYmlNode>> getYmlNodeMap() {
+    public static Map<String, Map<String, AbstractYmlNode>> initYmlNodeMap() {
         Map<String, GraphConfig> registryMap = new YmlRegistry().registry();
         for (String graphIdTemp : registryMap.keySet()) {
             synchronized (NodeHolder.class) {
@@ -81,11 +83,13 @@ public class NodeHolder {
                 List<NodeConfig> nodeConfigs = graphConfig.getNodes();
                 for (NodeConfig nodeConfig : nodeConfigs) {
                     AbstractYmlNode abstractYmlNode =
-                            NodeYmlFactory.getIYmlNode(nodeConfig, graphConfig.getScanPackage());
+                            NodeYmlFactory.getIYmlNode(nodeConfig);
                     abstractYmlNodeMap.put(nodeConfig.getUniqueId(), abstractYmlNode);
                     if (graphConfig.getStartNode().equals(nodeConfig.getUniqueId())) {
                         START_NODE_MAP.putIfAbsent(graphIdTemp, abstractYmlNode);
                     }
+                    HandlerHolder.putYmlAfterHandler(graphIdTemp, new YmlAfterHandler(nodeConfig));
+                    HandlerHolder.putYmlPreHandler(graphIdTemp, new YmlPreHandler(nodeConfig));
                 }
             }
         }

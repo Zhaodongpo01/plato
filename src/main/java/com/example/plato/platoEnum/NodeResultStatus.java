@@ -17,7 +17,7 @@ public enum NodeResultStatus {
     ERROR,
     ;
 
-    public static Set<NodeResultStatus> getExceptionStatus() {
+    public static Set<NodeResultStatus> getAbnormalStatus() {
         return Sets.newHashSet(LIMIT_RUN, ERROR);
     }
 

@@ -18,9 +18,9 @@ public class FirstTestYmlService {
         return 1000L;
     }
 
-    public Integer testMethod2(Long id) {
+    public boolean testMethod2(Integer id) {
         log.info("FirstTestYmlService#testMethod2#id:{}", id);
-        return 123;
+        return false;
     }
 
 }
