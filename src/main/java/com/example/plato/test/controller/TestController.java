@@ -98,7 +98,7 @@ public class TestController {
         GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
-                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD, false)
                 .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
         GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();

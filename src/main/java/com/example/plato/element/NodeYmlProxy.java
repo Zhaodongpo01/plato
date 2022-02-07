@@ -108,7 +108,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         String limitMes;
         if (StringUtils.isNotBlank(pre)) {
             List<String> preNodes = Splitter.on(",").trimResults().splitToList(pre);
-            limitMes = checkPreNodes(graphRunningInfo, preNodes);
+            limitMes = checkPreNodes(graphRunningInfo, preNodes, comingNodeConfig.getUniqueId());
             if (StringUtils.isNotBlank(limitMes)) {
                 setLimitResult(limitMes, graphTraceId, traceId, nodeConfig.getGraphId(), nodeConfig.getUniqueId());
                 return false;

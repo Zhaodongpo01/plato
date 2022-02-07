@@ -9,11 +9,11 @@ import com.example.plato.runningData.GraphRunningInfo;
  */
 
 @FunctionalInterface
-public interface PreHandler<R> {
+public interface PreHandler<P> {
 
     PreHandler VOID_PRE_HANDLER = graphRunningInfo -> null;
 
-    R paramHandle(GraphRunningInfo graphRunningInfo);
+    P paramHandle(GraphRunningInfo graphRunningInfo);
 
     default boolean suicide(GraphRunningInfo graphRunningInfo) {
         return false;

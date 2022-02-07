@@ -105,7 +105,9 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         String limitMes;
         if (StringUtils.isNotBlank(limitMes = checkSuicide(graphRunningInfo))
                 || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo))
-                || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo, nodeLoadByBean.getPreNodes()))
+                || StringUtils.isNotBlank(
+                limitMes = checkPreNodes(graphRunningInfo, nodeLoadByBean.getPreNodes(),
+                        comingNodeLoadByBean.getUniqueId()))
                 || StringUtils.isNotBlank(limitMes = checkNextHasResult())) {
             setLimitResult(limitMes, graphTraceId, traceId, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId());
             return false;
@@ -140,8 +142,8 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         AfterHandler afterHandler = comingNodeLoadByBean.getAfterHandler();
         if (Optional.ofNullable(afterHandler).isPresent()) {
             Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
-            return !CollectionUtils.isNotEmpty(notShouldRunNodes)
-                           || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId())
+            return (CollectionUtils.isEmpty(notShouldRunNodes)
+                    || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId()))
                    ? StringUtils.EMPTY : MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes();
         }
         return StringUtils.EMPTY;

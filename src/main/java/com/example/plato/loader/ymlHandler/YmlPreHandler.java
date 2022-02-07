@@ -14,21 +14,21 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2022/2/7 3:10 下午
  */
 @Slf4j
-public class YmlPreHandler<R> extends AbstractYmlHandler implements PreHandler<R> {
+public class YmlPreHandler<P> extends AbstractYmlHandler implements PreHandler<P> {
 
     public YmlPreHandler(NodeConfig nodeConfig) {
         super(nodeConfig);
     }
 
     @Override
-    public R paramHandle(GraphRunningInfo graphRunningInfo) {
+    public P paramHandle(GraphRunningInfo graphRunningInfo) {
         checkNodeConfig();
         NodeConfig nodeConfig = getNodeConfig();
         String preHandler = nodeConfig.getPreHandler();
         if (StringUtils.isBlank(preHandler)) {
             return null;
         }
-        return ((PreHandler<R>) getHandler(preHandler)).paramHandle(graphRunningInfo);
+        return ((PreHandler<P>) getHandler(preHandler)).paramHandle(graphRunningInfo);
     }
 
     @Override

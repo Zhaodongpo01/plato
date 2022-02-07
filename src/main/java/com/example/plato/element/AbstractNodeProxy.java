@@ -6,7 +6,7 @@ import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
-import com.example.plato.util.PlatoAssert;
+import com.google.common.collect.Sets;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -52,9 +53,17 @@ public abstract class AbstractNodeProxy implements INodeProxy {
      * 线程2：第一步线程B执行完。第二步执行D
      * 线程1：在线程2的第一步骤执行完之后，线程1D开始执行，并且在执行前已经检测强依赖的B已经执行完成
      * 线程2：线程2的第二步骤又把D执行了一遍。
-     * 存在线程1和线程2再切换时，D被执行了两边。
-     * */
-    public String checkPreNodes(GraphRunningInfo graphRunningInfo, List<String> preNodes) {
+     * 存在线程1和线程2再切换时，D被执行了两遍。
+     *
+     * 为了解决这个问题，当当前节点的preNodes不为空时，只有preNode才能触发当前节点执行。
+     * 也就是当前Node的非强依赖节点不能触发当前节点执行。
+     *
+     * 但是如果D节点前面的B和C节点都不是强依赖节点，那么D节点将执行两次。
+     */
+    public String checkPreNodes(GraphRunningInfo graphRunningInfo, List<String> preNodes, String comingNodeUniqueId) {
+        if (CollectionUtils.isNotEmpty(preNodes) && !Sets.newHashSet(preNodes).contains(comingNodeUniqueId)) {
+            return MessageEnum.COMING_NODE_IS_NOT_PRE_NODE.getMes();
+        }
         Optional<String> firstUnique = preNodes.parallelStream().filter(uniqueId -> {
             NodeRunningInfo<?> nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(uniqueId);
             if (Objects.isNull(nodeRunningInfo)) {
