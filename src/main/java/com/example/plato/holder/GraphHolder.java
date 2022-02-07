@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GraphHolder {
 
     /**
-     * completableFuture所以没有使用ThreadLocal  <graphId : <graphTraceId,GraphRunningInfo>>
+     * 没有使用ThreadLocal  <graphId : <graphTraceId,GraphRunningInfo>>
      */
     private static final Map<String, Map<String, GraphRunningInfo>> GRAPH_RUNNING_INFO_MAP = new ConcurrentHashMap<>();
 

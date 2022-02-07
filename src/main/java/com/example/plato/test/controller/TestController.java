@@ -98,8 +98,8 @@ public class TestController {
         GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
-                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD, false)
-                .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
+                .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD,false);
         GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));

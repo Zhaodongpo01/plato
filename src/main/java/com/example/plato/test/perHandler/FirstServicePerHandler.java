@@ -20,7 +20,6 @@ public class FirstServicePerHandler {
 
     public PreHandler perhandler1() {
         return new PreHandler<Integer>() {
-
             @Override
             public Integer paramHandle(GraphRunningInfo graphRunningInfo) {
                 NodeRunningInfo uniqueIdA = graphRunningInfo.getNodeRunningInfo("uniqueIdA");
@@ -28,10 +27,9 @@ public class FirstServicePerHandler {
                 log.info("perhandler1#data:{}", PlatoJsonUtil.toJson(data));
                 return 10000000;
             }
-
             @Override
             public boolean suicide(GraphRunningInfo graphRunningInfo) {
-                log.error("已经自杀，但是没完全自杀");
+                log.info("调用自杀接口返回false");
                 return false;
             }
         };

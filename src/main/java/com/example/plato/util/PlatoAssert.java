@@ -1,8 +1,11 @@
 package com.example.plato.util;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.springframework.lang.Nullable;
+import org.apache.commons.lang3.ObjectUtils;
+
+import com.example.plato.exception.PlatoException;
 
 /**
  * @author zhaodongpo
@@ -11,14 +14,24 @@ import org.springframework.lang.Nullable;
  */
 public class PlatoAssert {
 
-    public static void notNull(@Nullable Object object, Supplier<String> messageSupplier) {
-        if (object == null) {
-            throw new IllegalArgumentException(nullSafeGet(messageSupplier));
+    public static void notNull(Supplier<String> supplier, Object... objects) {
+        if (ObjectUtils.anyNull(objects)) {
+            throw new PlatoException(getErrorMes(supplier));
         }
     }
 
-    private static String nullSafeGet(@Nullable Supplier<String> messageSupplier) {
-        return (messageSupplier != null ? messageSupplier.get() : null);
+    public static <T> T nullGet(Supplier<T> supplier, T defaultVal, Object... objects) {
+        if (ObjectUtils.anyNull(objects)) {
+            return supplier.get();
+        }
+        return defaultVal;
+    }
+
+    private static <T> T getErrorMes(Supplier<T> supplier) {
+        if (Optional.ofNullable(supplier).isPresent()) {
+            return supplier.get();
+        }
+        return null;
     }
 
 }
