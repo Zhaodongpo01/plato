@@ -80,7 +80,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
             endTime = SystemClock.now();
             changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
             resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             endTime = SystemClock.now();
             log.error(String.format("%s\t{}", MessageEnum.CLIENT_ERROR), abstractYmlNode.getNodeConfig().getUniqueId(),
                     e);
