@@ -78,7 +78,8 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         }
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         R result = null;
-        ResultData resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
+        ResultData resultData =
+                ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
         long startTime = SystemClock.now();
         long endTime = SystemClock.now();
         try {
@@ -128,6 +129,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
             return StringUtils.EMPTY;
         }
         YmlPreHandler ymlPreHandler = HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
+        PlatoAssert.nullException(() -> "checkSuicide ymlPreHandler is null", ymlPreHandler);
         return ymlPreHandler.suicide(graphRunningInfo) ? MessageEnum.SUICIDE.getMes() : StringUtils.EMPTY;
     }
 
@@ -185,7 +187,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
             AbstractYmlNode nextAbstractYmlNode =
                     NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodes.get(finalI));
             completableFutures[finalI] = CompletableFuture.runAsync(
-                    () -> new NodeYmlProxy(nextAbstractYmlNode, graphTraceId).run(this, executorService),
+                    () -> new NodeYmlProxy<>(nextAbstractYmlNode, graphTraceId).run(this, executorService),
                     executorService);
         }
         try {

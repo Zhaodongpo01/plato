@@ -16,6 +16,7 @@ import com.example.plato.exception.PlatoException;
  * @author zhaodongpo
  * @version 1.0
  * @date 2022/2/7 2:26 下午
+ * 没有使用Spring的Assert
  */
 public class PlatoAssert {
 

@@ -34,7 +34,7 @@ public class NodeHolder {
      */
     private static Map<String, Map<String, NodeLoadByBean>> nodeMap = new ConcurrentHashMap<>();
 
-    private static final Map<String, AbstractYmlNode> START_NODE_MAP = new HashMap<>();
+    private static final Map<String, AbstractYmlNode<?, ?>> START_NODE_MAP = new HashMap<>();
 
     private static final Map<String, Map<String, AbstractYmlNode>> NODE_YML_MAP = new HashMap<>();
 
@@ -55,7 +55,7 @@ public class NodeHolder {
         return nodeLoadByBean;
     }
 
-    public static Map<String, AbstractYmlNode> getStartNodeMap() {
+    public static Map<String, AbstractYmlNode<?, ?>> getStartNodeMap() {
         return START_NODE_MAP;
     }
 

@@ -14,10 +14,8 @@ public abstract class AbstractYmlNode<P, R> implements INodeWork<P, R> {
 
     private NodeConfig nodeConfig;
 
-
     public AbstractYmlNode(NodeConfig nodeConfig) {
         this.nodeConfig = nodeConfig;
     }
 
-    private AbstractYmlNode(){}
 }

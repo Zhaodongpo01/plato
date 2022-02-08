@@ -1,6 +1,6 @@
 package com.example.plato.util;
 
-import java.util.UUID;
+import org.springframework.util.SimpleIdGenerator;
 
 /**
  * @author zhaodongpo
@@ -10,7 +10,7 @@ import java.util.UUID;
 public class TraceUtil {
 
     public static String getRandomTraceId() {
-        return UUID.randomUUID().toString();
+        return new SimpleIdGenerator().generateId().toString();
     }
 
 }

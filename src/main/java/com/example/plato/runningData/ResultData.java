@@ -1,6 +1,7 @@
 package com.example.plato.runningData;
 
 import com.example.plato.platoEnum.NodeResultStatus;
+
 import lombok.Data;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,17 +30,8 @@ public class ResultData<R> {
         resultData.setNodeResultStatus(resultStatus);
         resultData.setMes(mes);
         resultData.setCostTime(costTime);
-        resultData.setSuccess(NodeResultStatus.ERROR.equals(resultStatus) ? false : true);
+        resultData.setSuccess(!NodeResultStatus.ERROR.equals(resultStatus));
         return resultData;
-    }
-
-    public static <R> ResultData getSuccess(R data, String mes, NodeResultStatus nodeResultStatus) {
-        ResultData<Object> objectResultData = new ResultData<>();
-        objectResultData.setData(data);
-        objectResultData.setNodeResultStatus(nodeResultStatus);
-        objectResultData.setMes(mes);
-        objectResultData.setSuccess(true);
-        return objectResultData;
     }
 
     public static ResultData getFail(String mes, NodeResultStatus nodeResultStatus) {
