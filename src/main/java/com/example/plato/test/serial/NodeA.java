@@ -15,7 +15,7 @@ public class NodeA implements INodeWork<String, Long> {
     @Override
     public Long work(String s) {
         log.info("NodeA参数:{}", s);
-        return Long.parseLong(s);
+        return Long.valueOf(s.length());
     }
 
     @Override

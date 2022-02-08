@@ -58,7 +58,7 @@ public class GraphManager<P> {
     /**
      * 代码方式启动run方法
      */
-    public GraphRunningInfo run(long timeOut, TimeUnit timeUnit) {
+    public GraphRunningInfo run(P p, long timeOut, TimeUnit timeUnit) {
         NodeLoadByBean<?, ?> firstNodeLoadByBean = getFirstNodeBeanBuilder().build();
         PlatoAssert.nullException(() -> "run firstNodeLoadByBean blank", firstNodeLoadByBean);
         PlatoAssert.emptyException(() -> "run graphId blank", firstNodeLoadByBean.getGraphId());
@@ -66,7 +66,7 @@ public class GraphManager<P> {
         String graphTraceId = TraceUtil.getRandomTraceId();
         GraphHolder.putGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId, new GraphRunningInfo());
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeBeanProxy<>(firstNodeLoadByBean, graphTraceId).run(null, threadPoolExecutor));
+                () -> new NodeBeanProxy(firstNodeLoadByBean, graphTraceId, p).run(null, threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
             return GraphHolder.removeGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId);

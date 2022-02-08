@@ -25,7 +25,6 @@ public class NodeLoadByBean<P, R> {
     private NodeLoadByBean() {
     }
 
-    private P p;
     private String uniqueId;
     private String graphId;
     private String name;
@@ -72,11 +71,10 @@ public class NodeLoadByBean<P, R> {
             return new NodeBeanBuilder();
         }
 
-        public NodeBeanBuilder<P, R> firstSetNodeBuilder(String graphId, String uniqueId, P p,
-                INodeWork<P, R> iNodeWork) {
+        public NodeBeanBuilder<P, R> firstSetNodeBuilder(String graphId, String uniqueId, INodeWork<P, R> iNodeWork) {
             PlatoAssert.nullException(() -> "firstSetNodeBuilder iNodeWork is null", iNodeWork);
             PlatoAssert.emptyException(() -> "firstSetNodeBuilder param error ", graphId, uniqueId);
-            this.setGraphId(graphId).setUniqueId(uniqueId).setINodeWork(iNodeWork).setParam(p);
+            this.setGraphId(graphId).setUniqueId(uniqueId).setINodeWork(iNodeWork);
             return this;
         }
 
@@ -96,12 +94,6 @@ public class NodeLoadByBean<P, R> {
         public NodeBeanBuilder<P, R> setUniqueId(String uniqueId) {
             PlatoAssert.emptyException(() -> "setUniqueId uniqueId empty ", uniqueId);
             super.uniqueId = uniqueId;
-            return this;
-        }
-
-        public NodeBeanBuilder<P, R> setParam(P p) {
-            PlatoAssert.nullException(() -> "setParam p is null", p);
-            super.p = p;
             return this;
         }
 
@@ -158,8 +150,7 @@ public class NodeLoadByBean<P, R> {
                 return false;
             }
             NodeBeanBuilder<?, ?> that = (NodeBeanBuilder<?, ?>) o;
-            return Objects.equals(this.getP(), that.getP())
-                    && Objects.equals(this.getGraphId(), that.getGraphId())
+            return Objects.equals(this.getGraphId(), that.getGraphId())
                     && Objects.equals(this.getUniqueId(), that.getUniqueId())
                     && Objects.equals(this.getNextNodes(), that.getNextNodes())
                     && Objects.equals(this.getPreNodes(), that.getPreNodes())

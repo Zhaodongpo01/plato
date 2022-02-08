@@ -15,6 +15,7 @@ import com.example.plato.test.serial.NodeD;
 import com.example.plato.util.ParserString2CodeUtil;
 import com.example.plato.util.PlatoJsonUtil;
 import com.example.plato.test.service.TestService;
+import com.example.plato.util.TraceUtil;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +68,7 @@ public class TestController {
     @RequestMapping("serial")
     public String testSerial() {
         NodeBeanBuilder<String, Long> nodeBeanBuilderA =
-                NodeBeanBuilder.get().firstSetNodeBuilder("graphId", "uniqueIdA", "123333", new NodeA());
+                NodeBeanBuilder.get().firstSetNodeBuilder("graphId", "uniqueIdA", new NodeA());
         NodeBeanBuilder<List<Integer>, Boolean> nodeBeanBuilderB =
                 NodeBeanBuilder.get().setNodeBuilder("uniqueIdB", new NodeB());
         NodeBeanBuilder<TestModel, FirstModel> nodeBeanBuilderC =
@@ -83,7 +84,7 @@ public class TestController {
             @Override
             public boolean suicide(GraphRunningInfo graphRunningInfo) {
                 NodeRunningInfo uniqueIdA = graphRunningInfo.getNodeRunningInfo("uniqueIdA");
-                return (Long) uniqueIdA.getResultData().getData() < 100;
+                return (Long) uniqueIdA.getResultData().getData() > 100;
             }
         });
         nodeBeanBuilderC.setPreHandler((PreHandler<TestModel>) graphRunningInfo -> {
@@ -99,8 +100,9 @@ public class TestController {
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
                 .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
-                .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD,false);
-        GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
+                .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
+        GraphRunningInfo graphRunningInfo =
+                graphManager.run(TraceUtil.getRandomTraceId(), 100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
         return "success";

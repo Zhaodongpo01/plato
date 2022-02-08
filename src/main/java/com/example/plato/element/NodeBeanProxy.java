@@ -38,6 +38,13 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
     private String traceId;
     private String graphTraceId;
     private NodeLoadByBean<P, R> nodeLoadByBean;
+    private P p;
+
+    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId, P p) {
+        this.nodeLoadByBean = nodeLoadByBean;
+        this.graphTraceId = graphTraceId;
+        this.p = p;
+    }
 
     public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId) {
         this.nodeLoadByBean = nodeLoadByBean;
@@ -63,7 +70,6 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
 
     @Override
     public boolean run(AbstractNodeProxy comingNode) {
-        P p = nodeLoadByBean.getP();
         if (Objects.nonNull(comingNode)) {
             Pair<NodeLoadByBean<?, ?>, GraphRunningInfo> perData = getPerData(comingNode);
             GraphRunningInfo graphRunningInfo = perData.getRight();
