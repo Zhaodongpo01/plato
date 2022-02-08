@@ -10,6 +10,7 @@ import com.example.plato.platoEnum.MessageEnum;
 import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
+import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.SystemClock;
 import com.example.plato.util.TraceUtil;
 
@@ -56,9 +57,8 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         NodeLoadByBean<?, ?> comingNodeLoadByBean = ((NodeBeanProxy<?, ?>) comingNode).getNodeLoadByBean();
         GraphRunningInfo graphRunningInfo =
                 GraphHolder.getGraphRunningInfo(comingNodeLoadByBean.getGraphId(), graphTraceId);
-        if (ObjectUtils.anyNull(comingNodeLoadByBean, graphRunningInfo)) {
-            throw new PlatoException("getPerData comingNodeLoadByBean & graphRunningInfo error");
-        }
+        PlatoAssert.nullException(() -> "getPerData comingNodeLoadByBean & graphRunningInfo error",
+                comingNodeLoadByBean, graphRunningInfo);
         return Pair.of(comingNodeLoadByBean, graphRunningInfo);
     }
 
@@ -105,9 +105,8 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         String limitMes;
         if (StringUtils.isNotBlank(limitMes = checkSuicide(graphRunningInfo))
                 || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo))
-                || StringUtils.isNotBlank(
-                limitMes = checkPreNodes(graphRunningInfo, nodeLoadByBean.getPreNodes(),
-                        comingNodeLoadByBean.getUniqueId()))
+                || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo,
+                nodeLoadByBean.getPreNodes(), comingNodeLoadByBean.getUniqueId()))
                 || StringUtils.isNotBlank(limitMes = checkNextHasResult())) {
             setLimitResult(limitMes, graphTraceId, traceId, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId());
             return false;
@@ -175,12 +174,11 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
         NodeRunningInfo<?> comingNodeRunningInfo =
                 graphRunningInfo.getNodeRunningInfo(comingNodeLoadByBean.getUniqueId());
-        if (Objects.isNull(comingNodeRunningInfo)) {
-            throw new PlatoException("paramHandle execute error");
-        }
+        PlatoAssert.nullException(() -> "paramHandle comingNodeRunningInfo error", comingNodeRunningInfo);
         if (Optional.ofNullable(preHandler).isPresent()) {
             return preHandler.paramHandle(graphRunningInfo);
-        } else if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
+        }
+        if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
             return (P) comingNodeRunningInfo.getResultData().getData();
         }
         throw new PlatoException("paramHandle error");

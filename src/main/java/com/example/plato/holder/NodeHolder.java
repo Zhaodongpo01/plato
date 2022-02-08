@@ -10,7 +10,6 @@ import com.example.plato.loader.ymlNode.AbstractYmlNode;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.plato.element.NodeLoadByBean;
+import com.example.plato.util.PlatoAssert;
 
 /**
  * @author zhaodongpo
@@ -39,16 +39,13 @@ public class NodeHolder {
     private static final Map<String, Map<String, AbstractYmlNode>> NODE_YML_MAP = new HashMap<>();
 
     public static NodeLoadByBean getNode(String graphId, String uniqueId) {
-        if (StringUtils.isAnyBlank(graphId, uniqueId) || !nodeMap.containsKey(graphId)) {
-            return null;
-        }
-        return nodeMap.get(uniqueId).get(uniqueId);
+        PlatoAssert.emptyException(() -> "getNode param error", graphId, uniqueId);
+        return nodeMap.containsKey(graphId) ? nodeMap.get(graphId).get(uniqueId) : null;
     }
 
     public static NodeLoadByBean putNode(String graphId, String uniqueId, NodeLoadByBean nodeLoadByBean) {
-        if (StringUtils.isAnyBlank(graphId, uniqueId) || !Optional.ofNullable(nodeLoadByBean).isPresent()) {
-            return null;
-        }
+        PlatoAssert.emptyException(() -> "putNode param error", graphId, uniqueId);
+        PlatoAssert.nullException(() -> "putNode nodeLoadByBean error", nodeLoadByBean);
         if (nodeMap.containsKey(graphId)) {
             return nodeMap.get(graphId).put(uniqueId, nodeLoadByBean);
         }
@@ -63,7 +60,8 @@ public class NodeHolder {
     }
 
     public static AbstractYmlNode getAbstractYmlNode(String graphIdTemp, String uniqueId) {
-        if (StringUtils.isAnyBlank(graphIdTemp, uniqueId) || !NODE_YML_MAP.containsKey(graphIdTemp)) {
+        PlatoAssert.emptyException(() -> "getAbstractYmlNode param error", graphIdTemp, uniqueId);
+        if (!NODE_YML_MAP.containsKey(graphIdTemp)) {
             return null;
         }
         return NODE_YML_MAP.get(graphIdTemp).get(uniqueId);
@@ -88,8 +86,12 @@ public class NodeHolder {
                     if (graphConfig.getStartNode().equals(nodeConfig.getUniqueId())) {
                         START_NODE_MAP.putIfAbsent(graphIdTemp, abstractYmlNode);
                     }
-                    HandlerHolder.putYmlAfterHandler(graphIdTemp, new YmlAfterHandler(nodeConfig));
-                    HandlerHolder.putYmlPreHandler(graphIdTemp, new YmlPreHandler(nodeConfig));
+                    if (Optional.ofNullable(nodeConfig.getAfterHandler()).isPresent()) {
+                        HandlerHolder.putYmlAfterHandler(graphIdTemp, new YmlAfterHandler(nodeConfig));
+                    }
+                    if (Optional.ofNullable(nodeConfig.getPreHandler()).isPresent()) {
+                        HandlerHolder.putYmlPreHandler(graphIdTemp, new YmlPreHandler(nodeConfig));
+                    }
                 }
             }
         }

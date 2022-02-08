@@ -2,13 +2,11 @@ package com.example.plato.holder;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.loader.ymlHandler.YmlAfterHandler;
 import com.example.plato.loader.ymlHandler.YmlPreHandler;
+import com.example.plato.util.PlatoAssert;
 
 /**
  * @author zhaodongpo
@@ -29,13 +27,9 @@ public class HandlerHolder {
 
     public synchronized static YmlPreHandler putYmlPreHandler(String graphId,
             YmlPreHandler ymlPreHandler) {
-        if (Objects.isNull(ymlPreHandler)) {
-            return null;
-        }
+        PlatoAssert.nullException(() -> "putYmlPreHandler ymlPreHandler is null", ymlPreHandler);
         NodeConfig nodeConfig = ymlPreHandler.getNodeConfig();
-        if (StringUtils.isBlank(nodeConfig.getPreHandler())) {
-            return null;
-        }
+        PlatoAssert.emptyException(() -> "putYmlPreHandler preHandler error", nodeConfig.getPreHandler());
         String uniqueId = nodeConfig.getUniqueId();
         if (!preHandlerMap.containsKey(graphId)) {
             Map<String, YmlPreHandler> ymlPreHandlerMap = new HashMap<>();
@@ -46,13 +40,9 @@ public class HandlerHolder {
     }
 
     public synchronized static YmlAfterHandler putYmlAfterHandler(String graphId, YmlAfterHandler ymlAfterHandler) {
-        if (Objects.isNull(ymlAfterHandler)) {
-            return null;
-        }
+        PlatoAssert.nullException(() -> "putYmlAfterHandler ymlAfterHandler is null", ymlAfterHandler);
         NodeConfig nodeConfig = ymlAfterHandler.getNodeConfig();
-        if (StringUtils.isBlank(nodeConfig.getAfterHandler())) {
-            return null;
-        }
+        PlatoAssert.emptyException(() -> "putYmlAfterHandler afterHandler error", nodeConfig.getAfterHandler());
         String uniqueId = nodeConfig.getUniqueId();
         if (!afterHandlerMap.containsKey(graphId)) {
             Map<String, YmlAfterHandler> ymlAfterHandlerMap = new HashMap<>();

@@ -3,10 +3,10 @@ package com.example.plato.holder;
 import com.example.plato.exception.PlatoException;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
+import com.example.plato.util.PlatoAssert;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -46,10 +46,8 @@ public class GraphHolder {
 
     public static GraphRunningInfo putGraphRunningInfo(String graphId, String graphTraceId,
             GraphRunningInfo graphRunningInfo) {
-        if (StringUtils.isAnyBlank(graphId, graphTraceId)
-                || !Optional.ofNullable(graphRunningInfo).isPresent()) {
-            return null;
-        }
+        PlatoAssert.emptyException(() -> "putGraphRunningInfo param error", graphId, graphTraceId);
+        PlatoAssert.nullException(() -> "putGraphRunningInfo graphRunningInfo error", graphRunningInfo);
         if (GRAPH_RUNNING_INFO_MAP.containsKey(graphId)) {
             return GRAPH_RUNNING_INFO_MAP.get(graphId).put(graphTraceId, graphRunningInfo);
         }
@@ -62,8 +60,8 @@ public class GraphHolder {
     public static Map<String, NodeRunningInfo> getNodeRunningInfoMap(String graphId, String graphTraceId) {
         Map<String, NodeRunningInfo> nodeRunningInfoMap = new ConcurrentHashMap<>();
         GraphRunningInfo graphRunningInfo;
-        if (StringUtils.isAnyBlank(graphId, graphTraceId)
-                || !GRAPH_RUNNING_INFO_MAP.containsKey(graphId)
+        PlatoAssert.emptyException(() -> "getNodeRunningInfoMap param error", graphId, graphTraceId);
+        if (!GRAPH_RUNNING_INFO_MAP.containsKey(graphId)
                 || (graphRunningInfo = GRAPH_RUNNING_INFO_MAP.get(graphId).get(graphTraceId)) == null) {
             return nodeRunningInfoMap;
         }
@@ -72,10 +70,9 @@ public class GraphHolder {
 
     public static NodeRunningInfo getNodeRunningInfo(String graphId, String graphTraceId, String uniqueId) {
         Map<String, NodeRunningInfo> nodeRunningInfoMap;
-        if (StringUtils.isBlank(uniqueId)
-                || MapUtils.isEmpty((nodeRunningInfoMap = getNodeRunningInfoMap(graphId, graphTraceId)))) {
-            return null;
-        }
+        PlatoAssert.emptyException(() -> "getNodeRunningInfo uniqueId error", uniqueId);
+        PlatoAssert.emptyException(() -> "getNodeRunningInfo get result error",
+                (nodeRunningInfoMap = getNodeRunningInfoMap(graphId, graphTraceId)));
         return nodeRunningInfoMap.get(uniqueId);
     }
 

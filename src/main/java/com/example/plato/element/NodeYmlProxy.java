@@ -17,6 +17,7 @@ import com.example.plato.loader.ymlNode.AbstractYmlNode;
 import com.example.plato.platoEnum.MessageEnum;
 import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.*;
+import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.SystemClock;
 import com.example.plato.util.TraceUtil;
 
@@ -136,9 +137,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         }
         YmlAfterHandler ymlAfterHandler =
                 HandlerHolder.getYmlAfterHandler(comingNodeConfig.getGraphId(), comingNodeConfig.getUniqueId());
-        if (ymlAfterHandler == null) {
-            throw new PlatoException("checkComingNodeAfter 有 afterHandler 但是没拿到");
-        }
+        PlatoAssert.nullException(() -> "checkComingNodeAfter 有 afterHandler 但是没拿到", ymlAfterHandler);
         Set<String> notShouldRunNodes = ymlAfterHandler.notShouldRunNodes(graphRunningInfo);
         if (CollectionUtils.isNotEmpty(notShouldRunNodes)) {
             return notShouldRunNodes.contains(abstractYmlNode.getNodeConfig().getUniqueId())
@@ -149,22 +148,15 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
 
     private Pair<NodeConfig, GraphRunningInfo> getPerData(AbstractNodeProxy comingNode) {
         NodeConfig nodeConfig = ((NodeYmlProxy<?, ?>) comingNode).getAbstractYmlNode().getNodeConfig();
-        if (Objects.isNull(nodeConfig)) {
-            log.error("NodeYmlProxy nodeConfig error");
-            return null;
-        }
+        PlatoAssert.nullException(() -> "NodeYmlProxy nodeConfig error", nodeConfig);
         GraphRunningInfo graphRunningInfo = GraphHolder.getGraphRunningInfo(nodeConfig.getGraphId(), graphTraceId);
-        if (Objects.isNull(graphRunningInfo)) {
-            throw new PlatoException("checkShouldRun graphRunningInfo error");
-        }
+        PlatoAssert.nullException(() -> "checkShouldRun graphRunningInfo error", graphRunningInfo);
         return Pair.of(nodeConfig, graphRunningInfo);
     }
 
     private P paramHandle(NodeYmlProxy<?, ?> comingNode, GraphRunningInfo graphRunningInfo) {
         AbstractYmlNode<?, ?> comingAbstractYmlNode = comingNode.getAbstractYmlNode();
-        if (comingAbstractYmlNode == null) {
-            return null;
-        }
+        PlatoAssert.nullException(() -> "paramHandle comingAbstractYmlNode is null", comingAbstractYmlNode);
         NodeConfig comingNodeConfig = comingAbstractYmlNode.getNodeConfig();
         String comingUniqueId = comingNodeConfig.getUniqueId();
         NodeRunningInfo nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(comingUniqueId);

@@ -31,7 +31,7 @@ public abstract class AbstractNodeProxy implements INodeProxy {
     private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {
-        throw new PlatoException("private 禁止调用");
+        throw new PlatoException("禁止调用");
     }
 
     public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
@@ -41,7 +41,7 @@ public abstract class AbstractNodeProxy implements INodeProxy {
     protected void changeStatus(NodeResultStatus fromStatus, NodeResultStatus toStatus) {
         if (!compareAndSetState(fromStatus, toStatus)) {
             log.error("NodeResultStatus change status error");
-            throw new PlatoException("NodeResultStatus change status error");
+            throw new PlatoException(MessageEnum.UPDATE_NODE_STATUS_ERROR.getMes());
         }
     }
 
@@ -53,11 +53,11 @@ public abstract class AbstractNodeProxy implements INodeProxy {
      * 线程2：第一步线程B执行完。第二步执行D
      * 线程1：在线程2的第一步骤执行完之后，线程1D开始执行，并且在执行前已经检测强依赖的B已经执行完成
      * 线程2：线程2的第二步骤又把D执行了一遍。
-     * 存在线程1和线程2再切换时，D被执行了两遍。
-     *
-     * 为了解决这个问题，当当前节点的preNodes不为空时，只有preNode才能触发当前节点执行。
+     * 存在线程1和线程2在切换时，D被执行了两遍。
+     * <p>
+     * 当当前节点的preNodes不为空时，只有preNode才能触发当前节点执行。
      * 也就是当前Node的非强依赖节点不能触发当前节点执行。
-     *
+     * <p>
      * 但是如果D节点前面的B和C节点都不是强依赖节点，那么D节点将执行两次。
      */
     public String checkPreNodes(GraphRunningInfo graphRunningInfo, List<String> preNodes, String comingNodeUniqueId) {

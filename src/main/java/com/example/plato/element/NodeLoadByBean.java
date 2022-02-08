@@ -1,17 +1,15 @@
 package com.example.plato.element;
 
-import com.example.plato.exception.PlatoException;
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.holder.NodeHolder;
+import com.example.plato.util.PlatoAssert;
 
 import lombok.Data;
 import lombok.Getter;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,9 +57,8 @@ public class NodeLoadByBean<P, R> {
         }
 
         private NodeBeanBuilder<P, R> check() {
-            if (ObjectUtils.anyNull(this.getINodeWork(), this.getUniqueId(), this.getGraphId())) {
-                throw new PlatoException("NodeBeanBuilder#check error");
-            }
+            PlatoAssert.nullException(() -> "NodeBeanBuilder check INodeWork error", this.getINodeWork());
+            PlatoAssert.emptyException(() -> "NodeBeanBuilder#check error", this.getUniqueId(), this.getGraphId());
             return this;
         }
 
@@ -76,65 +73,58 @@ public class NodeLoadByBean<P, R> {
 
         public NodeBeanBuilder<P, R> firstSetNodeBuilder(String graphId, String uniqueId, P p,
                 INodeWork<P, R> iNodeWork) {
-            if (!StringUtils.isAnyBlank(graphId, uniqueId) && Optional.ofNullable(iNodeWork).isPresent()) {
-                this.setGraphId(graphId).setUniqueId(uniqueId).setINodeWork(iNodeWork).setParam(p);
-            }
+            PlatoAssert.nullException(() -> "firstSetNodeBuilder iNodeWork is null", iNodeWork);
+            PlatoAssert.emptyException(() -> "firstSetNodeBuilder param error ", graphId, uniqueId);
+            this.setGraphId(graphId).setUniqueId(uniqueId).setINodeWork(iNodeWork).setParam(p);
             return this;
         }
 
         public NodeBeanBuilder<P, R> setNodeBuilder(String uniqueId, INodeWork<P, R> iNodeWork) {
-            if (StringUtils.isNotBlank(uniqueId) && Optional.ofNullable(iNodeWork).isPresent()) {
-                this.setUniqueId(uniqueId).setINodeWork(iNodeWork);
-            }
+            PlatoAssert.nullException(() -> "setNodeBuilder iNodeWork is null", iNodeWork);
+            PlatoAssert.emptyException(() -> "setNodeBuilder uniqueId null ", uniqueId);
+            this.setUniqueId(uniqueId).setINodeWork(iNodeWork);
             return this;
         }
 
         public NodeBeanBuilder<P, R> setGraphId(String graphId) {
-            if (StringUtils.isNotBlank(graphId)) {
-                super.graphId = graphId;
-            }
+            PlatoAssert.emptyException(() -> "setGraphId graphId empty ", graphId);
+            super.graphId = graphId;
             return this;
         }
 
         public NodeBeanBuilder<P, R> setUniqueId(String uniqueId) {
-            if (StringUtils.isNotBlank(uniqueId)) {
-                super.uniqueId = uniqueId;
-            }
+            PlatoAssert.emptyException(() -> "setUniqueId uniqueId empty ", uniqueId);
+            super.uniqueId = uniqueId;
             return this;
         }
 
         public NodeBeanBuilder<P, R> setParam(P p) {
-            if (Optional.ofNullable(p).isPresent()) {
-                super.p = p;
-            }
+            PlatoAssert.nullException(() -> "setParam p is null", p);
+            super.p = p;
             return this;
         }
 
         public NodeBeanBuilder<P, R> setName(String name) {
-            if (StringUtils.isNotBlank(name)) {
-                super.name = name;
-            }
+            PlatoAssert.emptyException(() -> "setName name empty ", name);
+            super.name = name;
             return this;
         }
 
         public NodeBeanBuilder<P, R> setPreHandler(PreHandler preHandler) {
-            if (Optional.ofNullable(preHandler).isPresent()) {
-                super.preHandler = preHandler;
-            }
+            PlatoAssert.nullException(() -> "setPreHandler preHandler is null", preHandler);
+            super.preHandler = preHandler;
             return this;
         }
 
         public NodeBeanBuilder<P, R> setAfterHandler(AfterHandler afterHandler) {
-            if (Optional.ofNullable(afterHandler).isPresent()) {
-                super.afterHandler = afterHandler;
-            }
+            PlatoAssert.nullException(() -> "setAfterHandler afterHandler is null", afterHandler);
+            super.afterHandler = afterHandler;
             return this;
         }
 
         public NodeBeanBuilder<P, R> setINodeWork(INodeWork<P, R> iNodeWork) {
-            if (Optional.ofNullable(iNodeWork).isPresent()) {
-                super.iNodeWork = iNodeWork;
-            }
+            PlatoAssert.nullException(() -> "setINodeWork iNodeWork is null", iNodeWork);
+            super.iNodeWork = iNodeWork;
             return this;
         }
 
