@@ -8,6 +8,7 @@ import com.example.plato.util.PlatoAssert;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -49,7 +50,8 @@ public class NodeLoadByBean<P, R> {
                             nodeLoadByBean.getNextNodes()
                                     .addAll(convertBuild2Bean(this.getNextBuilderNodes(), this.getGraphId()));
                         }
-                        return NodeHolder.putNode(this.getGraphId(), this.getUniqueId(), nodeLoadByBean);
+                        NodeHolder.putNode(this.getGraphId(), this.getUniqueId(), nodeLoadByBean);
+                        return this;
                     }
                 }
             }

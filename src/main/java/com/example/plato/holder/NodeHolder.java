@@ -51,7 +51,7 @@ public class NodeHolder {
         }
         ConcurrentHashMap<String, NodeLoadByBean> concurrentHashMap = new ConcurrentHashMap<>();
         concurrentHashMap.put(uniqueId, nodeLoadByBean);
-        nodeMap.put(uniqueId, concurrentHashMap);
+        nodeMap.put(graphId, concurrentHashMap);
         return nodeLoadByBean;
     }
 
