@@ -9,5 +9,6 @@ public enum NodeType {
     METHOD,
     BEAN,
     SUBFLOW,
+    CONDITION,
     ;
 }

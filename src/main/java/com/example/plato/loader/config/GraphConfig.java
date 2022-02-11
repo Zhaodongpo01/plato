@@ -31,8 +31,6 @@ public class GraphConfig extends PlatoConfig {
 
     private String startNode;
 
-    private String scanPackage;
-
     private List<NodeConfig> nodes;
 
     @Override
@@ -45,9 +43,6 @@ public class GraphConfig extends PlatoConfig {
         }
         if (CollectionUtils.isEmpty(nodes)) {
             throw new PlatoException("GraphConfig nodes is empty");
-        }
-        if (StringUtils.isBlank(scanPackage)) {
-            throw new PlatoException("GraphConfig scanPackage is empty");
         }
     }
 }

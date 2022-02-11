@@ -8,6 +8,7 @@ nodes:
       uniqueId: uniqueIdA
       name: nodeA
       invokeElement: firstTestYmlService:testMethod1
+      type: METHOD
       desc: 测试方法testMethod1
       next: uniqueIdB
       #preHandler: firstServicePerHandler:perhandler1

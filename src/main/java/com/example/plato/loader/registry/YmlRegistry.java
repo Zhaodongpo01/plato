@@ -84,7 +84,6 @@ public class YmlRegistry implements GraphRegistry {
                 .graphDesc(String.valueOf(objectMap.get(GRAPH_DESC)))
                 .graphName(String.valueOf(objectMap.get(GRAPH_NAME)))
                 .startNode(String.valueOf(objectMap.get(START_NODE)))
-                .scanPackage(String.valueOf(objectMap.get(SCAN_PACKAGE)))
                 .build();
         List nodeObjects = (List) objectMap.get(NODES);
         List<NodeConfig> nodes = new ArrayList<>();
