@@ -1,6 +1,7 @@
 package com.example.plato.runningData;
 
 import com.example.plato.holder.GraphHolder;
+
 import lombok.Getter;
 
 /**
@@ -11,21 +12,22 @@ import lombok.Getter;
 @Getter
 public class NodeRunningInfo<R> {
 
-    private String graphTraceId;
+    private final String graphTraceId;
 
-    private String traceId;
+    private final String traceId;
 
-    private String graphId;
+    private final String graphId;
 
-    private String uniqueId;
+    private final String uniqueId;
 
-    private ResultData<R> resultData = new ResultData<>();
+    private final ResultData<R> resultData;
 
     public void build() {
         GraphHolder.putNodeRunningInfo(graphId, graphTraceId, uniqueId, this);
     }
 
-    public NodeRunningInfo(String graphTraceId, String traceId, String graphId, String uniqueId, ResultData<R> resultData) {
+    public NodeRunningInfo(String graphTraceId, String traceId, String graphId, String uniqueId,
+            ResultData<R> resultData) {
         this.graphTraceId = graphTraceId;
         this.traceId = traceId;
         this.graphId = graphId;

@@ -1,0 +1,23 @@
+graphId: 9527
+graphName: 柏拉图
+graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
+scanPackage: com.example.plato.test
+startNode: uniqueIdA
+nodes:
+  - nodeConfig:
+      uniqueId: uniqueIdA
+      name: nodeA
+      invokeElement: firstTestYmlService:testMethod1
+      type: METHOD
+      desc: 测试方法testMethod1
+      next: uniqueIdB
+      #preHandler: firstServicePerHandler:perhandler1
+      #afterHandler: firstServiceAfterHandler:afterHandler1
+  - nodeConfig:
+      uniqueId: uniqueIdB
+      name: nodeB
+      invokeElement: firstTestYmlService:testMethod2
+      desc: 测试方法testMethod2
+      pre: uniqueIdA
+      preHandler: firstServicePerHandler:perhandler1
+      #afterHandler: firstServiceAfterHandler:afterHandler2

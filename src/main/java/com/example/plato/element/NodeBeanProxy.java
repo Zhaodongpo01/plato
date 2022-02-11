@@ -6,10 +6,11 @@ import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.holder.GraphHolder;
 import com.example.plato.runningData.GraphRunningInfo;
-import com.example.plato.runningData.MessageEnum;
-import com.example.plato.runningData.NodeResultStatus;
+import com.example.plato.platoEnum.MessageEnum;
+import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
+import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.SystemClock;
 import com.example.plato.util.TraceUtil;
 
@@ -18,12 +19,11 @@ import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author zhaodongpo
@@ -33,19 +33,17 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class NodeBeanProxy<P, R> extends AbstractNode {
+public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
 
     private String traceId;
     private String graphTraceId;
     private NodeLoadByBean<P, R> nodeLoadByBean;
-    private AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
+    private P p;
 
-    private void setStatusAtomicReference() {
-        throw new PlatoException("private 禁止调用");
-    }
-
-    public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
-        return this.statusAtomicReference.compareAndSet(expect, update);
+    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId, P p) {
+        this.nodeLoadByBean = nodeLoadByBean;
+        this.graphTraceId = graphTraceId;
+        this.p = p;
     }
 
     public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId) {
@@ -53,38 +51,38 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
         this.graphTraceId = graphTraceId;
     }
 
-    /**
-     * 这个方法是否可以放到,抽象类里面去
-     */
     @Override
-    public void run(AbstractNode comingNode, ExecutorService executorService) {
+    public void run(AbstractNodeProxy comingNode, ExecutorService executorService) {
         traceId = TraceUtil.getRandomTraceId();
         if (run(comingNode)) {
             runNext(executorService);
         }
     }
 
+    private Pair<NodeLoadByBean<?, ?>, GraphRunningInfo> getPerData(AbstractNodeProxy comingNode) {
+        NodeLoadByBean<?, ?> comingNodeLoadByBean = ((NodeBeanProxy<?, ?>) comingNode).getNodeLoadByBean();
+        GraphRunningInfo graphRunningInfo =
+                GraphHolder.getGraphRunningInfo(comingNodeLoadByBean.getGraphId(), graphTraceId);
+        PlatoAssert.nullException(() -> "getPerData comingNodeLoadByBean & graphRunningInfo error",
+                comingNodeLoadByBean, graphRunningInfo);
+        return Pair.of(comingNodeLoadByBean, graphRunningInfo);
+    }
+
     @Override
-    boolean run(AbstractNode comingNode) {
-        P p;
+    public boolean run(AbstractNodeProxy comingNode) {
         if (Objects.nonNull(comingNode)) {
-            NodeLoadByBean<?, ?> comingNodeLoadByBean = ((NodeBeanProxy<?, ?>) comingNode).getNodeLoadByBean();
-            GraphRunningInfo graphRunningInfo =
-                    GraphHolder.getGraphRunningInfo(nodeLoadByBean.getGraphId(), graphTraceId);
-            if (ObjectUtils.anyNull(comingNodeLoadByBean, graphRunningInfo)) {
-                throw new PlatoException("checkShouldRun graphRunningInfo error");
-            }
+            Pair<NodeLoadByBean<?, ?>, GraphRunningInfo> perData = getPerData(comingNode);
+            GraphRunningInfo graphRunningInfo = perData.getRight();
+            NodeLoadByBean<?, ?> comingNodeLoadByBean = perData.getLeft();
             if (!checkShouldRun(graphRunningInfo, comingNodeLoadByBean)) {
                 return false;
             }
             p = paramHandle(graphRunningInfo, comingNodeLoadByBean);
-        } else {
-            p = nodeLoadByBean.getP();
         }
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         INodeWork<P, R> iNodeWork = nodeLoadByBean.getINodeWork();
         R result = null;
-        ResultData<R> resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
+        ResultData resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
         long startTime = SystemClock.now();
         long endTime = SystemClock.now();
         try {
@@ -100,7 +98,7 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
             return false;
         } finally {
             log.info("{}\t执行耗时{}", nodeLoadByBean.getUniqueId(), endTime - startTime);
-            NodeRunningInfo<R> nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
                     nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
             nodeRunningInfo.build();
             iNodeWork.hook(p, resultData);
@@ -108,18 +106,14 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
         return true;
     }
 
-    boolean checkShouldRun(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
+    private boolean checkShouldRun(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         String limitMes;
         if (StringUtils.isNotBlank(limitMes = checkSuicide(graphRunningInfo))
                 || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo))
-                || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo))
+                || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo,
+                nodeLoadByBean.getPreNodes(), comingNodeLoadByBean.getUniqueId()))
                 || StringUtils.isNotBlank(limitMes = checkNextHasResult())) {
-            changeStatus(NodeResultStatus.INIT, NodeResultStatus.LIMIT_RUN);
-            ResultData<R> resultData = new ResultData<>();
-            resultData.setNodeResultStatus(NodeResultStatus.LIMIT_RUN);
-            resultData.setMes(limitMes);
-            new NodeRunningInfo(graphTraceId, traceId, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(),
-                    resultData).build();
+            setLimitResult(limitMes, graphTraceId, traceId, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId());
             return false;
         }
         return true;
@@ -145,36 +139,22 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
                ? StringUtils.EMPTY : MessageEnum.SUICIDE.getMes();
     }
 
-    private String checkPreNodes(GraphRunningInfo graphRunningInfo) {
-        List<String> preNodes = nodeLoadByBean.getPreNodes();
-        Optional<String> firstUnique = preNodes.stream().filter(uniqueId -> {
-            NodeRunningInfo<?> nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(uniqueId);
-            if (Objects.isNull(nodeRunningInfo)) {
-                return true;
-            }
-            NodeResultStatus nodeResultStatus = nodeRunningInfo.getResultData().getNodeResultStatus();
-            if (NodeResultStatus.getExceptionStatus().contains(nodeResultStatus)) {
-                return true;
-            }
-            ResultData<?> resultData = nodeRunningInfo.getResultData();
-            return resultData == null || !NodeResultStatus.EXECUTED.equals(resultData.getNodeResultStatus());
-        }).findFirst();
-        return firstUnique.isPresent() ? MessageEnum.PRE_NOT_HAS_RESULT.getMes() : StringUtils.EMPTY;
-    }
-
+    /**
+     * if else
+     */
     private String checkComingNodeAfter(NodeLoadByBean<?, ?> comingNodeLoadByBean, GraphRunningInfo graphRunningInfo) {
         AfterHandler afterHandler = comingNodeLoadByBean.getAfterHandler();
         if (Optional.ofNullable(afterHandler).isPresent()) {
             Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
-            return !CollectionUtils.isNotEmpty(notShouldRunNodes)
-                           || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId())
+            return (CollectionUtils.isEmpty(notShouldRunNodes)
+                    || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId()))
                    ? StringUtils.EMPTY : MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes();
         }
         return StringUtils.EMPTY;
     }
 
     @Override
-    void runNext(ExecutorService executorService) {
+    public void runNext(ExecutorService executorService) {
         List<NodeLoadByBean<?, ?>> nextNodes = nodeLoadByBean.getNextNodes();
         if (CollectionUtils.isEmpty(nextNodes)) {
             return;
@@ -199,21 +179,14 @@ public class NodeBeanProxy<P, R> extends AbstractNode {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
         NodeRunningInfo<?> comingNodeRunningInfo =
                 graphRunningInfo.getNodeRunningInfo(comingNodeLoadByBean.getUniqueId());
-        if (Objects.isNull(comingNodeRunningInfo)) {
-            throw new PlatoException("paramHandle execute error");
-        }
+        PlatoAssert.nullException(() -> "paramHandle comingNodeRunningInfo error", comingNodeRunningInfo);
         if (Optional.ofNullable(preHandler).isPresent()) {
             return preHandler.paramHandle(graphRunningInfo);
-        } else if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
+        }
+        if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
             return (P) comingNodeRunningInfo.getResultData().getData();
         }
         throw new PlatoException("paramHandle error");
     }
 
-    private void changeStatus(NodeResultStatus fromStatus, NodeResultStatus toStatus) {
-        if (!compareAndSetState(fromStatus, toStatus)) {
-            log.error("NodeResultStatus change status error");
-            throw new PlatoException("NodeResultStatus change status error");
-        }
-    }
 }

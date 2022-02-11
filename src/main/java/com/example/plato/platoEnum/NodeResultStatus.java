@@ -1,4 +1,4 @@
-package com.example.plato.runningData;
+package com.example.plato.platoEnum;
 
 import com.google.common.collect.Sets;
 
@@ -17,7 +17,7 @@ public enum NodeResultStatus {
     ERROR,
     ;
 
-    public static Set<NodeResultStatus> getExceptionStatus() {
+    public static Set<NodeResultStatus> getAbnormalStatus() {
         return Sets.newHashSet(LIMIT_RUN, ERROR);
     }
 

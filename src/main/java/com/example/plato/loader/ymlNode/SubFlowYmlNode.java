@@ -6,11 +6,11 @@ import com.example.plato.runningData.ResultData;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/2/11 10:30 上午
+ * @date 2022/2/5 16:03
  */
-public class BeanYmlNode<P, R> extends AbstractYmlNode<P, R>{
+public class SubFlowYmlNode<P, R> extends AbstractYmlNode<P, R> {
 
-    public BeanYmlNode(NodeConfig nodeConfig) {
+    public SubFlowYmlNode(NodeConfig nodeConfig) {
         super(nodeConfig);
     }
 

@@ -2,7 +2,7 @@ package com.example.plato.test.controller;
 
 import com.example.plato.element.GraphManager;
 import com.example.plato.handler.PreHandler;
-import com.example.plato.loader.YmlRegistry;
+import com.example.plato.loader.registry.YmlRegistry;
 import com.example.plato.loader.config.GraphConfig;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
@@ -12,16 +12,21 @@ import com.example.plato.test.serial.NodeA;
 import com.example.plato.test.serial.NodeB;
 import com.example.plato.test.serial.NodeC;
 import com.example.plato.test.serial.NodeD;
+import com.example.plato.util.ParserString2CodeUtil;
 import com.example.plato.util.PlatoJsonUtil;
+import com.example.plato.test.service.TestService;
+import com.example.plato.util.TraceUtil;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.plato.element.NodeLoadByBean.NodeBeanBuilder;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -36,19 +41,34 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TestController {
 
+    @Autowired
+    private TestService testService;
+
     @RequestMapping("yml")
     public String yml() {
-        YmlRegistry ymlRegistry = new YmlRegistry();
-        Map<String, GraphConfig> registry = ymlRegistry.registry();
-        log.info("ymlymlyml:{}", PlatoJsonUtil.toJson(registry));
+        FirstModel firstModel = new FirstModel();
+        firstModel.setIdf(1000L);
+        firstModel.setName("zhaodongpo");
+        GraphRunningInfo graphRunningInfo =
+                GraphManager.getManager().runByYml(firstModel, "9527", 10000L, TimeUnit.SECONDS);
+        log.info("yml#GraphRunningInfo:{}", PlatoJsonUtil.toJson(graphRunningInfo));
         return "success";
     }
 
+    @RequestMapping("expression")
+    public String expression() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("testService", testService);
+        map.put("var", "zhaodongpo");
+        String expression = "testService.save(var)";
+        ParserString2CodeUtil.parserString2Code(expression, map);
+        return "";
+    }
 
     @RequestMapping("serial")
     public String testSerial() {
         NodeBeanBuilder<String, Long> nodeBeanBuilderA =
-                NodeBeanBuilder.get().firstSetNodeBuilder("graphId", "uniqueIdA", "123333", new NodeA());
+                NodeBeanBuilder.get().firstSetNodeBuilder("graphId", "uniqueIdA", new NodeA());
         NodeBeanBuilder<List<Integer>, Boolean> nodeBeanBuilderB =
                 NodeBeanBuilder.get().setNodeBuilder("uniqueIdB", new NodeB());
         NodeBeanBuilder<TestModel, FirstModel> nodeBeanBuilderC =
@@ -64,7 +84,7 @@ public class TestController {
             @Override
             public boolean suicide(GraphRunningInfo graphRunningInfo) {
                 NodeRunningInfo uniqueIdA = graphRunningInfo.getNodeRunningInfo("uniqueIdA");
-                return (Long) uniqueIdA.getResultData().getData() < 100;
+                return (Long) uniqueIdA.getResultData().getData() > 100;
             }
         });
         nodeBeanBuilderC.setPreHandler((PreHandler<TestModel>) graphRunningInfo -> {
@@ -81,7 +101,8 @@ public class TestController {
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderC)
                 .linkNodes(nodeBeanBuilderB, nodeBeanBuilderD)
                 .linkNodes(nodeBeanBuilderC, nodeBeanBuilderD, false);
-        GraphRunningInfo graphRunningInfo = graphManager.run(100000L, TimeUnit.MILLISECONDS);
+        GraphRunningInfo graphRunningInfo =
+                graphManager.run(TraceUtil.getRandomTraceId(), 100000L, TimeUnit.MILLISECONDS);
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
         return "success";

@@ -1,13 +1,11 @@
 package com.example.plato.loader.factory;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.example.plato.exception.PlatoException;
+import com.example.plato.loader.config.NodeConfig;
+import com.example.plato.loader.ymlNode.AbstractYmlNode;
 import com.example.plato.loader.ymlNode.BeanYmlNode;
-import com.example.plato.loader.ymlNode.ConditionYmlNode;
-import com.example.plato.loader.ymlNode.IYmlNode;
 import com.example.plato.loader.ymlNode.MethodYmlNode;
-import com.example.plato.loader.ymlNode.SubflowYmlNode;
+import com.example.plato.loader.ymlNode.SubFlowYmlNode;
 import com.example.plato.platoEnum.NodeType;
 
 /**
@@ -17,17 +15,15 @@ import com.example.plato.platoEnum.NodeType;
  */
 public class NodeYmlFactory {
 
-    private static final Map<String, IYmlNode> I_COMPONENT_MAP = new HashMap<>();
-
-    static {
-        I_COMPONENT_MAP.put(NodeType.BEAN.name(), new BeanYmlNode());
-        I_COMPONENT_MAP.put(NodeType.METHOD.name(), new MethodYmlNode());
-        I_COMPONENT_MAP.put(NodeType.CONDITION.name(), new ConditionYmlNode());
-        I_COMPONENT_MAP.put(NodeType.SUBFLOW.name(), new SubflowYmlNode());
+    public static AbstractYmlNode getIYmlNode(NodeConfig nodeConfig) {
+        if (NodeType.METHOD.equals(nodeConfig.getType())) {
+            return new MethodYmlNode(nodeConfig);
+        } else if (NodeType.SUBFLOW.equals(nodeConfig.getType())) {
+            return new SubFlowYmlNode(nodeConfig);
+        } else if (NodeType.BEAN.equals(nodeConfig.getType())) {
+            return new BeanYmlNode(nodeConfig);
+        } else {
+            throw new PlatoException("NodeType error");
+        }
     }
-
-    public static IYmlNode getComponent(String component) {
-        return I_COMPONENT_MAP.get(component);
-    }
-
 }

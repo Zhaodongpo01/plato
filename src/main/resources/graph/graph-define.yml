@@ -1,0 +1,34 @@
+graphId: 9527
+graphName: 柏拉图
+graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
+scanPackage: com.example.plato.test
+startNode: nodeAId
+nodes:
+  - nodeConfig:
+      uniqueId: nodeAId
+      name: nodeA
+      component: beanName:save
+      desc: 方法类型的Node节点
+      type: METHOD
+      subFlows:
+        - subFlow:
+            graphId: graphsub1
+            startNode: startNode1
+            endNode: endNode1
+        - subFlow:
+            graphId: graphsub2
+            startNode: startNode2
+            endNode: endNode2
+      next: nodeBId
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
+  - nodeConfig:
+      uniqueId: nodeBId
+      name: nodeB
+      component: beanName
+      desc: Bean类型的Node节点
+      type: BEAN
+      next: nodeCId
+      pre: nodeAId
+      preHandler: com.example.plato.test.perHandler:perHandler
+      afterHandler: com.example.plato.test.afterHandler:afterHandler
