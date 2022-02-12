@@ -32,7 +32,7 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
             new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {
-        throw new PlatoException("禁止调用");
+        throw new PlatoException("禁止通过set方法设置状态");
     }
 
     public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
