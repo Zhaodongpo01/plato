@@ -2,10 +2,10 @@ package com.example.plato.runningData;
 
 import lombok.Getter;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.example.plato.util.PlatoAssert;
 
 /**
  * @author zhaodongpo
@@ -24,9 +24,12 @@ public class GraphRunningInfo<R> {
     }
 
     public NodeRunningInfo<R> getNodeRunningInfo(String uniqueId) {
-        if (StringUtils.isBlank(uniqueId) || !nodeRunningInfoMap.containsKey(uniqueId)) {
-            return null;
-        }
+        PlatoAssert.emptyException(() -> "getNodeRunningInfo uniqueId is empty", uniqueId);
         return nodeRunningInfoMap.get(uniqueId);
     }
+
+    public <R> NodeRunningInfo<R> putNodeRunningInfo(String uniqueId, NodeRunningInfo nodeRunningInfo) {
+        return nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
+    }
+
 }

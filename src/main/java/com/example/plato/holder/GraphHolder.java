@@ -24,7 +24,7 @@ public class GraphHolder {
     /**
      * 没有使用ThreadLocal  <graphId : <graphTraceId,GraphRunningInfo>>
      */
-    private static final Map<String, Map<String, GraphRunningInfo>> GRAPH_RUNNING_INFO_MAP = new ConcurrentHashMap<>();
+    /*private static final Map<String, Map<String, GraphRunningInfo>> GRAPH_RUNNING_INFO_MAP = new ConcurrentHashMap<>();
 
     public static GraphRunningInfo getGraphRunningInfo(String graphId, String graphTraceId) {
         if (StringUtils.isAnyBlank(graphId, graphTraceId)
@@ -84,5 +84,5 @@ public class GraphHolder {
         Map<String, NodeRunningInfo> nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
         nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
         return nodeRunningInfo;
-    }
+    }*/
 }
