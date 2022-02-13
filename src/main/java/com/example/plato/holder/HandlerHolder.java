@@ -2,6 +2,7 @@ package com.example.plato.holder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.loader.ymlHandler.YmlAfterHandler;
@@ -32,7 +33,7 @@ public class HandlerHolder {
         PlatoAssert.emptyException(() -> "putYmlPreHandler preHandler error", nodeConfig.getPreHandler());
         String uniqueId = nodeConfig.getUniqueId();
         if (!preHandlerMap.containsKey(graphId)) {
-            Map<String, YmlPreHandler> ymlPreHandlerMap = new HashMap<>();
+            Map<String, YmlPreHandler> ymlPreHandlerMap = new ConcurrentHashMap<>();
             preHandlerMap.put(graphId, ymlPreHandlerMap);
             ymlPreHandlerMap.put(uniqueId, ymlPreHandler);
         }
@@ -45,7 +46,7 @@ public class HandlerHolder {
         PlatoAssert.emptyException(() -> "putYmlAfterHandler afterHandler error", nodeConfig.getAfterHandler());
         String uniqueId = nodeConfig.getUniqueId();
         if (!afterHandlerMap.containsKey(graphId)) {
-            Map<String, YmlAfterHandler> ymlAfterHandlerMap = new HashMap<>();
+            Map<String, YmlAfterHandler> ymlAfterHandlerMap = new ConcurrentHashMap<>();
             afterHandlerMap.put(graphId, ymlAfterHandlerMap);
             ymlAfterHandlerMap.put(uniqueId, ymlAfterHandler);
         }
@@ -60,11 +61,4 @@ public class HandlerHolder {
         return preHandlerMap.containsKey(graphId) ? preHandlerMap.get(graphId).get(uniqueId) : null;
     }
 
-    public static Map<String, Map<String, YmlPreHandler>> getPreHandlerMap() {
-        return preHandlerMap;
-    }
-
-    public static Map<String, Map<String, YmlAfterHandler>> getAfterHandlerMap() {
-        return afterHandlerMap;
-    }
 }

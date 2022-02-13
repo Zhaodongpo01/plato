@@ -28,7 +28,7 @@ public class GraphRunningInfo<R> {
         return nodeRunningInfoMap.get(uniqueId);
     }
 
-    public <R> void putNodeRunningInfo(String uniqueId, NodeRunningInfo nodeRunningInfo) {
+    public void putNodeRunningInfo(String uniqueId, NodeRunningInfo nodeRunningInfo) {
         nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
     }
 
