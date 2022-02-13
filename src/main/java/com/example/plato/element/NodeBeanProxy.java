@@ -31,7 +31,7 @@ import java.util.concurrent.*;
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
+public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
 
     @Getter
     @Setter
@@ -74,7 +74,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         long startTime = SystemClock.now();
         long endTime = SystemClock.now();
         try {
-            result = iNodeWork.work((P) getP());
+            result = iNodeWork.work(getP());
             endTime = SystemClock.now();
             changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
             resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
@@ -89,7 +89,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
             NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(getGraphTraceId(), getTraceId(),
                     nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
             getGraphRunningInfo().putNodeRunningInfo(nodeLoadByBean.getUniqueId(), nodeRunningInfo);
-            iNodeWork.hook((P)getP(), resultData);
+            iNodeWork.hook(getP(), resultData);
         }
         return true;
     }

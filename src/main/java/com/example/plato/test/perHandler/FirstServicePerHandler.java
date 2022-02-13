@@ -27,6 +27,7 @@ public class FirstServicePerHandler {
                 log.info("perhandler1#data:{}", PlatoJsonUtil.toJson(data));
                 return 10000000;
             }
+
             @Override
             public boolean suicide(GraphRunningInfo graphRunningInfo) {
                 log.info("调用自杀接口返回false");
@@ -34,4 +35,9 @@ public class FirstServicePerHandler {
             }
         };
     }
+
+    public PreHandler perhandler2() {
+        return PreHandler.VOID_PRE_HANDLER;
+    }
+
 }

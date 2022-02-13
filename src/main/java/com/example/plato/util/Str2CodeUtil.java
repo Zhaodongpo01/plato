@@ -15,9 +15,10 @@ import lombok.extern.slf4j.Slf4j;
  * @author zhaodongpo
  * @version 1.0
  * @date 2022/2/3 10:08 上午
+ * 是否可以有一种El类型的Node。先写在这里。后续补充。。。。。
  */
 @Slf4j
-public class ParserString2CodeUtil {
+public class Str2CodeUtil {
 
     public static Object parserString2Code(String varParam, Map<String, Object> varMap) {
         if (StringUtils.isBlank(varParam) || MapUtils.isEmpty(varMap)) {

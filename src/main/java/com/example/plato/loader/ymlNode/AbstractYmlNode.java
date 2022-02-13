@@ -1,6 +1,5 @@
 package com.example.plato.loader.ymlNode;
 
-import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.IWork;
 import com.example.plato.loader.config.NodeConfig;
 import lombok.Data;
