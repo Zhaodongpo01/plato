@@ -18,7 +18,7 @@ public class GraphRunningInfo<R> {
     /**
      * <uniqueId,NodeRunningInfo>
      */
-    private Map<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
+    private final Map<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
 
     public GraphRunningInfo() {
     }
@@ -28,8 +28,8 @@ public class GraphRunningInfo<R> {
         return nodeRunningInfoMap.get(uniqueId);
     }
 
-    public <R> NodeRunningInfo<R> putNodeRunningInfo(String uniqueId, NodeRunningInfo nodeRunningInfo) {
-        return nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
+    public <R> void putNodeRunningInfo(String uniqueId, NodeRunningInfo nodeRunningInfo) {
+        nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
     }
 
 }

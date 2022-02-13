@@ -22,8 +22,9 @@ import com.example.plato.util.TraceUtil;
 
 import com.google.common.base.Splitter;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -35,34 +36,29 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2022/2/2 2:19 下午
  */
 @Slf4j
-@Data
 @EqualsAndHashCode(callSuper = true)
 public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
 
-    private P p;
-    private GraphRunningInfo<R> graphRunningInfo;
-    private String traceId;
-    private String graphTraceId;
+    @Getter
+    @Setter
     private AbstractYmlNode<P, R> abstractYmlNode;
 
     public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId, P p,
             GraphRunningInfo<R> graphRunningInfo) {
-        this.abstractYmlNode = abstractYmlNode;
-        this.graphRunningInfo = graphRunningInfo;
-        this.graphTraceId = graphTraceId;
-        this.p = p;
+        this(abstractYmlNode, graphTraceId, graphRunningInfo);
+        setP(p);
     }
 
     public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId,
             GraphRunningInfo<R> graphRunningInfo) {
         this.abstractYmlNode = abstractYmlNode;
-        this.graphRunningInfo = graphRunningInfo;
-        this.graphTraceId = graphTraceId;
+        setGraphRunningInfo(graphRunningInfo);
+        setGraphTraceId(graphTraceId);
     }
 
     @Override
     public void run(AbstractNodeProxy comingNode, ExecutorService executorService) {
-        traceId = TraceUtil.getRandomTraceId();
+        setTraceId(TraceUtil.getRandomTraceId());
         if (run(comingNode)) {
             runNext(executorService);
         }
@@ -76,7 +72,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
             if (!checkShouldRun(comingNodeConfig)) {
                 return false;
             }
-            p = paramHandle((NodeYmlProxy<?, ?>) comingNode);
+            setP(paramHandle((NodeYmlProxy<?, ?>) comingNode));
         }
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         R result = null;
@@ -85,7 +81,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         long startTime = SystemClock.now();
         long endTime = SystemClock.now();
         try {
-            result = abstractYmlNode.work(p);
+            result = abstractYmlNode.work((P) getP());
             endTime = SystemClock.now();
             changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
             resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
@@ -99,9 +95,9 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
             return false;
         } finally {
             log.info("{}\t执行耗时{}", currentNodeConfig.getUniqueId(), endTime - startTime);
-            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(getGraphTraceId(), getTraceId(),
                     currentNodeConfig.getGraphId(), currentNodeConfig.getUniqueId(), resultData);
-            graphRunningInfo.putNodeRunningInfo(currentNodeConfig.getUniqueId(), nodeRunningInfo);
+            getGraphRunningInfo().putNodeRunningInfo(currentNodeConfig.getUniqueId(), nodeRunningInfo);
         }
         return true;
     }
@@ -112,19 +108,18 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         String limitMes;
         if (StringUtils.isNotBlank(pre)) {
             List<String> preNodes = Splitter.on(",").trimResults().splitToList(pre);
-            limitMes = checkPreNodes(graphRunningInfo, preNodes, comingNodeConfig.getUniqueId());
+            limitMes = checkPreNodes(preNodes, comingNodeConfig.getUniqueId());
             if (StringUtils.isNotBlank(limitMes)) {
-                setLimitResult(limitMes, graphTraceId, traceId, nodeConfig.getGraphId(), nodeConfig.getUniqueId(),
-                        graphRunningInfo);
+                setLimitResult(limitMes, nodeConfig.getGraphId(), nodeConfig.getUniqueId());
                 return false;
             }
         }
         if (StringUtils.isBlank(limitMes = checkSuicide(nodeConfig))
-                && StringUtils.isBlank(limitMes = checkComingNodeAfter(comingNodeConfig, graphRunningInfo))) {
+                && StringUtils.isBlank(
+                limitMes = checkComingNodeAfter(comingNodeConfig, getGraphRunningInfo()))) {
             return true;
         }
-        setLimitResult(limitMes, graphTraceId, traceId, nodeConfig.getGraphId(), nodeConfig.getUniqueId(),
-                graphRunningInfo);
+        setLimitResult(limitMes, nodeConfig.getGraphId(), nodeConfig.getUniqueId());
         return false;
     }
 
@@ -134,7 +129,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         }
         YmlPreHandler ymlPreHandler = HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
         PlatoAssert.nullException(() -> "checkSuicide ymlPreHandler is null", ymlPreHandler);
-        return ymlPreHandler.suicide(graphRunningInfo) ? MessageEnum.SUICIDE.getMes() : StringUtils.EMPTY;
+        return ymlPreHandler.suicide(getGraphRunningInfo()) ? MessageEnum.SUICIDE.getMes() : StringUtils.EMPTY;
     }
 
     public String checkComingNodeAfter(NodeConfig comingNodeConfig, GraphRunningInfo graphRunningInfo) {
@@ -157,7 +152,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         PlatoAssert.nullException(() -> "paramHandle comingAbstractYmlNode is null", comingAbstractYmlNode);
         NodeConfig comingNodeConfig = comingAbstractYmlNode.getNodeConfig();
         String comingUniqueId = comingNodeConfig.getUniqueId();
-        NodeRunningInfo nodeRunningInfo = graphRunningInfo.getNodeRunningInfo(comingUniqueId);
+        NodeRunningInfo nodeRunningInfo = getGraphRunningInfo().getNodeRunningInfo(comingUniqueId);
         ResultData resultData = nodeRunningInfo.getResultData();
         Object data = resultData.getData();
         NodeConfig nodeConfig = abstractYmlNode.getNodeConfig();
@@ -165,7 +160,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         if (StringUtils.isNotBlank(preHandler)) {
             YmlPreHandler ymlPreHandler =
                     HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
-            return (P) ymlPreHandler.paramHandle(graphRunningInfo);
+            return (P) ymlPreHandler.paramHandle(getGraphRunningInfo());
         }
         return (P) data;
     }
@@ -183,7 +178,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
             AbstractYmlNode nextAbstractYmlNode =
                     NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodes.get(finalI));
             completableFutures[finalI] = CompletableFuture.runAsync(
-                    () -> new NodeYmlProxy<>(nextAbstractYmlNode, graphTraceId, graphRunningInfo).run(this,
+                    () -> new NodeYmlProxy<>(nextAbstractYmlNode, getGraphTraceId(), getGraphRunningInfo()).run(this,
                             executorService), executorService);
         }
         try {
