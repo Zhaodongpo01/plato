@@ -18,9 +18,4 @@ public class SubFlowYmlNode<P, R> extends AbstractYmlNode<P, R> {
     public R work(P p) throws InterruptedException {
         return null;
     }
-
-    @Override
-    public void hook(P p, ResultData<R> resultData) {
-
-    }
 }

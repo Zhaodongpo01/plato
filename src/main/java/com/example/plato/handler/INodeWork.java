@@ -7,12 +7,7 @@ import com.example.plato.runningData.ResultData;
  * @version 1.0
  * @date 2022/1/23 10:48 上午
  */
-public interface INodeWork<P, R> {
-
-    /**
-     * 回调方法
-     */
-    R work(P p) throws InterruptedException;
+public interface INodeWork<P, R> extends IWork<P, R> {
 
     /**
      * 实现hook方法

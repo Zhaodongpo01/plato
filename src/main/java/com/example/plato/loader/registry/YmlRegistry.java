@@ -43,7 +43,7 @@ public class YmlRegistry implements GraphRegistry {
 
     private static final String START_NODE = "startNode";
 
-    private static final String SCAN_PACKAGE = "scanPackage";
+    private static final String CHECK_NEXT_HAS_RESULT = "checkNextResult";
 
     private static Map<String, GraphConfig> resultMap = new HashMap<>();
 

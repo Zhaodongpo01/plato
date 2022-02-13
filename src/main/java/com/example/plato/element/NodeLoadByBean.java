@@ -31,12 +31,13 @@ public class NodeLoadByBean<P, R> {
     private PreHandler<P> preHandler;
     private AfterHandler afterHandler;
     private INodeWork<P, R> iNodeWork;
-    private boolean checkNextHasResult = false;
+    private boolean checkNextResult = false;
     private final List<NodeLoadByBean<?, ?>> nextNodes = new ArrayList<>();
     private final List<String> preNodes = new ArrayList<>();
 
     @Data
     public static class NodeBeanBuilder<P, R> extends NodeLoadByBean {
+
         private List<NodeBeanBuilder<?, ?>> nextBuilderNodes = new ArrayList<>();
 
         NodeLoadByBean<P, R> build() {
@@ -121,8 +122,8 @@ public class NodeLoadByBean<P, R> {
             return this;
         }
 
-        public NodeBeanBuilder<P, R> setCheckNextHasResult(boolean checkNextHasResult) {
-            super.checkNextHasResult = checkNextHasResult;
+        public NodeBeanBuilder<P, R> setCheckNextHasResult(boolean checkNextResult) {
+            super.checkNextResult = checkNextResult;
             return this;
         }
 

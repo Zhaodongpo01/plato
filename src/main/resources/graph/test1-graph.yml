@@ -20,5 +20,15 @@ nodes:
       invokeElement: firstTestYmlService:testMethod2
       desc: 测试方法testMethod2
       pre: uniqueIdA
+      next: uniqueIdD
       preHandler: firstServicePerHandler:perhandler1
+      #afterHandler: firstServiceAfterHandler:afterHandler2
+  - nodeConfig:
+      uniqueId: uniqueIdD
+      name: nodeD
+      type: BEAN
+      invokeElement: nodeD
+      desc: 测试Bean类型节点
+      pre: uniqueIdB
+      #preHandler: firstServicePerHandler:perhandler3
       #afterHandler: firstServiceAfterHandler:afterHandler2

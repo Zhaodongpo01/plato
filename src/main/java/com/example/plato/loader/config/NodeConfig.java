@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -41,6 +42,8 @@ public class NodeConfig extends PlatoConfig {
 
     private List<SubFlow> subFlows;
 
+    private boolean checkNextResult = false;
+
     private String next;
 
     private String pre;
@@ -63,7 +66,7 @@ public class NodeConfig extends PlatoConfig {
         if (StringUtils.isBlank(graphId)) {
             throw new PlatoException("NodeConfig graphId is empty");
         }
-        if (StringUtils.isBlank(invokeElement) || !invokeElement.contains(":")) {
+        if (StringUtils.isBlank(invokeElement)) {
             log.error("NodeConfig invokeElement is empty:{},uniqueId:{}", invokeElement, uniqueId);
             throw new PlatoException("NodeConfig invokeElement is empty");
         }

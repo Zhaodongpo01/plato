@@ -109,7 +109,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
 
     private String checkNextHasResult() {
         List<NodeLoadByBean<?, ?>> nextNodes = nodeLoadByBean.getNextNodes();
-        if (CollectionUtils.isEmpty(nextNodes) && !nodeLoadByBean.isCheckNextHasResult()) {
+        if (CollectionUtils.isEmpty(nextNodes) && !nodeLoadByBean.isCheckNextResult()) {
             return StringUtils.EMPTY;
         }
         Optional<NodeLoadByBean<?, ?>> first = nextNodes.stream().filter(temp -> {

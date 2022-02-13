@@ -5,6 +5,7 @@ import com.example.plato.runningData.ResultData;
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
 import com.example.plato.util.PlatoJsonUtil;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
