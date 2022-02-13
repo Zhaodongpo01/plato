@@ -16,6 +16,7 @@ nodes:
   - nodeConfig:
       uniqueId: uniqueIdB
       name: nodeB
+      type: METHOD
       invokeElement: firstTestYmlService:testMethod2
       desc: 测试方法testMethod2
       pre: uniqueIdA
