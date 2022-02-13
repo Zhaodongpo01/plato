@@ -30,9 +30,4 @@ public class MethodYmlNode<P, R> extends AbstractYmlNode<P, R> {
         Object result = ClassUtil.methodInvoke(serviceName, split[1], p);
         return Optional.ofNullable(result).isPresent() ? (R) result : null;
     }
-
-    @Override
-    public void hook(P p, ResultData<R> resultData) {
-
-    }
 }

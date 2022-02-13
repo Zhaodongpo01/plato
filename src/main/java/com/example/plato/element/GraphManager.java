@@ -2,7 +2,6 @@ package com.example.plato.element;
 
 import com.example.plato.element.NodeLoadByBean.NodeBeanBuilder;
 import com.example.plato.exception.PlatoException;
-import com.example.plato.holder.GraphHolder;
 import com.example.plato.holder.NodeHolder;
 import com.example.plato.loader.ymlNode.AbstractYmlNode;
 import com.example.plato.platoEnum.MessageEnum;
@@ -64,14 +63,14 @@ public class GraphManager<P> {
         PlatoAssert.emptyException(() -> "run graphId blank", firstNodeLoadByBean.getGraphId());
         PlatoAssert.notEmptyException(() -> "firstNodeLoadByBean define error", firstNodeLoadByBean.getPreNodes());
         String graphTraceId = TraceUtil.getRandomTraceId();
-        GraphHolder.putGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId, new GraphRunningInfo());
+        GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeBeanProxy(firstNodeLoadByBean, graphTraceId, p).run(null, threadPoolExecutor));
+                () -> new NodeBeanProxy(firstNodeLoadByBean, graphTraceId, p, graphRunningInfo).run(null,
+                        threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
-            return GraphHolder.removeGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId);
+            return graphRunningInfo;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            GraphHolder.removeGraphRunningInfo(firstNodeLoadByBean.getGraphId(), graphTraceId);
             log.error("GraphManager run error mes {} ", e.getMessage(), e);
             throw new PlatoException("GraphManager run error");
         }
@@ -85,15 +84,14 @@ public class GraphManager<P> {
         PlatoAssert.emptyException(MessageEnum.START_MISS_ERROR::getMes, startNodeMap);
         AbstractYmlNode<?, ?> abstractYmlNode = startNodeMap.get(graphId);
         String graphTraceId = TraceUtil.getRandomTraceId();
-        GraphHolder.putGraphRunningInfo(graphId, graphTraceId, new GraphRunningInfo());
+        GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeYmlProxy(abstractYmlNode, graphTraceId, p)
+                () -> new NodeYmlProxy(abstractYmlNode, graphTraceId, p, graphRunningInfo)
                         .run(null, threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
-            return GraphHolder.removeGraphRunningInfo(graphId, graphTraceId);
+            return graphRunningInfo;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            GraphHolder.removeGraphRunningInfo(graphId, graphTraceId);
             log.error("GraphManager runByYml error mes {} ", e.getMessage(), e);
             throw new PlatoException("GraphManager runByYml error");
         }

@@ -8,6 +8,9 @@ import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
 import com.google.common.collect.Sets;
 
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -24,14 +27,21 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2022/1/23 11:04 上午
  */
 @Slf4j
-public abstract class AbstractNodeProxy implements INodeProxy {
+@Data
+public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
+
+    private P p;
+    private String traceId;
+    private String graphTraceId;
+    private GraphRunningInfo<R> graphRunningInfo;
 
     public static final Long DEFAULT_TIME_OUT = 60_000L;
 
-    private final AtomicReference<NodeResultStatus> statusAtomicReference = new AtomicReference<>(NodeResultStatus.INIT);
+    private final AtomicReference<NodeResultStatus> statusAtomicReference =
+            new AtomicReference<>(NodeResultStatus.INIT);
 
     private void setStatusAtomicReference() {
-        throw new PlatoException("禁止调用");
+        throw new PlatoException("禁止通过set方法设置状态");
     }
 
     public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
@@ -60,7 +70,7 @@ public abstract class AbstractNodeProxy implements INodeProxy {
      * <p>
      * 但是如果D节点前面的B和C节点都不是强依赖节点，那么D节点将执行两次。
      */
-    protected String checkPreNodes(GraphRunningInfo graphRunningInfo, List<String> preNodes, String comingNodeUniqueId) {
+    protected String checkPreNodes(List<String> preNodes, String comingNodeUniqueId) {
         if (CollectionUtils.isNotEmpty(preNodes) && !Sets.newHashSet(preNodes).contains(comingNodeUniqueId)) {
             return MessageEnum.COMING_NODE_IS_NOT_PRE_NODE.getMes();
         }
@@ -79,13 +89,14 @@ public abstract class AbstractNodeProxy implements INodeProxy {
         return firstUnique.isPresent() ? MessageEnum.PRE_NOT_HAS_RESULT.getMes() : StringUtils.EMPTY;
     }
 
-    protected <R> void setLimitResult(String limitMes, String graphTraceId, String traceId, String graphId,
-            String uniqueId) {
+    protected <R> void setLimitResult(String limitMes, String graphId, String uniqueId) {
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.LIMIT_RUN);
         ResultData<R> resultData = new ResultData<>();
         resultData.setNodeResultStatus(NodeResultStatus.LIMIT_RUN);
         resultData.setMes(limitMes);
-        new NodeRunningInfo<>(graphTraceId, traceId, graphId, uniqueId, resultData).build();
+        NodeRunningInfo<R> nodeRunningInfo =
+                new NodeRunningInfo<>(graphTraceId, traceId, graphId, uniqueId, resultData);
+        graphRunningInfo.putNodeRunningInfo(uniqueId, nodeRunningInfo);
     }
 
 }

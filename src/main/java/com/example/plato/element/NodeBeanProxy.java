@@ -4,7 +4,6 @@ import com.example.plato.exception.PlatoException;
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
-import com.example.plato.holder.GraphHolder;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.platoEnum.MessageEnum;
 import com.example.plato.platoEnum.NodeResultStatus;
@@ -14,13 +13,13 @@ import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.SystemClock;
 import com.example.plato.util.TraceUtil;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -31,53 +30,42 @@ import java.util.concurrent.*;
  * @date 2022/1/30 16:01
  */
 @Slf4j
-@Data
 @EqualsAndHashCode(callSuper = true)
 public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
 
-    private String traceId;
-    private String graphTraceId;
+    @Getter
+    @Setter
     private NodeLoadByBean<P, R> nodeLoadByBean;
-    private P p;
 
-    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId, P p) {
-        this.nodeLoadByBean = nodeLoadByBean;
-        this.graphTraceId = graphTraceId;
-        this.p = p;
+    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId, P p,
+            GraphRunningInfo<R> graphRunningInfo) {
+        this(nodeLoadByBean, graphTraceId, graphRunningInfo);
+        super.setP(p);
     }
 
-    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId) {
+    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId,
+            GraphRunningInfo<R> graphRunningInfo) {
         this.nodeLoadByBean = nodeLoadByBean;
-        this.graphTraceId = graphTraceId;
+        super.setGraphTraceId(graphTraceId);
+        super.setGraphRunningInfo(graphRunningInfo);
     }
 
     @Override
     public void run(AbstractNodeProxy comingNode, ExecutorService executorService) {
-        traceId = TraceUtil.getRandomTraceId();
+        super.setTraceId(TraceUtil.getRandomTraceId());
         if (run(comingNode)) {
             runNext(executorService);
         }
     }
 
-    private Pair<NodeLoadByBean<?, ?>, GraphRunningInfo> getPerData(AbstractNodeProxy comingNode) {
-        NodeLoadByBean<?, ?> comingNodeLoadByBean = ((NodeBeanProxy<?, ?>) comingNode).getNodeLoadByBean();
-        GraphRunningInfo graphRunningInfo =
-                GraphHolder.getGraphRunningInfo(comingNodeLoadByBean.getGraphId(), graphTraceId);
-        PlatoAssert.nullException(() -> "getPerData comingNodeLoadByBean & graphRunningInfo error",
-                comingNodeLoadByBean, graphRunningInfo);
-        return Pair.of(comingNodeLoadByBean, graphRunningInfo);
-    }
-
     @Override
     public boolean run(AbstractNodeProxy comingNode) {
         if (Objects.nonNull(comingNode)) {
-            Pair<NodeLoadByBean<?, ?>, GraphRunningInfo> perData = getPerData(comingNode);
-            GraphRunningInfo graphRunningInfo = perData.getRight();
-            NodeLoadByBean<?, ?> comingNodeLoadByBean = perData.getLeft();
-            if (!checkShouldRun(graphRunningInfo, comingNodeLoadByBean)) {
+            NodeLoadByBean<?, ?> comingNodeLoadByBean = ((NodeBeanProxy<?, ?>) comingNode).getNodeLoadByBean();
+            if (!checkShouldRun(comingNodeLoadByBean)) {
                 return false;
             }
-            p = paramHandle(graphRunningInfo, comingNodeLoadByBean);
+            super.setP(paramHandle(comingNodeLoadByBean));
         }
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         INodeWork<P, R> iNodeWork = nodeLoadByBean.getINodeWork();
@@ -86,7 +74,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         long startTime = SystemClock.now();
         long endTime = SystemClock.now();
         try {
-            result = iNodeWork.work(p);
+            result = iNodeWork.work((P) getP());
             endTime = SystemClock.now();
             changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
             resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
@@ -98,22 +86,22 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
             return false;
         } finally {
             log.info("{}\t执行耗时{}", nodeLoadByBean.getUniqueId(), endTime - startTime);
-            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(graphTraceId, traceId,
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(super.getGraphTraceId(), super.getTraceId(),
                     nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
-            nodeRunningInfo.build();
-            iNodeWork.hook(p, resultData);
+            super.getGraphRunningInfo().putNodeRunningInfo(nodeLoadByBean.getUniqueId(), nodeRunningInfo);
+            iNodeWork.hook((P) super.getP(), resultData);
         }
         return true;
     }
 
-    private boolean checkShouldRun(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
+    private boolean checkShouldRun(NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         String limitMes;
-        if (StringUtils.isNotBlank(limitMes = checkSuicide(graphRunningInfo))
-                || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean, graphRunningInfo))
-                || StringUtils.isNotBlank(limitMes = checkPreNodes(graphRunningInfo,
-                nodeLoadByBean.getPreNodes(), comingNodeLoadByBean.getUniqueId()))
+        if (StringUtils.isNotBlank(limitMes = checkSuicide())
+                || StringUtils.isNotBlank(limitMes = checkComingNodeAfter(comingNodeLoadByBean))
+                || StringUtils.isNotBlank(
+                limitMes = checkPreNodes(nodeLoadByBean.getPreNodes(), comingNodeLoadByBean.getUniqueId()))
                 || StringUtils.isNotBlank(limitMes = checkNextHasResult())) {
-            setLimitResult(limitMes, graphTraceId, traceId, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId());
+            setLimitResult(limitMes, nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId());
             return false;
         }
         return true;
@@ -121,31 +109,30 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
 
     private String checkNextHasResult() {
         List<NodeLoadByBean<?, ?>> nextNodes = nodeLoadByBean.getNextNodes();
-        if (CollectionUtils.isEmpty(nextNodes) && !nodeLoadByBean.isCheckNextHasResult()) {
+        if (CollectionUtils.isEmpty(nextNodes) && !nodeLoadByBean.isCheckNextResult()) {
             return StringUtils.EMPTY;
         }
         Optional<NodeLoadByBean<?, ?>> first = nextNodes.stream().filter(temp -> {
             boolean contains = temp.getPreNodes().contains(nodeLoadByBean.getUniqueId());
-            NodeRunningInfo nodeRunningInfo =
-                    GraphHolder.getNodeRunningInfo(nodeLoadByBean.getGraphId(), graphTraceId, temp.getUniqueId());
+            NodeRunningInfo<R> nodeRunningInfo = super.getGraphRunningInfo().getNodeRunningInfo(temp.getUniqueId());
             return contains && Objects.nonNull(nodeRunningInfo);
         }).findFirst();
         return first.isPresent() ? MessageEnum.NEXT_NODE_HAS_RESULT.getMes() : StringUtils.EMPTY;
     }
 
-    private String checkSuicide(GraphRunningInfo graphRunningInfo) {
+    private String checkSuicide() {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
-        return Objects.isNull(preHandler) || !preHandler.suicide(graphRunningInfo)
+        return Objects.isNull(preHandler) || !preHandler.suicide(super.getGraphRunningInfo())
                ? StringUtils.EMPTY : MessageEnum.SUICIDE.getMes();
     }
 
     /**
      * if else
      */
-    private String checkComingNodeAfter(NodeLoadByBean<?, ?> comingNodeLoadByBean, GraphRunningInfo graphRunningInfo) {
+    private String checkComingNodeAfter(NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         AfterHandler afterHandler = comingNodeLoadByBean.getAfterHandler();
         if (Optional.ofNullable(afterHandler).isPresent()) {
-            Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
+            Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(super.getGraphRunningInfo());
             return (CollectionUtils.isEmpty(notShouldRunNodes)
                     || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId()))
                    ? StringUtils.EMPTY : MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes();
@@ -163,8 +150,8 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
         for (int i = 0; i < nextNodes.size(); i++) {
             final int finalI = i;
             completableFutures[finalI] = CompletableFuture.runAsync(
-                    () -> new NodeBeanProxy(nextNodes.get(finalI), graphTraceId).run(this, executorService),
-                    executorService);
+                    () -> new NodeBeanProxy(nextNodes.get(finalI), getGraphTraceId(), super.getGraphRunningInfo()).run(
+                            this, executorService), executorService);
         }
         try {
             CompletableFuture.allOf(completableFutures).get(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
@@ -175,13 +162,13 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy {
     }
 
 
-    private P paramHandle(GraphRunningInfo graphRunningInfo, NodeLoadByBean<?, ?> comingNodeLoadByBean) {
+    private P paramHandle(NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
         NodeRunningInfo<?> comingNodeRunningInfo =
-                graphRunningInfo.getNodeRunningInfo(comingNodeLoadByBean.getUniqueId());
+                super.getGraphRunningInfo().getNodeRunningInfo(comingNodeLoadByBean.getUniqueId());
         PlatoAssert.nullException(() -> "paramHandle comingNodeRunningInfo error", comingNodeRunningInfo);
         if (Optional.ofNullable(preHandler).isPresent()) {
-            return preHandler.paramHandle(graphRunningInfo);
+            return preHandler.paramHandle(super.getGraphRunningInfo());
         }
         if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
             return (P) comingNodeRunningInfo.getResultData().getData();
