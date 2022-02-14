@@ -27,14 +27,14 @@ nodes:
       invokeElement: nodeD
       desc: 测试Bean类型节点
       pre: uniqueIdB
-      next: uniqueIdE
+        #next: uniqueIdE
       preHandler: firstServicePerHandler:perhandler2
-  - nodeConfig:
-      uniqueId: uniqueIdE
-      name: nodeE
-      type: SCRIPT
-      invokeElement: "/Users/zhaodongpo/plato/plato/src/main/resources/python"
-      desc: 测试条件类型节点
-      pre: uniqueIdD
+  #- nodeConfig:
+        #    uniqueId: uniqueIdE
+        #name: nodeE
+        #type: SCRIPT
+        #invokeElement: "/Users/zhaodongpo/plato/plato/src/main/resources/python"
+        #desc: 测试条件类型节点
+        #pre: uniqueIdD
       #preHandler: firstServicePerHandler:perhandler3
       #afterHandler: firstServiceAfterHandler:afterHandler2

@@ -6,6 +6,7 @@ import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
+import com.example.plato.util.SystemClock;
 import com.google.common.collect.Sets;
 
 import lombok.Data;
@@ -15,9 +16,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * @author zhaodongpo
@@ -42,7 +45,7 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
         throw new PlatoException("禁止通过set方法设置状态");
     }
 
-    public boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
+    protected boolean compareAndSetState(NodeResultStatus expect, NodeResultStatus update) {
         return this.statusAtomicReference.compareAndSet(expect, update);
     }
 
@@ -87,7 +90,7 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
         return firstUnique.isPresent() ? MessageEnum.PRE_NOT_HAS_RESULT.getMes() : StringUtils.EMPTY;
     }
 
-    protected <R> void setLimitResult(String limitMes, String graphId, String uniqueId) {
+    protected void setLimitResult(String limitMes, String graphId, String uniqueId) {
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.LIMIT_RUN);
         ResultData<R> resultData = new ResultData<>();
         resultData.setNodeResultStatus(NodeResultStatus.LIMIT_RUN);
@@ -95,6 +98,31 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
         NodeRunningInfo<R> nodeRunningInfo =
                 new NodeRunningInfo<>(graphTraceId, traceId, graphId, uniqueId, resultData);
         graphRunningInfo.putNodeRunningInfo(uniqueId, nodeRunningInfo);
+    }
+
+    protected Pair<Boolean, ResultData<R>> executor(Function<P, R> workFunction, String uniqueId, String graphId) {
+        R result = null;
+        ResultData<R> resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
+        long startTime = SystemClock.now();
+        long endTime = SystemClock.now();
+        try {
+            result = workFunction.apply(p);
+            endTime = SystemClock.now();
+            changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
+            resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
+        } catch (Exception e) {
+            endTime = SystemClock.now();
+            log.error(String.format("%s\t{}", MessageEnum.CLIENT_ERROR), uniqueId, e);
+            changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.ERROR);
+            resultData = ResultData.build(result, NodeResultStatus.ERROR, "fail", endTime - startTime);
+            return Pair.of(false, resultData);
+        } finally {
+            log.info("{}\t执行耗时{}", uniqueId, endTime - startTime);
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo(getGraphTraceId(), getTraceId(),
+                    graphId, uniqueId, resultData);
+            getGraphRunningInfo().putNodeRunningInfo(uniqueId, nodeRunningInfo);
+        }
+        return Pair.of(true, resultData);
     }
 
 }

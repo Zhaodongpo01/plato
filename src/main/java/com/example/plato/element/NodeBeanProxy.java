@@ -10,7 +10,6 @@ import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.util.PlatoAssert;
-import com.example.plato.util.SystemClock;
 import com.example.plato.util.TraceUtil;
 
 import lombok.EqualsAndHashCode;
@@ -20,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -69,29 +69,15 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
         }
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         INodeWork<P, R> iNodeWork = nodeLoadByBean.getINodeWork();
-        R result = null;
-        ResultData resultData = ResultData.getFail(MessageEnum.CLIENT_ERROR.getMes(), NodeResultStatus.ERROR);
-        long startTime = SystemClock.now();
-        long endTime = SystemClock.now();
-        try {
-            result = iNodeWork.work(getP());
-            endTime = SystemClock.now();
-            changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.EXECUTED);
-            resultData = ResultData.build(result, NodeResultStatus.EXECUTED, "success", endTime - startTime);
-        } catch (Exception e) {
-            endTime = SystemClock.now();
-            log.error(String.format("%s\t{}", MessageEnum.CLIENT_ERROR), nodeLoadByBean.getUniqueId(), e);
-            changeStatus(NodeResultStatus.EXECUTING, NodeResultStatus.ERROR);
-            resultData = ResultData.build(result, NodeResultStatus.ERROR, "fail", endTime - startTime);
-            return false;
-        } finally {
-            log.info("{}\t执行耗时{}", nodeLoadByBean.getUniqueId(), endTime - startTime);
-            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo<>(getGraphTraceId(), getTraceId(),
-                    nodeLoadByBean.getGraphId(), nodeLoadByBean.getUniqueId(), resultData);
-            getGraphRunningInfo().putNodeRunningInfo(nodeLoadByBean.getUniqueId(), nodeRunningInfo);
-            iNodeWork.hook(getP(), resultData);
-        }
-        return true;
+        Pair<Boolean, ResultData<R>> executor = executor(param -> {
+            try {
+                return iNodeWork.work(getP());
+            } catch (InterruptedException e) {
+                throw new PlatoException("NodeBeanProxy client run error");
+            }
+        }, nodeLoadByBean.getUniqueId(), nodeLoadByBean.getGraphId());
+        iNodeWork.hook(getP(), executor.getRight());
+        return executor.getLeft();
     }
 
     private boolean checkShouldRun(NodeLoadByBean<?, ?> comingNodeLoadByBean) {
