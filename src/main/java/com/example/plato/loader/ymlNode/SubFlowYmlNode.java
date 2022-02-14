@@ -1,7 +1,6 @@
 package com.example.plato.loader.ymlNode;
 
 import com.example.plato.loader.config.NodeConfig;
-import com.example.plato.runningData.ResultData;
 
 /**
  * @author zhaodongpo
