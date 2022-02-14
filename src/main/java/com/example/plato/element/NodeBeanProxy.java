@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zhaodongpo
@@ -132,22 +133,20 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
         if (CollectionUtils.isEmpty(nextNodes)) {
             return;
         }
-        CompletableFuture[] completableFutures = new CompletableFuture[nextNodes.size()];
-        for (int i = 0; i < nextNodes.size(); i++) {
-            final int finalI = i;
-            completableFutures[finalI] = CompletableFuture.runAsync(
-                    () -> new NodeBeanProxy(nextNodes.get(finalI), getGraphTraceId(), getGraphRunningInfo()).run(
-                            this, executorService), executorService);
-        }
+        List<CompletableFuture<Void>> completableFutureList =
+                nextNodes.stream().map(nodeLoadByBeanTemp -> CompletableFuture.runAsync(
+                        () -> new NodeBeanProxy(nodeLoadByBeanTemp, getGraphTraceId(), getGraphRunningInfo()).run(
+                                this, executorService), executorService)).collect(Collectors.toList());
         try {
-            CompletableFuture.allOf(completableFutures).get(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
+            CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {}))
+                    .get(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             log.error("runNext异常le{}", e.getMessage(), e);
             throw new PlatoException("runNext异常le");
         }
     }
 
-
+    @SuppressWarnings("unchecked")
     private P paramHandle(NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         PreHandler<P> preHandler = nodeLoadByBean.getPreHandler();
         NodeRunningInfo<?> comingNodeRunningInfo =
@@ -156,10 +155,14 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
         if (Optional.ofNullable(preHandler).isPresent()) {
             return preHandler.paramHandle(getGraphRunningInfo());
         }
-        if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
-            return (P) comingNodeRunningInfo.getResultData().getData();
+        try {
+            if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
+                return (P) comingNodeRunningInfo.getResultData().getData();
+            }
+        } catch (Exception e) {
+            throw new PlatoException("paramHandle error");
         }
-        throw new PlatoException("paramHandle error");
+        return null;
     }
 
 }

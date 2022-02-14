@@ -1,9 +1,10 @@
 package com.example.plato.loader.ymlNode;
 
 import com.example.plato.loader.config.NodeConfig;
-import com.example.plato.runningData.ResultData;
 import com.example.plato.util.ClassUtil;
+import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.SpringUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class MethodYmlNode<P, R> extends AbstractYmlNode<P, R> {
         String invokeElement = getNodeConfig().getInvokeElement();
         String[] split = invokeElement.split(":");
         Object bean = SpringUtils.getBean(split[0]);
+        PlatoAssert.nullException(() -> "MethodYmlNode work error", bean);
         String serviceName = bean.getClass().getName();
         Object result = ClassUtil.methodInvoke(serviceName, split[1], p);
         return Optional.ofNullable(result).isPresent() ? (R) result : null;

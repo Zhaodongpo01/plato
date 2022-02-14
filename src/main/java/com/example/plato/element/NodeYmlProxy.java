@@ -1,10 +1,12 @@
 package com.example.plato.element;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import com.example.plato.exception.PlatoException;
 import com.example.plato.holder.HandlerHolder;
@@ -18,8 +20,6 @@ import com.example.plato.platoEnum.NodeResultStatus;
 import com.example.plato.runningData.*;
 import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.TraceUtil;
-
-import com.google.common.base.Splitter;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,7 +37,7 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
+public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
 
     @Getter
     @Setter
@@ -77,7 +77,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         changeStatus(NodeResultStatus.INIT, NodeResultStatus.EXECUTING);
         Pair<Boolean, ResultData<R>> executor = executor(param -> {
             try {
-                return abstractYmlNode.work((P) getP());
+                return abstractYmlNode.work(getP());
             } catch (InterruptedException e) {
                 throw new PlatoException("NodeYmlProxy client run error");
             }
@@ -90,7 +90,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         String pre = nodeConfig.getPre();
         String limitMes;
         if (StringUtils.isNotBlank(pre)) {
-            List<String> preNodes = Splitter.on(",").trimResults().splitToList(pre);
+            List<String> preNodes = Arrays.asList(pre.split(","));
             limitMes = checkPreNodes(preNodes, comingNodeConfig.getUniqueId());
             if (StringUtils.isNotBlank(limitMes)) {
                 setLimitResult(limitMes, nodeConfig.getGraphId(), nodeConfig.getUniqueId());
@@ -112,6 +112,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         }
         YmlPreHandler ymlPreHandler = HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
         PlatoAssert.nullException(() -> "checkSuicide ymlPreHandler is null", ymlPreHandler);
+        assert ymlPreHandler != null;
         return ymlPreHandler.suicide(getGraphRunningInfo()) ? MessageEnum.SUICIDE.getMes() : StringUtils.EMPTY;
     }
 
@@ -122,6 +123,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         YmlAfterHandler ymlAfterHandler =
                 HandlerHolder.getYmlAfterHandler(comingNodeConfig.getGraphId(), comingNodeConfig.getUniqueId());
         PlatoAssert.nullException(() -> "checkComingNodeAfter 有 afterHandler 但是没拿到", ymlAfterHandler);
+        assert ymlAfterHandler != null;
         Set<String> notShouldRunNodes = ymlAfterHandler.notShouldRunNodes(graphRunningInfo);
         if (CollectionUtils.isNotEmpty(notShouldRunNodes)) {
             return notShouldRunNodes.contains(abstractYmlNode.getNodeConfig().getUniqueId())
@@ -130,19 +132,22 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         return StringUtils.EMPTY;
     }
 
+    @SuppressWarnings("unchecked")
     private P paramHandle(NodeYmlProxy<?, ?> comingNode) {
         AbstractYmlNode<?, ?> comingAbstractYmlNode = comingNode.getAbstractYmlNode();
         PlatoAssert.nullException(() -> "paramHandle comingAbstractYmlNode is null", comingAbstractYmlNode);
         NodeConfig comingNodeConfig = comingAbstractYmlNode.getNodeConfig();
         String comingUniqueId = comingNodeConfig.getUniqueId();
-        NodeRunningInfo nodeRunningInfo = getGraphRunningInfo().getNodeRunningInfo(comingUniqueId);
-        ResultData resultData = nodeRunningInfo.getResultData();
+        NodeRunningInfo<R> nodeRunningInfo = getGraphRunningInfo().getNodeRunningInfo(comingUniqueId);
+        ResultData<R> resultData = nodeRunningInfo.getResultData();
         Object data = resultData.getData();
         NodeConfig nodeConfig = abstractYmlNode.getNodeConfig();
         String preHandler = nodeConfig.getPreHandler();
         if (StringUtils.isNotBlank(preHandler)) {
             YmlPreHandler ymlPreHandler =
                     HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
+            PlatoAssert.nullException(() -> "paramHandle ymlPreHandler error", ymlPreHandler);
+            assert ymlPreHandler != null;
             return (P) ymlPreHandler.paramHandle(getGraphRunningInfo());
         }
         return (P) data;
@@ -154,18 +159,15 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy {
         if (Objects.isNull(nodeConfig) || StringUtils.isBlank(nodeConfig.getNext())) {
             return;
         }
-        List<String> nextNodes = Splitter.on(",").trimResults().splitToList(nodeConfig.getNext());
-        CompletableFuture[] completableFutures = new CompletableFuture[nextNodes.size()];
-        for (int i = 0; i < nextNodes.size(); i++) {
-            final int finalI = i;
-            AbstractYmlNode nextAbstractYmlNode =
-                    NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodes.get(finalI));
-            completableFutures[finalI] = CompletableFuture.runAsync(
-                    () -> new NodeYmlProxy<>(nextAbstractYmlNode, getGraphTraceId(), getGraphRunningInfo()).run(this,
-                            executorService), executorService);
-        }
+        List<String> nextNodes = Arrays.asList(nodeConfig.getNext().split(","));
+        List<CompletableFuture<Void>> completableFutureList =
+                nextNodes.stream().map(nextNodeTemp -> CompletableFuture.runAsync(
+                        () -> new NodeYmlProxy<>(NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodeTemp),
+                                getGraphTraceId(), getGraphRunningInfo()).run(this,
+                                executorService), executorService)).collect(Collectors.toList());
         try {
-            CompletableFuture.allOf(completableFutures).get(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
+            CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {}))
+                    .get(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             log.error("runNext异常le{}", e.getMessage(), e);
             throw new PlatoException("runNext异常le");
