@@ -1,7 +1,5 @@
 package com.example.plato.test.node.yml;
 
-import java.util.List;
-
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
 import com.example.plato.util.PlatoJsonUtil;
@@ -19,8 +17,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FirstTestYmlService {
 
-    public String uniqAMethod(List<Integer> integerList) {
-        log.info("ymlTest1#integerList:{}", integerList);
+    public String uniqAMethod(Integer[] args) {
+        log.info("ymlTest1#integerList:{}", args);
         return "执行第一个MethodType的Node";
     }
 

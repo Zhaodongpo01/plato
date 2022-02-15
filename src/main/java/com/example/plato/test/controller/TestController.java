@@ -44,11 +44,9 @@ public class TestController {
 
     @RequestMapping("yml")
     public String yml() {
-        FirstModel firstModel = new FirstModel();
-        firstModel.setIdf(1000L);
-        firstModel.setName("zhaodongpo");
+        Integer[] integerList = new Integer[] {1, 2, 3, 4};
         GraphRunningInfo graphRunningInfo =
-                GraphManager.getManager().runByYml(firstModel, "9527", 10000L, TimeUnit.SECONDS);
+                GraphManager.getManager().runByYml(integerList, "9527", 10000L, TimeUnit.SECONDS);
         log.info("yml#GraphRunningInfo:{}", PlatoJsonUtil.toJson(graphRunningInfo));
         return "success";
     }

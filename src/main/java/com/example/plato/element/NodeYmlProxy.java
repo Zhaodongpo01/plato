@@ -141,11 +141,15 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
         Object data = resultData.getData();
         NodeConfig nodeConfig = abstractYmlNode.getNodeConfig();
         String preHandler = nodeConfig.getPreHandler();
+
         if (StringUtils.isNotBlank(preHandler)) {
             YmlPreHandler ymlPreHandler =
                     HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
             PlatoAssert.nullException(() -> "paramHandle ymlPreHandler error", ymlPreHandler);
-            return (P) ymlPreHandler.paramHandle(getGraphRunningInfo());
+            Object objParam = ymlPreHandler.paramHandle(getGraphRunningInfo());
+            if (Objects.nonNull(objParam)) {
+                return (P) objParam;
+            }
         }
         return (P) data;
     }

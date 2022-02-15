@@ -1,7 +1,7 @@
-graphId: 777
+graphId: 9527
 graphName: 柏拉图Test2
 graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
-startNode: unAa
+startNode: uniqA
 nodes:
   - nodeConfig:
       uniqueId: uniqA
