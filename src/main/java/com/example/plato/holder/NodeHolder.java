@@ -10,7 +10,6 @@ import com.example.plato.loader.ymlNode.AbstractYmlNode;
 
 import lombok.extern.slf4j.Slf4j;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,26 +31,29 @@ public class NodeHolder {
     /**
      * <graphId:<uniqueId,NodeLoadByBean>>
      */
-    private static Map<String, Map<String, NodeLoadByBean>> nodeMap = new ConcurrentHashMap<>();
+    private static final Map<String, Map<String, NodeLoadByBean>> NODE_MAP = new ConcurrentHashMap<>();
+
+    /**
+     * <graphId:<uniqueId,AbstractYmlNode>>
+     */
+    private static final Map<String, Map<String, AbstractYmlNode>> NODE_YML_MAP = new HashMap<>();
 
     private static final Map<String, AbstractYmlNode<?, ?>> START_NODE_MAP = new HashMap<>();
 
-    private static final Map<String, Map<String, AbstractYmlNode>> NODE_YML_MAP = new HashMap<>();
-
     public static NodeLoadByBean getNode(String graphId, String uniqueId) {
         PlatoAssert.emptyException(() -> "getNode param error", graphId, uniqueId);
-        return nodeMap.containsKey(graphId) ? nodeMap.get(graphId).get(uniqueId) : null;
+        return NODE_MAP.containsKey(graphId) ? NODE_MAP.get(graphId).get(uniqueId) : null;
     }
 
     public static NodeLoadByBean putNode(String graphId, String uniqueId, NodeLoadByBean nodeLoadByBean) {
         PlatoAssert.emptyException(() -> "putNode param error", graphId, uniqueId);
         PlatoAssert.nullException(() -> "putNode nodeLoadByBean error", nodeLoadByBean);
-        if (nodeMap.containsKey(graphId)) {
-            return nodeMap.get(graphId).put(uniqueId, nodeLoadByBean);
+        if (NODE_MAP.containsKey(graphId)) {
+            return NODE_MAP.get(graphId).put(uniqueId, nodeLoadByBean);
         }
         ConcurrentHashMap<String, NodeLoadByBean> concurrentHashMap = new ConcurrentHashMap<>();
         concurrentHashMap.put(uniqueId, nodeLoadByBean);
-        nodeMap.put(graphId, concurrentHashMap);
+        NODE_MAP.put(graphId, concurrentHashMap);
         return nodeLoadByBean;
     }
 

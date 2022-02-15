@@ -99,7 +99,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
         }
         if (StringUtils.isBlank(limitMes = checkSuicide(nodeConfig))
                 && StringUtils.isBlank(
-                limitMes = checkComingNodeAfter(comingNodeConfig, getGraphRunningInfo()))) {
+                limitMes = checkComingNodeAfter(comingNodeConfig))) {
             return true;
         }
         setLimitResult(limitMes, nodeConfig.getGraphId(), nodeConfig.getUniqueId());
@@ -112,19 +112,17 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
         }
         YmlPreHandler ymlPreHandler = HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
         PlatoAssert.nullException(() -> "checkSuicide ymlPreHandler is null", ymlPreHandler);
-        assert ymlPreHandler != null;
         return ymlPreHandler.suicide(getGraphRunningInfo()) ? MessageEnum.SUICIDE.getMes() : StringUtils.EMPTY;
     }
 
-    public String checkComingNodeAfter(NodeConfig comingNodeConfig, GraphRunningInfo graphRunningInfo) {
+    public String checkComingNodeAfter(NodeConfig comingNodeConfig) {
         if (StringUtils.isBlank(comingNodeConfig.getAfterHandler())) {
             return StringUtils.EMPTY;
         }
         YmlAfterHandler ymlAfterHandler =
                 HandlerHolder.getYmlAfterHandler(comingNodeConfig.getGraphId(), comingNodeConfig.getUniqueId());
         PlatoAssert.nullException(() -> "checkComingNodeAfter 有 afterHandler 但是没拿到", ymlAfterHandler);
-        assert ymlAfterHandler != null;
-        Set<String> notShouldRunNodes = ymlAfterHandler.notShouldRunNodes(graphRunningInfo);
+        Set<String> notShouldRunNodes = ymlAfterHandler.notShouldRunNodes(getGraphRunningInfo());
         if (CollectionUtils.isNotEmpty(notShouldRunNodes)) {
             return notShouldRunNodes.contains(abstractYmlNode.getNodeConfig().getUniqueId())
                    ? MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes() : StringUtils.EMPTY;
@@ -147,7 +145,6 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
             YmlPreHandler ymlPreHandler =
                     HandlerHolder.getYmlPreHandler(nodeConfig.getGraphId(), nodeConfig.getUniqueId());
             PlatoAssert.nullException(() -> "paramHandle ymlPreHandler error", ymlPreHandler);
-            assert ymlPreHandler != null;
             return (P) ymlPreHandler.paramHandle(getGraphRunningInfo());
         }
         return (P) data;

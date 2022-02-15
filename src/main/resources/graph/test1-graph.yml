@@ -1,11 +1,10 @@
 graphId: 9527
 graphName: 柏拉图
 graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
-scanPackage: com.example.plato.test
-startNode: uniqueIdA
+startNode: unA
 nodes:
   - nodeConfig:
-      uniqueId: uniqueIdA
+      uniqueId: unA
       name: nodeA
       invokeElement: firstTestYmlService:testMethod1
       type: METHOD
@@ -27,7 +26,6 @@ nodes:
       invokeElement: nodeD
       desc: 测试Bean类型节点
       pre: uniqueIdB
-        #next: uniqueIdE
       preHandler: firstServicePerHandler:perhandler2
   #- nodeConfig:
         #    uniqueId: uniqueIdE

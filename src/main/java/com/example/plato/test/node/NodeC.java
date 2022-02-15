@@ -1,4 +1,4 @@
-package com.example.plato.test.serial;
+package com.example.plato.test.node;
 
 import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
