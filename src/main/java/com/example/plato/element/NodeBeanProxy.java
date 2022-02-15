@@ -153,7 +153,10 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
                 getGraphRunningInfo().getNodeRunningInfo(comingNodeLoadByBean.getUniqueId());
         PlatoAssert.nullException(() -> "paramHandle comingNodeRunningInfo error", comingNodeRunningInfo);
         if (Optional.ofNullable(preHandler).isPresent()) {
-            return preHandler.paramHandle(getGraphRunningInfo());
+            P p = preHandler.paramHandle(getGraphRunningInfo());
+            if (Objects.nonNull(p)) {
+                return p;
+            }
         }
         try {
             if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {

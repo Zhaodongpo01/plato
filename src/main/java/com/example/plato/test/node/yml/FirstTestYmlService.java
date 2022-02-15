@@ -3,6 +3,8 @@ package com.example.plato.test.node.yml;
 import java.util.List;
 
 import com.example.plato.test.model.FirstModel;
+import com.example.plato.test.model.TestModel;
+import com.example.plato.util.PlatoJsonUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,8 +19,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FirstTestYmlService {
 
-    public String ymlTest1(List<Integer> integerList) {
+    public String uniqAMethod(List<Integer> integerList) {
         log.info("ymlTest1#integerList:{}", integerList);
         return "执行第一个MethodType的Node";
+    }
+
+    public TestModel uniqBMethod(FirstModel firstModel) {
+        log.info("FirstTestYmlService#uniqBMethod:{}", PlatoJsonUtil.toJson(firstModel));
+        TestModel testModel = new TestModel();
+        testModel.setAge(10);
+        testModel.setUsername(firstModel.getName());
+        testModel.setId(firstModel.getIdf());
+        return testModel;
     }
 }

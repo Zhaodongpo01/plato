@@ -1,0 +1,29 @@
+graphId: 777
+graphName: 柏拉图Test2
+graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
+startNode: unAa
+nodes:
+  - nodeConfig:
+      uniqueId: uniqA
+      name: nodeA
+      invokeElement: firstTestYmlService:uniqAMethod
+      type: METHOD
+      desc: 测试方法unAMethod
+      next: uniqB
+  - nodeConfig:
+      uniqueId: uniqB
+      name: nodeB
+      type: METHOD
+      invokeElement: firstTestYmlService:uniqBMethod
+      desc: 测试方法uniqBMethod
+      pre: uniqA
+      next: uniqC
+      preHandler: firstServicePerHandler:perhandlerB
+  - nodeConfig:
+      uniqueId: uniqC
+      name: nodeC
+      type: BEAN
+      invokeElement: nodeCBean
+      desc: 测试Bean类型节点
+      pre: uniqB
+      preHandler: firstServicePerHandler:perhandlerC

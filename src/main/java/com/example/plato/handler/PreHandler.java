@@ -8,12 +8,23 @@ import com.example.plato.runningData.GraphRunningInfo;
  * @date 2022/1/23 11:36 上午
  */
 
-@FunctionalInterface
 public interface PreHandler<P> {
 
-    PreHandler VOID_PRE_HANDLER = graphRunningInfo -> null;
+    PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
+        @Override
+        public Object paramHandle(GraphRunningInfo graphRunningInfo) {
+            return PreHandler.super.paramHandle(graphRunningInfo);
+        }
 
-    P paramHandle(GraphRunningInfo graphRunningInfo);
+        @Override
+        public boolean suicide(GraphRunningInfo graphRunningInfo) {
+            return PreHandler.super.suicide(graphRunningInfo);
+        }
+    };
+
+    default P paramHandle(GraphRunningInfo graphRunningInfo) {
+        return null;
+    }
 
     default boolean suicide(GraphRunningInfo graphRunningInfo) {
         return false;

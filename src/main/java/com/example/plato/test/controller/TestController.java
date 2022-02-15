@@ -85,14 +85,17 @@ public class TestController {
                 return (Long) uniqueIdA.getResultData().getData() > 100;
             }
         });
-        nodeBeanBuilderC.setPreHandler((PreHandler<TestModel>) graphRunningInfo -> {
-            TestModel testModel = new TestModel();
-            testModel.setAge(10);
-            testModel.setId(103_87_87_838L);
-            testModel.setUsername("wb_liuyanmei");
-            return testModel;
+        nodeBeanBuilderC.setPreHandler(new PreHandler() {
+            @Override
+            public Object paramHandle(GraphRunningInfo graphRunningInfo) {
+                TestModel testModel = new TestModel();
+                testModel.setAge(10);
+                testModel.setId(103_87_87_838L);
+                testModel.setUsername("wb_liuyanmei");
+                return testModel;
+            }
         });
-        nodeBeanBuilderD.setPreHandler(PreHandler.VOID_PRE_HANDLER);
+        nodeBeanBuilderD.setPreHandler(PreHandler.DEFAULT_PRE_HANDLER);
 
         GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)

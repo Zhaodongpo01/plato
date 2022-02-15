@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.NodeRunningInfo;
+import com.example.plato.test.model.FirstModel;
+import com.example.plato.test.model.TestModel;
 import com.example.plato.util.PlatoJsonUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -13,26 +15,34 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class FirstServicePerHandler {
 
-    public PreHandler perhandler1() {
-        return new PreHandler<Integer>() {
+    public PreHandler<FirstModel> perhandlerB() {
+        return new PreHandler<FirstModel>() {
             @Override
-            public Integer paramHandle(GraphRunningInfo graphRunningInfo) {
-                NodeRunningInfo uniqueIdA = graphRunningInfo.getNodeRunningInfo("uniqueIdA");
-                Object data = uniqueIdA.getResultData().getData();
-                log.info("perhandler1#data:{}", PlatoJsonUtil.toJson(data));
-                return 10000000;
-            }
-
-            @Override
-            public boolean suicide(GraphRunningInfo graphRunningInfo) {
-                log.info("调用自杀接口返回false");
-                return false;
+            public FirstModel paramHandle(GraphRunningInfo graphRunningInfo) {
+                NodeRunningInfo uniqAResult = graphRunningInfo.getNodeRunningInfo("uniqA");
+                String uniqueAResult = String.valueOf(uniqAResult.getResultData().getData());
+                FirstModel firstModel = new FirstModel();
+                firstModel.setIdf(1000088L);
+                firstModel.setName(uniqueAResult);
+                return firstModel;
             }
         };
     }
 
-    public PreHandler perhandler2() {
-        return PreHandler.VOID_PRE_HANDLER;
-    }
+    public PreHandler<TestModel> perhandlerC() {
+        return new PreHandler<TestModel>() {
+            @Override
+            public TestModel paramHandle(GraphRunningInfo graphRunningInfo) {
+                return null;
+            }
 
+            @Override
+            public boolean suicide(GraphRunningInfo graphRunningInfo) {
+                NodeRunningInfo uniqB = graphRunningInfo.getNodeRunningInfo("uniqB");
+                TestModel testModel = (TestModel) uniqB.getResultData().getData();
+                log.info("perhandlerC#uniqB的Result:{}", PlatoJsonUtil.toJson(testModel));
+                return testModel.getAge() != 10;   //不等于10自杀
+            }
+        };
+    }
 }
