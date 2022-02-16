@@ -1,5 +1,6 @@
 package com.example.plato.test.ymlHandler;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import com.example.plato.handler.PreHandler;
@@ -42,6 +43,25 @@ public class FirstServicePerHandler {
                 TestModel testModel = (TestModel) uniqB.getResultData().getData();
                 log.info("perhandlerC#uniqB的Result:{}", PlatoJsonUtil.toJson(testModel));
                 return testModel.getAge() != 10;   //不等于10自杀
+            }
+        };
+    }
+
+    public PreHandler<String[]> perhandlerD() {
+        return new PreHandler<String[]>() {
+            @Override
+            public String[] paramHandle(GraphRunningInfo graphRunningInfo) {
+                if (ObjectUtils.allNotNull(graphRunningInfo)) {
+                    NodeRunningInfo uniqCRunningInfo = graphRunningInfo.getNodeRunningInfo("uniqC");
+                    if (uniqCRunningInfo != null && uniqCRunningInfo.getResultData().getData() != null) {
+                        String data = String.valueOf(uniqCRunningInfo.getResultData().getData());
+                        TestModel testModel = PlatoJsonUtil.fromJson(data, TestModel.class);
+                        String username = testModel.getUsername();
+                        Long id = testModel.getId();
+                        return new String[] {String.valueOf(id), username};
+                    }
+                }
+                return PreHandler.super.paramHandle(graphRunningInfo);
             }
         };
     }

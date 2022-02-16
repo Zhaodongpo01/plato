@@ -26,4 +26,13 @@ nodes:
       invokeElement: nodeCBean
       desc: 测试Bean类型节点
       pre: uniqB
+      next: uniqD
       preHandler: firstServicePerHandler:perhandlerC
+  - nodeConfig:
+      uniqueId: uniqD
+      name: nodeD
+      type: SCRIPT
+      invokeElement: /Users/zhaodongpo/plato/plato/src/main/resources/python/platoTest.py
+      desc: python脚本类型节点
+      pre: uniqC
+      preHandler: firstServicePerHandler:perhandlerD

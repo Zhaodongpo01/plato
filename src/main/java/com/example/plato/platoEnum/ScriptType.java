@@ -9,7 +9,6 @@ import lombok.Getter;
  */
 public enum ScriptType {
     PYTHON("python"),
-    LUA("lua"),
     SHELL("shell"),
     ;
 

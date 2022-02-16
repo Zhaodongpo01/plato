@@ -2,6 +2,7 @@ package com.example.plato.loader.ymlNode;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Objects;
 
 import com.example.plato.loader.config.NodeConfig;
 import com.example.plato.platoEnum.ScriptType;
@@ -29,9 +30,10 @@ public class ScriptYmlNode<P, R> extends AbstractYmlNode<P, R> {
         LinkedList<String> elementList = new LinkedList<>();
         elementList.add(ScriptType.PYTHON.getScriptType());
         elementList.add(invokeElement);
-        String[] args = (String[]) p;
-        elementList.addAll(Arrays.asList(args));
-        PyScriptParserUtil.runPyScript((String[]) p);
+        if (Objects.nonNull(p)) {
+            elementList.addAll(Arrays.asList((String[]) p));
+        }
+        PyScriptParserUtil.runPyScript(elementList.toArray(new String[] {}));
         return null;
     }
 }

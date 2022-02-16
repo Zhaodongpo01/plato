@@ -18,45 +18,43 @@ import lombok.extern.slf4j.Slf4j;
 public class PyScriptParserUtil {
 
     /**
-     * @param args = new String[] {"python", "/Users/zhaodongpo/plato/plato/src/main/resources/python", "快手", "wb_liuyanmei"};
+     * @param args = new String[] {"python", "/Users/zhaodongpo/plato/plato/src/main/resources/python", "快手",
+     * "wb_liuyanmei"};
      */
-    public static void runPyScript(String[] args) {
+    public static boolean runPyScript(String[] args) {
         Process process;
         try {
             process = Runtime.getRuntime().exec(args);
         } catch (IOException e) {
-            throw new PlatoException(e, "invokePy exec error");
+            throw new PlatoException(e, "runPyScript exec error");
         }
         BufferedReader in;
         try {
             in = new BufferedReader(new InputStreamReader(process.getInputStream(), "GBK"));
         } catch (UnsupportedEncodingException e) {
-            throw new PlatoException(e, "invokePy UnsupportedEncodingException error");
+            throw new PlatoException(e, "runPyScript UnsupportedEncodingException error");
         }
         String line;
         while (true) {
             try {
                 if (!((line = in.readLine()) != null)) {
+                    log.info("runPyScript#line:{}", line);
                     break;
                 }
             } catch (IOException e) {
                 throw new PlatoException(e, "");
             }
-            log.info("invokePy read line:{}", line);
+            log.info("runPyScript read line:{}", line);
         }
         try {
             in.close();
         } catch (IOException e) {
             throw new PlatoException(e, "close error");
         }
-        int re = 1;
         try {
-            re = process.waitFor();
+            return process.waitFor() == 1;
         } catch (InterruptedException e) {
-            throw new PlatoException(e, "invokePy InterruptedException");
-        }
-        if (re == 0) {
-            log.info("invokePy 执行失败");
+            throw new PlatoException(e, "runPyScript InterruptedException");
         }
     }
 }
