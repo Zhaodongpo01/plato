@@ -46,7 +46,7 @@ public class TestController {
     public String yml() {
         Integer[] integerList = new Integer[] {1, 2, 3, 4};
         GraphRunningInfo graphRunningInfo =
-                GraphManager.getManager().runByYml(integerList, "9527", 10000L, TimeUnit.SECONDS);
+                GraphManager.getManager().run(integerList, "9527", 10000L, TimeUnit.SECONDS);
         log.info("yml#GraphRunningInfo:{}", PlatoJsonUtil.toJson(graphRunningInfo));
         return "success";
     }

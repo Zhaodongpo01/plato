@@ -33,7 +33,6 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
 
     private P p;
     private String traceId;
-    private String graphTraceId;
     private GraphRunningInfo<R> graphRunningInfo;
 
     public static final Long DEFAULT_TIME_OUT = 60_000L;
@@ -96,7 +95,7 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
         resultData.setNodeResultStatus(NodeResultStatus.LIMIT_RUN);
         resultData.setMes(limitMes);
         NodeRunningInfo<R> nodeRunningInfo =
-                new NodeRunningInfo<>(graphTraceId, traceId, graphId, uniqueId, resultData);
+                new NodeRunningInfo<>(traceId, graphId, uniqueId, resultData);
         graphRunningInfo.putNodeRunningInfo(uniqueId, nodeRunningInfo);
     }
 
@@ -118,8 +117,7 @@ public abstract class AbstractNodeProxy<P, R> implements INodeProxy {
             return Pair.of(false, resultData);
         } finally {
             log.info("{}\t执行耗时{}", uniqueId, endTime - startTime);
-            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo(getGraphTraceId(), getTraceId(),
-                    graphId, uniqueId, resultData);
+            NodeRunningInfo nodeRunningInfo = new NodeRunningInfo(getTraceId(), graphId, uniqueId, resultData);
             getGraphRunningInfo().putNodeRunningInfo(uniqueId, nodeRunningInfo);
         }
         return Pair.of(true, resultData);

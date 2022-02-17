@@ -15,12 +15,15 @@ import com.example.plato.util.PlatoAssert;
 @Getter
 public class GraphRunningInfo<R> {
 
+    private String graphTraceId;
+
     /**
      * <uniqueId,NodeRunningInfo>
      */
     private final Map<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
 
-    public GraphRunningInfo() {
+    public GraphRunningInfo(String graphTraceId) {
+        this.graphTraceId = graphTraceId;
     }
 
     public NodeRunningInfo<R> getNodeRunningInfo(String uniqueId) {

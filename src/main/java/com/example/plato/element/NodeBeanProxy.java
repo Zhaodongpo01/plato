@@ -38,16 +38,14 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
     @Setter
     private NodeLoadByBean<P, R> nodeLoadByBean;
 
-    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId, P p,
+    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, P p,
             GraphRunningInfo<R> graphRunningInfo) {
-        this(nodeLoadByBean, graphTraceId, graphRunningInfo);
+        this(nodeLoadByBean, graphRunningInfo);
         setP(p);
     }
 
-    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, String graphTraceId,
-            GraphRunningInfo<R> graphRunningInfo) {
+    public NodeBeanProxy(NodeLoadByBean<P, R> nodeLoadByBean, GraphRunningInfo<R> graphRunningInfo) {
         this.nodeLoadByBean = nodeLoadByBean;
-        setGraphTraceId(graphTraceId);
         setGraphRunningInfo(graphRunningInfo);
     }
 
@@ -118,13 +116,13 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
      */
     private String checkComingNodeAfter(NodeLoadByBean<?, ?> comingNodeLoadByBean) {
         AfterHandler afterHandler = comingNodeLoadByBean.getAfterHandler();
-        if (Optional.ofNullable(afterHandler).isPresent()) {
-            Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(getGraphRunningInfo());
-            return (CollectionUtils.isEmpty(notShouldRunNodes)
-                    || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId()))
-                   ? StringUtils.EMPTY : MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes();
+        if (Objects.isNull(afterHandler)) {
+            return StringUtils.EMPTY;
         }
-        return StringUtils.EMPTY;
+        Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(getGraphRunningInfo());
+        return (CollectionUtils.isEmpty(notShouldRunNodes)
+                || !notShouldRunNodes.contains(nodeLoadByBean.getUniqueId()))
+               ? StringUtils.EMPTY : MessageEnum.COMING_NODE_LIMIT_CURRENT_RUN.getMes();
     }
 
     @Override
@@ -135,7 +133,7 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
         }
         List<CompletableFuture<Void>> completableFutureList =
                 nextNodes.stream().map(nodeLoadByBeanTemp -> CompletableFuture.runAsync(
-                        () -> new NodeBeanProxy(nodeLoadByBeanTemp, getGraphTraceId(), getGraphRunningInfo()).run(
+                        () -> new NodeBeanProxy(nodeLoadByBeanTemp, getGraphRunningInfo()).run(
                                 this, executorService), executorService)).collect(Collectors.toList());
         try {
             CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {}))
@@ -152,20 +150,17 @@ public class NodeBeanProxy<P, R> extends AbstractNodeProxy<P, R> {
         NodeRunningInfo<?> comingNodeRunningInfo =
                 getGraphRunningInfo().getNodeRunningInfo(comingNodeLoadByBean.getUniqueId());
         PlatoAssert.nullException(() -> "paramHandle comingNodeRunningInfo error", comingNodeRunningInfo);
-        if (Optional.ofNullable(preHandler).isPresent()) {
-            P p = preHandler.paramHandle(getGraphRunningInfo());
-            if (Objects.nonNull(p)) {
-                return p;
-            }
-        }
         try {
+            if (Optional.ofNullable(preHandler).isPresent()) {
+                P p = preHandler.paramHandle(getGraphRunningInfo());
+                return Objects.nonNull(p) ? p : null;
+            }
             if (Optional.ofNullable(comingNodeRunningInfo.getResultData().getData()).isPresent()) {
                 return (P) comingNodeRunningInfo.getResultData().getData();
             }
         } catch (Exception e) {
-            throw new PlatoException("paramHandle error");
+            throw new PlatoException(e, "paramHandle error");
         }
         return null;
     }
-
 }

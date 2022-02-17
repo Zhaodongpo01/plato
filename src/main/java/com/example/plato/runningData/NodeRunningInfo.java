@@ -10,8 +10,6 @@ import lombok.Getter;
 @Getter
 public class NodeRunningInfo<R> {
 
-    private final String graphTraceId;
-
     private final String traceId;
 
     private final String graphId;
@@ -20,9 +18,8 @@ public class NodeRunningInfo<R> {
 
     private final ResultData<R> resultData;
 
-    public NodeRunningInfo(String graphTraceId, String traceId, String graphId, String uniqueId,
+    public NodeRunningInfo(String traceId, String graphId, String uniqueId,
             ResultData<R> resultData) {
-        this.graphTraceId = graphTraceId;
         this.traceId = traceId;
         this.graphId = graphId;
         this.uniqueId = uniqueId;

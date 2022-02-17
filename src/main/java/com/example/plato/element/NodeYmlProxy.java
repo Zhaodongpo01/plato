@@ -43,17 +43,15 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
     @Setter
     private AbstractYmlNode<P, R> abstractYmlNode;
 
-    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId, P p,
+    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, P p,
             GraphRunningInfo<R> graphRunningInfo) {
-        this(abstractYmlNode, graphTraceId, graphRunningInfo);
+        this(abstractYmlNode, graphRunningInfo);
         setP(p);
     }
 
-    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, String graphTraceId,
-            GraphRunningInfo<R> graphRunningInfo) {
+    public NodeYmlProxy(AbstractYmlNode<P, R> abstractYmlNode, GraphRunningInfo<R> graphRunningInfo) {
         this.abstractYmlNode = abstractYmlNode;
         setGraphRunningInfo(graphRunningInfo);
-        setGraphTraceId(graphTraceId);
     }
 
     @Override
@@ -163,8 +161,7 @@ public class NodeYmlProxy<P, R> extends AbstractNodeProxy<P, R> {
         List<String> nextNodes = Arrays.asList(nodeConfig.getNext().split(","));
         List<CompletableFuture<Void>> completableFutureList =
                 nextNodes.stream().map(nextNodeTemp -> CompletableFuture.runAsync(
-                        () -> new NodeYmlProxy<>(NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodeTemp),
-                                getGraphTraceId(), getGraphRunningInfo()).run(this,
+                        () -> new NodeYmlProxy<>(NodeHolder.getAbstractYmlNode(nodeConfig.getGraphId(), nextNodeTemp), getGraphRunningInfo()).run(this,
                                 executorService), executorService)).collect(Collectors.toList());
         try {
             CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {}))

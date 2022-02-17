@@ -10,9 +10,6 @@ import com.example.plato.runningData.GraphRunningInfo;
 
 public interface PreHandler<P> {
 
-    /**
-     * 存在只用到接口中其中一个方法的情况
-     */
     PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
         @Override
         public Object paramHandle(GraphRunningInfo graphRunningInfo) {

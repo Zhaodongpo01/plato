@@ -38,7 +38,6 @@ public class PyScriptParserUtil {
         while (true) {
             try {
                 if (!((line = in.readLine()) != null)) {
-                    log.info("runPyScript#line:{}", line);
                     break;
                 }
             } catch (IOException e) {

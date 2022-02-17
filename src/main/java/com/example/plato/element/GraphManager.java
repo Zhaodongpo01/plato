@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 import java.util.stream.Collectors;
 
 /**
@@ -29,12 +30,12 @@ import java.util.stream.Collectors;
 public class GraphManager<P> {
 
     private static ExecutorService threadPoolExecutor = new ThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors()
+            Runtime.getRuntime().availableProcessors() * 2
             , 1000
             , 1000_0L
             , TimeUnit.MILLISECONDS
             , new LinkedBlockingQueue<>(1500)
-            , new ThreadPoolExecutor.AbortPolicy());
+            , new AbortPolicy());
 
     private final Map<String, NodeBeanBuilder<?, ?>> firstNodeBeanBuilderMap = new ConcurrentHashMap<>();
 
@@ -62,10 +63,9 @@ public class GraphManager<P> {
         PlatoAssert.nullException(() -> "run firstNodeLoadByBean blank", firstNodeLoadByBean);
         PlatoAssert.emptyException(() -> "run graphId blank", firstNodeLoadByBean.getGraphId());
         PlatoAssert.notEmptyException(() -> "firstNodeLoadByBean define error", firstNodeLoadByBean.getPreNodes());
-        String graphTraceId = TraceUtil.getRandomTraceId();
-        GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
+        GraphRunningInfo graphRunningInfo = new GraphRunningInfo(TraceUtil.getRandomTraceId());
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeBeanProxy(firstNodeLoadByBean, graphTraceId, p, graphRunningInfo).run(null,
+                () -> new NodeBeanProxy(firstNodeLoadByBean, p, graphRunningInfo).run(null,
                         threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
@@ -79,14 +79,13 @@ public class GraphManager<P> {
     /**
      * yml方式启动run方法
      */
-    public GraphRunningInfo runByYml(P p, String graphId, long timeOut, TimeUnit timeUnit) {
+    public GraphRunningInfo run(P p, String graphId, long timeOut, TimeUnit timeUnit) {
         Map<String, AbstractYmlNode<?, ?>> startNodeMap = NodeHolder.getStartNodeMap();
         PlatoAssert.emptyException(MessageEnum.START_MISS_ERROR::getMes, startNodeMap);
         AbstractYmlNode<?, ?> abstractYmlNode = startNodeMap.get(graphId);
-        String graphTraceId = TraceUtil.getRandomTraceId();
-        GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
+        GraphRunningInfo graphRunningInfo = new GraphRunningInfo(TraceUtil.getRandomTraceId());
         CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(
-                () -> new NodeYmlProxy(abstractYmlNode, graphTraceId, p, graphRunningInfo)
+                () -> new NodeYmlProxy(abstractYmlNode, p, graphRunningInfo)
                         .run(null, threadPoolExecutor));
         try {
             completableFuture.get(timeOut, timeUnit);
