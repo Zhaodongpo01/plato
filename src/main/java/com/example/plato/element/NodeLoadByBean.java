@@ -6,6 +6,7 @@ import com.example.plato.handler.PreHandler;
 import com.example.plato.holder.NodeHolder;
 import com.example.plato.util.PlatoAssert;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
@@ -34,6 +35,20 @@ public class NodeLoadByBean<P, R> {
     private boolean checkNextResult = false;
     private final List<NodeLoadByBean<?, ?>> nextNodes = new ArrayList<>();
     private final List<String> preNodes = new ArrayList<>();
+    private Map<String, List<SubFlows>> subFlowList = new HashMap<>();
+
+    @Builder
+    static class SubFlows {
+        private String graphId;
+        private String startNodeUniqueId;
+        private String endNodeUniqueId;
+
+        SubFlows check() {
+            PlatoAssert.emptyException(() -> "SubFlows fields are empty", graphId, startNodeUniqueId,
+                    endNodeUniqueId);
+            return this;
+        }
+    }
 
     @Data
     public static class NodeBeanBuilder<P, R> extends NodeLoadByBean {

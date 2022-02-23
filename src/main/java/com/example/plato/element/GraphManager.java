@@ -12,14 +12,12 @@ import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
-import java.util.stream.Collectors;
 
 /**
  * @author zhaodongpo
@@ -32,9 +30,9 @@ public class GraphManager<P> {
     private static ExecutorService threadPoolExecutor = new ThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors() * 2
             , 1000
-            , 1000_0L
+            , 100_00L
             , TimeUnit.MILLISECONDS
-            , new LinkedBlockingQueue<>(1500)
+            , new LinkedBlockingQueue<>(1_500)
             , new AbortPolicy());
 
     private final Map<String, NodeBeanBuilder<?, ?>> firstNodeBeanBuilderMap = new ConcurrentHashMap<>();
@@ -96,12 +94,15 @@ public class GraphManager<P> {
         }
     }
 
+    public GraphManager linkNodes(NodeBeanBuilder nodeBeanBuilder, NodeBeanBuilder nextNodeBeanBuilder) {
+        return linkNodes(nodeBeanBuilder, nextNodeBeanBuilder, true);
+    }
+
     public GraphManager linkNodes(NodeBeanBuilder nodeBeanBuilder, NodeBeanBuilder nextNodeBeanBuilder,
-            Boolean... append) {
-        List<Boolean> appendList = Arrays.stream(append).collect(Collectors.toList());
+            Boolean append) {
         PlatoAssert.nullException(() -> "linkNodes param error", nextNodeBeanBuilder, nodeBeanBuilder);
         nodeBeanBuilder.addNextBuilderNodes(nextNodeBeanBuilder);
-        if (CollectionUtils.isEmpty(appendList) || BooleanUtils.isTrue(appendList.get(0))) {
+        if (Objects.isNull(append) || BooleanUtils.isTrue(append)) {
             nextNodeBeanBuilder.addPreBuilderNodes(nodeBeanBuilder.getUniqueId());
         }
         if (StringUtils.isNotBlank(nodeBeanBuilder.getGraphId())

@@ -89,7 +89,7 @@ public class TestController {
                 TestModel testModel = new TestModel();
                 testModel.setAge(10);
                 testModel.setId(103_87_87_838L);
-                testModel.setUsername("wb_liuyanmei");
+                testModel.setUsername("liuyanmei");
                 return testModel;
             }
         });
