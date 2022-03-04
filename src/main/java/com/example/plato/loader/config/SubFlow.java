@@ -25,7 +25,7 @@ public class SubFlow extends PlatoConfig {
     private String endNode;
 
     @Override
-    void validate() {
+    public void validate() {
         if (StringUtils.isBlank(graphId)) {
             throw new PlatoException("subFlow graphId is empty");
         }

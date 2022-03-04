@@ -4,15 +4,17 @@ import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.holder.NodeHolder;
+import com.example.plato.loader.config.SubFlow;
 import com.example.plato.util.PlatoAssert;
+import com.google.common.collect.Lists;
 
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -35,31 +37,23 @@ public class NodeLoadByBean<P, R> {
     private boolean checkNextResult = false;
     private final List<NodeLoadByBean<?, ?>> nextNodes = new ArrayList<>();
     private final List<String> preNodes = new ArrayList<>();
-    private Map<String, List<SubFlows>> subFlowList = new HashMap<>();
+    private final Map<String, List<SubFlow>> subFlowMap = new ConcurrentHashMap<>();
 
-    @Builder
-    static class SubFlows {
-        private String graphId;
-        private String startNodeUniqueId;
-        private String endNodeUniqueId;
+    @Getter
+    public static class NodeBeanBuilder<P, R> extends NodeLoadByBean<P, R> {
 
-        SubFlows check() {
-            PlatoAssert.emptyException(() -> "SubFlows fields are empty", graphId, startNodeUniqueId,
-                    endNodeUniqueId);
-            return this;
-        }
-    }
-
-    @Data
-    public static class NodeBeanBuilder<P, R> extends NodeLoadByBean {
-
-        private List<NodeBeanBuilder<?, ?>> nextBuilderNodes = new ArrayList<>();
+        private final List<NodeBeanBuilder<?, ?>> nextBuilderNodes = new ArrayList<>();
+        private final Map<String, List<SubFlow>> subFlowMap = new ConcurrentHashMap<>();
+        volatile private Object mutexLock;
 
         NodeLoadByBean<P, R> build() {
             if (NodeHolder.getNode(this.getGraphId(), this.getUniqueId()) == null) {
-                synchronized (NodeLoadByBean.class) {
+                synchronized (mutex()) {
                     if (NodeHolder.getNode(this.getGraphId(), this.getUniqueId()) == null) {
-                        NodeLoadByBean<P, R> nodeLoadByBean = (NodeLoadByBean<P, R>) check();
+                        NodeLoadByBean<P, R> nodeLoadByBean = check();
+                        if (MapUtils.isNotEmpty(subFlowMap)) {
+                            nodeLoadByBean.getSubFlowMap().putAll(subFlowMap);
+                        }
                         if (CollectionUtils.isNotEmpty(this.getNextBuilderNodes())) {
                             nodeLoadByBean.getNextNodes()
                                     .addAll(convertBuild2Bean(this.getNextBuilderNodes(), this.getGraphId()));
@@ -69,12 +63,25 @@ public class NodeLoadByBean<P, R> {
                     }
                 }
             }
-            return NodeHolder.getNode(this.getGraphId(), this.getUniqueId());
+            return (NodeLoadByBean<P, R>) NodeHolder.getNode(this.getGraphId(), this.getUniqueId());
+        }
+
+        private Object mutex() {
+            Object mutex = mutexLock;
+            if (mutex == null) {
+                synchronized (this) {
+                    mutex = mutexLock;
+                    if (mutex == null) {
+                        mutexLock = mutex = new Object();
+                    }
+                }
+            }
+            return mutex;
         }
 
         private NodeBeanBuilder<P, R> check() {
             PlatoAssert.nullException(() -> "NodeBeanBuilder check INodeWork error", this.getINodeWork());
-            PlatoAssert.emptyException(() -> "NodeBeanBuilder#check error", this.getUniqueId(), this.getGraphId());
+            PlatoAssert.emptyException(() -> "NodeBeanBuilder check error", this.getUniqueId(), this.getGraphId());
             return this;
         }
 
@@ -119,7 +126,7 @@ public class NodeLoadByBean<P, R> {
             return this;
         }
 
-        public NodeBeanBuilder<P, R> setPreHandler(PreHandler preHandler) {
+        public NodeBeanBuilder<P, R> setPreHandler(PreHandler<P> preHandler) {
             PlatoAssert.nullException(() -> "setPreHandler preHandler is null", preHandler);
             super.preHandler = preHandler;
             return this;
@@ -139,6 +146,20 @@ public class NodeLoadByBean<P, R> {
 
         public NodeBeanBuilder<P, R> setCheckNextHasResult(boolean checkNextResult) {
             super.checkNextResult = checkNextResult;
+            return this;
+        }
+
+        public NodeBeanBuilder<P, R> addSubFlows(String graphId, String startUniqueId, String endUniqueId) {
+            PlatoAssert.emptyException(() -> "addSubFlowsList param empty", graphId, startUniqueId, endUniqueId);
+            SubFlow subFlow = new SubFlow();
+            subFlow.setGraphId(graphId);
+            subFlow.setStartNode(startUniqueId);
+            subFlow.setEndNode(endUniqueId);
+            if (subFlowMap.containsKey(graphId)) {
+                subFlowMap.get(graphId).add(subFlow);
+            } else {
+                subFlowMap.put(graphId, Lists.newArrayList(subFlow));
+            }
             return this;
         }
 

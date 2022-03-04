@@ -7,8 +7,11 @@ import com.example.plato.runningData.NodeRunningInfo;
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
 import com.example.plato.test.node.NodeA;
+import com.example.plato.test.node.NodeA2;
 import com.example.plato.test.node.NodeB;
+import com.example.plato.test.node.NodeB2;
 import com.example.plato.test.node.NodeC;
+import com.example.plato.test.node.NodeC2;
 import com.example.plato.test.node.NodeD;
 import com.example.plato.util.Str2CodeUtil;
 import com.example.plato.util.PlatoJsonUtil;
@@ -70,6 +73,8 @@ public class TestController {
         NodeBeanBuilder<TestModel, FirstModel> nodeBeanBuilderC =
                 NodeBeanBuilder.get().setNodeBuilder("uniqueIdC", new NodeC());
         NodeBeanBuilder<Void, String> nodeBeanBuilderD = NodeBeanBuilder.get().setNodeBuilder("uniqueIdD", new NodeD());
+
+
         nodeBeanBuilderB.setPreHandler(new PreHandler<List<Integer>>() {
             @Override
             public List<Integer> paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -94,6 +99,7 @@ public class TestController {
             }
         });
         nodeBeanBuilderD.setPreHandler(PreHandler.DEFAULT_PRE_HANDLER);
+        nodeBeanBuilderD.addSubFlows("graphId2", "uniqueA2", "uniqueC2");
 
         GraphManager graphManager = GraphManager.getManager()
                 .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
@@ -106,4 +112,32 @@ public class TestController {
         log.info("testSerial#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
         return "success";
     }
+
+    @RequestMapping("serial2")
+    public String testSerial2() {
+        NodeBeanBuilder<String, FirstModel> nodeBeanBuilderA =
+                NodeBeanBuilder.get().firstSetNodeBuilder("graphId2", "uniqueIdA2", new NodeA2());
+        NodeBeanBuilder<Integer, TestModel> nodeBeanBuilderB =
+                NodeBeanBuilder.get().setNodeBuilder("uniqueIdB2", new NodeB2());
+        NodeBeanBuilder<TestModel, Void> nodeBeanBuilderC =
+                NodeBeanBuilder.get().setNodeBuilder("uniqueIdC2", new NodeC2());
+
+        nodeBeanBuilderB.setPreHandler(new PreHandler<Integer>() {
+            @Override
+            public Integer paramHandle(GraphRunningInfo graphRunningInfo) {
+                log.info("testSerial2#graphRunningInfo:{}", PlatoJsonUtil.toJson(graphRunningInfo));
+                NodeRunningInfo uniqueIdA2 = graphRunningInfo.getNodeRunningInfo("uniqueIdA2");
+                FirstModel firstModel = (FirstModel) uniqueIdA2.getResultData().getData();
+                return firstModel.getIdf().intValue();
+            }
+        });
+
+        GraphRunningInfo graphRunningInfo = GraphManager.getManager()
+                .linkNodes(nodeBeanBuilderA, nodeBeanBuilderB)
+                .linkNodes(nodeBeanBuilderB, nodeBeanBuilderC).run("开始数据", 1000_0L, TimeUnit.MICROSECONDS);
+        Map nodeRunningInfoMap = graphRunningInfo.getNodeRunningInfoMap();
+        log.info("testSerial2#nodeRunningInfoMap:{}", PlatoJsonUtil.toJson(nodeRunningInfoMap));
+        return "SUCCESS";
+    }
+
 }
