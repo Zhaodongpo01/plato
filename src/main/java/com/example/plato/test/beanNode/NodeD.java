@@ -1,7 +1,10 @@
-package com.example.plato.test.node;
+package com.example.plato.test.beanNode;
+
+import org.springframework.stereotype.Service;
 
 import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -10,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2022/1/27 11:29 上午
  */
 @Slf4j
+@Service
 public class NodeD implements INodeWork<Void, String> {
 
     @Override
@@ -19,6 +23,6 @@ public class NodeD implements INodeWork<Void, String> {
 
     @Override
     public void hook(Void unused, ResultData<String> resultData) {
-        log.info("NodeD#hook:{}", resultData);
+        log.info("NodeD#结果:{}", resultData);
     }
 }

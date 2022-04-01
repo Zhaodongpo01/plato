@@ -3,10 +3,12 @@ package com.example.plato.platoEnum;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/1/23 5:48 下午
+ * @date 2022/3/21 5:09 下午
  */
-public enum LoaderType {
+public enum LoadType {
+
+    CODE,
     YML,
-    BEAN,
     ;
+
 }

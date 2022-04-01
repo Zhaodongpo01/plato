@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2021/12/26 11:45 上午
+ * @date 2022/3/19 11:59 上午
  */
 public class SystemClock {
 
@@ -47,3 +47,4 @@ public class SystemClock {
         return now.get();
     }
 }
+

@@ -1,10 +1,11 @@
-package com.example.plato.test.node;
+package com.example.plato.test.beanNode;
+
+import org.springframework.stereotype.Service;
 
 import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
-import com.example.plato.util.PlatoJsonUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2022/1/24 2:37 下午
  */
 @Slf4j
+@Service
 public class NodeC implements INodeWork<TestModel, FirstModel> {
 
     @Override
     public FirstModel work(TestModel testModel) throws InterruptedException {
-        log.info("NodeC参数#testModel:{}", PlatoJsonUtil.toJson(testModel));
         //Thread.sleep(5000L);
         FirstModel firstModel = new FirstModel();
         firstModel.setName("赵东坡");
@@ -28,6 +29,6 @@ public class NodeC implements INodeWork<TestModel, FirstModel> {
 
     @Override
     public void hook(TestModel testModel, ResultData<FirstModel> resultData) {
-        log.info("NodeC#hook:{}", PlatoJsonUtil.toJson(testModel));
+        log.info("NodeC结果:{}", resultData);
     }
 }

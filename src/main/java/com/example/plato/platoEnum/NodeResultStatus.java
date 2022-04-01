@@ -1,8 +1,8 @@
 package com.example.plato.platoEnum;
 
-import com.google.common.collect.Sets;
-
 import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 /**
  * @author zhaodongpo

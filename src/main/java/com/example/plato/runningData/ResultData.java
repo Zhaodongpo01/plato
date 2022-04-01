@@ -1,10 +1,10 @@
 package com.example.plato.runningData;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.example.plato.platoEnum.NodeResultStatus;
 
 import lombok.Data;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author zhaodongpo
@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 @Data
 public class ResultData<R> {
 
-    private R data = null;
+    private R data;
 
     private boolean success = false;
 
@@ -34,9 +34,9 @@ public class ResultData<R> {
         return resultData;
     }
 
-    public static ResultData getFail(String mes, NodeResultStatus nodeResultStatus) {
-        ResultData<Object> objectResultData = new ResultData<>();
-        objectResultData.setNodeResultStatus(nodeResultStatus);
+    public static <R> ResultData<R> getFail(String mes) {
+        ResultData<R> objectResultData = new ResultData<>();
+        objectResultData.setNodeResultStatus(NodeResultStatus.ERROR);
         objectResultData.setMes(mes);
         objectResultData.setSuccess(false);
         return objectResultData;

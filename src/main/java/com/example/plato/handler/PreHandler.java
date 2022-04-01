@@ -5,9 +5,8 @@ import com.example.plato.runningData.GraphRunningInfo;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/1/23 11:36 上午
+ * @date 2022/4/1 12:23 上午
  */
-
 public interface PreHandler<P> {
 
     PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
@@ -29,5 +28,6 @@ public interface PreHandler<P> {
     default boolean suicide(GraphRunningInfo graphRunningInfo) {
         return false;
     }
+
 
 }

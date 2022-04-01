@@ -22,7 +22,6 @@ public class ClassUtil {
      * @param className 类名
      * @param expected  转换目标对象
      * @param params    请求参数
-     * @param <E>
      * @return
      */
     public static <E> E newInstance(String className, Class<E> expected, Object... params) {
@@ -34,7 +33,6 @@ public class ClassUtil {
      * 根据类名映射类
      *
      * @param className 类名
-     * @return
      */
     public static Class<?> forName(String className) {
         try {
@@ -50,8 +48,6 @@ public class ClassUtil {
      * @param clazz    类名
      * @param expected 转换目标对象
      * @param params   请求参数
-     * @param <E>
-     * @return
      */
     public static <E> E newInstance(Class<?> clazz, Class<E> expected, Object... params) {
         if (expected != null && !expected.isAssignableFrom(clazz)) {
@@ -76,8 +72,6 @@ public class ClassUtil {
 
     /**
      * 获取参数列表
-     * @param params
-     * @return
      */
     public static List<Class<?>> getParamsType(@Nullable Object... params) {
         List<Class<?>> parameterTypes = new ArrayList<>();
@@ -95,7 +89,6 @@ public class ClassUtil {
      *
      * @param className  类名
      * @param methodName 方法名
-     * @return
      */
     public static int getMethodCountForMame(String className, String methodName) {
         Class<?> clazz = forName(className);
@@ -108,7 +101,6 @@ public class ClassUtil {
      * @param className  类名
      * @param methodName 方法名
      * @param paramTypes 参数
-     * @return
      */
     public static boolean hasMethod(String className, String methodName, @Nullable Class<?>... paramTypes) {
         Class<?> clazz = forName(className);
@@ -121,10 +113,8 @@ public class ClassUtil {
      * @param className  类名
      * @param methodName 方法名
      * @param params     参数
-     * @param <T>
-     * @return
      */
-    public static <T> Object methodInvoke(String className, String methodName, @Nullable Object... params) {
+    public static Object methodInvoke(String className, String methodName, @Nullable Object... params) {
         Class<?> clazz = forName(className);
         Object target;
         try {
@@ -141,14 +131,12 @@ public class ClassUtil {
      * @param target     类名
      * @param methodName 方法名
      * @param params     参数   是List类型会有问题
-     * @param <T>
-     * @return
      */
-    public static <T> Object methodInvoke(Object target, String methodName, @Nullable Object... params) {
+    public static Object methodInvoke(Object target, String methodName, @Nullable Object... params) {
         List<Class<?>> parameterTypes = getParamsType(params);
         Method method = ReflectionUtils.findMethod(target.getClass(), methodName,
                 parameterTypes.toArray(new Class<?>[0]));
-        Object ret = null;
+        Object ret;
         if (method == null) {
             throw new RuntimeException("方法不存在:" + methodName);
         }

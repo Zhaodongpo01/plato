@@ -10,13 +10,12 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.example.plato.exception.PlatoException;
+import com.example.plato_zdp.exception.PlatoException;
 
 /**
  * @author zhaodongpo
  * @version 1.0
  * @date 2022/2/7 2:26 下午
- * 没有使用Spring的Assert
  */
 public class PlatoAssert {
 

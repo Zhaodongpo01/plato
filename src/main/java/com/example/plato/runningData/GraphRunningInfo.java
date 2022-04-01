@@ -1,37 +1,31 @@
 package com.example.plato.runningData;
 
-import lombok.Getter;
-
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.example.plato.util.PlatoAssert;
+import com.example.plato_zdp.util.PlatoAssert;
+import com.example.plato_zdp.util.TraceUtil;
 
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/1/30 14:56
+ * @date 2022/3/18 3:10 下午
  */
-@Getter
 public class GraphRunningInfo<R> {
 
-    private String graphTraceId;
+    private final String graphTraceId = TraceUtil.getRandomTraceId();
 
-    /**
-     * <uniqueId,NodeRunningInfo>
-     */
-    private final Map<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
 
-    public GraphRunningInfo(String graphTraceId) {
-        this.graphTraceId = graphTraceId;
+    public ConcurrentHashMap<String, NodeRunningInfo<R>> getNodeRunningInfoMap() {
+        return this.nodeRunningInfoMap;
     }
 
-    public NodeRunningInfo<R> getNodeRunningInfo(String uniqueId) {
-        PlatoAssert.emptyException(() -> "getNodeRunningInfo uniqueId is empty", uniqueId);
-        return nodeRunningInfoMap.get(uniqueId);
+    public NodeRunningInfo<R> getNodeRunningInfo(String uniqueNodeId) {
+        PlatoAssert.emptyException(() -> "getNodeRunningInfo uniqueNodeId is empty", uniqueNodeId);
+        return nodeRunningInfoMap.get(uniqueNodeId);
     }
 
-    public void putNodeRunningInfo(String uniqueId, NodeRunningInfo nodeRunningInfo) {
+    public void putNodeRunningInfo(String uniqueId, NodeRunningInfo<R> nodeRunningInfo) {
         nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
     }
 
