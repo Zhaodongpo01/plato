@@ -10,7 +10,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.example.plato_zdp.exception.PlatoException;
+import com.example.plato.exception.PlatoException;
+
 
 /**
  * @author zhaodongpo

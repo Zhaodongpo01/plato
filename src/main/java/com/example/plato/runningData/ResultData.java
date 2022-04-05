@@ -4,14 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.example.plato.platoEnum.NodeResultStatus;
 
-import lombok.Data;
-
 /**
  * @author zhaodongpo
  * @version 1.0
  * @date 2022/1/23 11:02 上午
  */
-@Data
 public class ResultData<R> {
 
     private R data;
@@ -40,5 +37,46 @@ public class ResultData<R> {
         objectResultData.setMes(mes);
         objectResultData.setSuccess(false);
         return objectResultData;
+    }
+
+
+    public R getData() {
+        return data;
+    }
+
+    public void setData(R data) {
+        this.data = data;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMes() {
+        return mes;
+    }
+
+    public void setMes(String mes) {
+        this.mes = mes;
+    }
+
+    public long getCostTime() {
+        return costTime;
+    }
+
+    public void setCostTime(long costTime) {
+        this.costTime = costTime;
+    }
+
+    public NodeResultStatus getNodeResultStatus() {
+        return nodeResultStatus;
+    }
+
+    public void setNodeResultStatus(NodeResultStatus nodeResultStatus) {
+        this.nodeResultStatus = nodeResultStatus;
     }
 }

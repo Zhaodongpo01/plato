@@ -1,79 +1,38 @@
 package com.example.plato.element;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.collections4.CollectionUtils;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
-import com.example.plato.platoEnum.CurrentState;
-import com.example.plato.platoEnum.NodeResultStatus;
-import com.example.plato.runningData.ResultData;
 import com.example.plato.util.PlatoAssert;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/31 11:12 下午
+ * 2022/3/31 11:12 下午
  */
+@Getter
+@Slf4j
 public class PlatoNode<P, R> {
 
-    private P p;
+    private String graphId;
     private String uniqueNodeId;
     private INodeWork<P, R> iNodeWork;
-    private AfterHandler afterHandler;
+    private AfterHandler afterHandler = AfterHandler.DEFAULT_AFTER_HANDLER;
     private PreHandler<P> preHandler = PreHandler.DEFAULT_PRE_HANDLER;
-    private List<PlatoNode<?, ?>> nextPlatoNodes = new ArrayList<>();
-    private List<PrePlatoNode> prePlatoNodes = new ArrayList<>();
-    private final AtomicReference<CurrentState> CUR_STATUS = new AtomicReference<>(CurrentState.INIT);
-    private volatile ResultData<R> resultData = ResultData.getFail("");
+    private final Map<PlatoNode<?, ?>, Boolean> nextPlatoNodeMap = new ConcurrentHashMap<>();   //后面这个节点强依赖自己
+    private final Map<PlatoNode<?, ?>, Boolean> prePlatoNodeMap = new ConcurrentHashMap<>();    //自己强依赖于前面的节点
 
-    private PlatoNode(String uniqueNodeId, INodeWork<P, R> iNodeWork) {
-        this.iNodeWork = iNodeWork;
-        this.uniqueNodeId = uniqueNodeId;
-    }
+    private PlatoNode() {
 
-    private boolean compareAndSetState(CurrentState expect, CurrentState update) {
-        return this.CUR_STATUS.compareAndSet(expect, update);
-    }
-
-    public ResultData<R> getResultData() {
-        return resultData;
-    }
-
-    private void addPreNode(PlatoNode<?, ?> platoNode, boolean must) {
-        addPreNode(new PrePlatoNode(platoNode, must));
-    }
-
-    private void addPreNode(PrePlatoNode prePlatoNode) {
-        //如果依赖的是重复的同一个，就不重复添加了
-        for (PrePlatoNode prePlatoNodeTemp : prePlatoNodes) {
-            if (prePlatoNodeTemp.equals(prePlatoNode)) {
-                return;
-            }
-        }
-        prePlatoNodes.add(prePlatoNode);
-    }
-
-    private void addNext(PlatoNode<?, ?> platoNode) {
-        //避免添加重复
-        for (PlatoNode platoNodeTemp : nextPlatoNodes) {
-            if (platoNodeTemp.equals(platoNode)) {
-                return;
-            }
-        }
-        nextPlatoNodes.add(platoNode);
     }
 
     @Override
@@ -84,222 +43,108 @@ public class PlatoNode<P, R> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        PlatoNode<?, ?> that = (PlatoNode<?, ?>) o;
-        return Objects.equals(p, that.p) &&
-                Objects.equals(iNodeWork, that.iNodeWork) &&
-                Objects.equals(nextPlatoNodes, that.nextPlatoNodes) &&
-                Objects.equals(prePlatoNodes, that.prePlatoNodes) &&
-                Objects.equals(CUR_STATUS, that.CUR_STATUS) &&
-                Objects.equals(resultData, that.resultData);
+        PlatoNodeBuilder<?, ?> that = (PlatoNodeBuilder<?, ?>) o;
+        return Objects.equals(this.getGraphId(), that.getGraphId())
+                && Objects.equals(this.getUniqueNodeId(), that.getUniqueNodeId())
+                && Objects.equals(this.getNextPlatoNodeMap(), that.getNextPlatoNodeMap())
+                && Objects.equals(this.getPrePlatoNodeMap(), that.getPrePlatoNodeMap())
+                && Objects.equals(this.getINodeWork(), that.getINodeWork())
+                && Objects.equals(this.getAfterHandler(), that.getAfterHandler())
+                && Objects.equals(this.getPreHandler(), that.getPreHandler())
+                ;
     }
 
-    public void run(P p, PlatoNode<?, ?> comingNode, ExecutorService threadPoolExecutor) {
-        if (CurrentState.EXECUTED.equals(CUR_STATUS.get())
-                || CurrentState.ERROR.equals(CUR_STATUS.get())) {
-            return;
-        }
-        if (CollectionUtils.isEmpty(prePlatoNodes)) {
-            this.p = p;
-            executor();
-            if (resultData.isSuccess() && CollectionUtils.isNotEmpty(nextPlatoNodes)) {
-                runNext(threadPoolExecutor);
-            }
-            return;
-        }
-        prePlatoNodesRun(comingNode, threadPoolExecutor);
-    }
+    public static class PlatoNodeBuilder<P, R> extends PlatoNode<P, R> {
 
-    private synchronized void prePlatoNodesRun(PlatoNode<?, ?> comingNode, ExecutorService threadPoolExecutor) {
-        AtomicBoolean current = new AtomicBoolean(false);
-        Set<PrePlatoNode> mustAppends = new HashSet<>();
-        prePlatoNodes.forEach(prePlatoNode -> {
-            if (prePlatoNode.isMust()) {
-                mustAppends.add(prePlatoNode);
-            }
-            if (prePlatoNode.getPlatoNode().equals(comingNode)) {
-                current.set(prePlatoNode.isMust());
-            }
-        });
-        //如果全部是不必须的条件，那么只要到了这里，就执行自己。
-        if (CollectionUtils.isEmpty(mustAppends)) {
-            executor();
-            runNext(threadPoolExecutor);
-            return;
-        }
-        //如果存在需要必须完成的，且fromWrapper不是必须的，就什么也不干
-        if (!current.get()) {
-            return;
-        }
-        boolean existsNotFinish = false;
-        boolean hasError = false;
-        for (PrePlatoNode prePlatoNode : mustAppends) {
-            PlatoNode<?, ?> platoNode = prePlatoNode.getPlatoNode();
-            ResultData<?> resultData = platoNode.getResultData(); //依赖节点的执行结果
-            if (CUR_STATUS.get() == CurrentState.INIT || CUR_STATUS.get() == CurrentState.EXECUTING) {
-                existsNotFinish = true;
-                break;
-            }
-            if (NodeResultStatus.ERROR.equals(resultData.getNodeResultStatus())) {
-                hasError = true;
-                break;
-            }
-        }
-        if (!existsNotFinish) {
-            executor();
-            runNext(threadPoolExecutor);
-            return;
-        }
-    }
+        volatile private Object mutexLock;
 
-    private void runNext(ExecutorService executorService) {
-        if (nextPlatoNodes.size() == 1) {
-            PlatoNode<?, ?> platoNode = nextPlatoNodes.get(0);
-            platoNode.run(getHandlerParam(), this, executorService);
-        } else {
-            CompletableFuture[] futures = new CompletableFuture[nextPlatoNodes.size()];
-            for (int i = 0; i < nextPlatoNodes.size(); i++) {
-                int finalI = i;
-                futures[i] = CompletableFuture.runAsync(() -> {
-                    PlatoNode<?, ?> platoNode = nextPlatoNodes.get(finalI);
-                    platoNode.run(getHandlerParam(), this, executorService);
-                }, executorService);
-            }
-            try {
-                CompletableFuture.allOf(futures).get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private <T> T getHandlerParam() {
-        PlatoAssert.nullException(() -> "getHandlerParam preHandler is null", preHandler);
-        return null;
-    }
-
-    private void executor() {
-        if (!checkIsNullResult()) {
-            return;
-        }
-        try {
-            if (!compareAndSetState(CurrentState.INIT, CurrentState.EXECUTING)) {
-                return;
-            }
-            R r = iNodeWork.work(p);
-            if (!compareAndSetState(CurrentState.EXECUTING, CurrentState.EXECUTED)) {
-                return;
-            }
-            resultData.setData(r);
-            resultData.setSuccess(true);
-            iNodeWork.hook(p, resultData);
-        } catch (Exception e) {
-            if (!checkIsNullResult()) {
-                return;
-            }
-            fastFail(CurrentState.EXECUTING, e);
-        }
-    }
-
-    private boolean fastFail(CurrentState expect, Exception e) {
-        if (!compareAndSetState(expect, CurrentState.ERROR)) {
-            return false;
-        }
-        if (checkIsNullResult()) {
-            resultData.setSuccess(false);
-            resultData.setMes(e == null ? "执行失败" : e.getMessage());
-        }
-        iNodeWork.hook(p, resultData);
-        return true;
-    }
-
-    private boolean checkIsNullResult() {
-        return NodeResultStatus.INIT == resultData.getNodeResultStatus();
-    }
-
-
-    public class PlatoNodeBuilder<T, V> {
-
-        private String uniqueNodeId;
-        private INodeWork<T, V> iNodeWork;
-        private final List<PlatoNode<?, ?>> nextPlatoNodes = new ArrayList<>();
-        private List<PrePlatoNode> prePlatoNodes = new ArrayList<>();
-        private Set<PlatoNode<?, ?>> selfIsMustSet;
-
-        public PlatoNodeBuilder<T, V> setUniqueNodeId(String uniqueNodeId) {
-            PlatoAssert.emptyException(() -> "setUniqueNodeId uniqueNodeId empty", uniqueNodeId);
-            this.uniqueNodeId = uniqueNodeId;
+        public PlatoNodeBuilder<P, R> setNodeBuilder(String uniqueId, String graphId, INodeWork<P, R> iNodeWork) {
+            PlatoAssert.nullException(() -> "setNodeBuilder iNodeWork is null", iNodeWork);
+            PlatoAssert.emptyException(() -> "setNodeBuilder uniqueId null ", uniqueId);
+            this.setGraphId(graphId).setUniqueId(uniqueId).setINodeWork(iNodeWork);
             return this;
         }
 
-        public PlatoNodeBuilder<T, V> setINodeWork(INodeWork<T, V> iNodeWork) {
-            PlatoAssert.nullException(() -> "setINodeWork iNodeWork nul", iNodeWork);
-            this.iNodeWork = iNodeWork;
+        public PlatoNodeBuilder<P, R> setGraphId(String graphId) {
+            PlatoAssert.emptyException(() -> "setGraphId graphId empty ", graphId);
+            super.graphId = graphId;
             return this;
         }
 
-        public PlatoNodeBuilder<T, V> addPreNodes(PlatoNode<?, ?>... platoNodes) {
-            PlatoAssert.nullException(() -> "addPreNodes param null", platoNodes);
-            Arrays.stream(platoNodes).forEach(this::addPreNode);
+        public PlatoNodeBuilder<P, R> setUniqueId(String uniqueId) {
+            PlatoAssert.emptyException(() -> "setUniqueId uniqueId empty ", uniqueId);
+            super.uniqueNodeId = uniqueId;
             return this;
         }
 
-        public PlatoNodeBuilder<T, V> addPreNode(PlatoNode<?, ?> platoNode) {
-            PlatoAssert.nullException(() -> "addPreNode param null", platoNode);
+        public PlatoNodeBuilder<P, R> setPreHandler(PreHandler<P> preHandler) {
+            PlatoAssert.nullException(() -> "setPreHandler preHandler is null", preHandler);
+            super.preHandler = preHandler;
             return this;
         }
 
-        public PlatoNodeBuilder<T, V> addPreNode(PlatoNode<?, ?> platoNode, boolean isMust) {
-            PlatoAssert.nullException(() -> "addPreNode param null", platoNode);
-            PrePlatoNode prePlatoNode = new PrePlatoNode(platoNode, isMust);
-            this.prePlatoNodes.add(prePlatoNode);
+        public PlatoNodeBuilder<P, R> setAfterHandler(AfterHandler afterHandler) {
+            PlatoAssert.nullException(() -> "setAfterHandler afterHandler is null", afterHandler);
+            super.afterHandler = afterHandler;
             return this;
         }
 
-        public PlatoNodeBuilder<T, V> addNext(PlatoNode<?, ?> platoNode) {
-            return addNext(platoNode, true);
-        }
-
-        public PlatoNodeBuilder<T, V> next(PlatoNode<?, ?>... platoNode) {
-            if (platoNode == null) {
-                return this;
-            }
-            for (PlatoNode<?, ?> platoNodeTemp : platoNode) {
-                next(platoNodeTemp);
-            }
+        public PlatoNodeBuilder<P, R> setINodeWork(INodeWork<P, R> iNodeWork) {
+            PlatoAssert.nullException(() -> "setINodeWork iNodeWork is null", iNodeWork);
+            super.iNodeWork = iNodeWork;
             return this;
         }
 
-        private PlatoNodeBuilder<T, V> addNext(PlatoNode<?, ?> platoNode, boolean selfIsMust) {
-            this.nextPlatoNodes.add(platoNode);
-            if (selfIsMust) {
-                if (selfIsMustSet == null) {
-                    selfIsMustSet = new HashSet<>();
-                }
-                selfIsMustSet.add(platoNode);
-            }
+        public PlatoNodeBuilder<P, R> addPreNode(PlatoNode<P, R>... platoNode) {
+            this.addPreNode(true, platoNode);
             return this;
         }
 
-        public PlatoNode<T, V> build() {
-            PlatoNode<T, V> platoNode = new PlatoNode<>(uniqueNodeId, iNodeWork);
-            if (CollectionUtils.isNotEmpty(prePlatoNodes)) {
-                prePlatoNodes.forEach(prePlatoNode -> {
-                    prePlatoNode.getPlatoNode().addNext(platoNode);
-                    platoNode.addPreNode(prePlatoNode);
-                });
-            }
-            if (CollectionUtils.isNotEmpty(nextPlatoNodes)) {
-                nextPlatoNodes.forEach(platoNodeTemp -> {
-                    boolean must = false;
-                    if (selfIsMustSet != null && selfIsMustSet.contains(platoNodeTemp)) {
-                        must = true;
+        public PlatoNodeBuilder<P, R> addPreNode(boolean appendMust, PlatoNode<P, R>... prePlatoNodes) {
+            //如果重复了就按照最后一个加入的状态保存
+            PlatoAssert.nullException(() -> "prePlatoNode must not null", (Object) prePlatoNodes);
+            Arrays.stream(prePlatoNodes).collect(Collectors.toList())
+                    .forEach(prePlatoNodeBuilder -> super.getPrePlatoNodeMap().put(prePlatoNodeBuilder, appendMust));
+            return this;
+        }
+
+        public PlatoNodeBuilder<P, R> addNextNode(PlatoNode<P, R>... nextPlatoNodes) {
+            this.addNextNode(true, nextPlatoNodes);
+            return this;
+        }
+
+        public PlatoNodeBuilder<P, R> addNextNode(boolean selfIsMust, PlatoNode<P, R>... nextPlatoNodes) {
+            //如果重复了就按照最后一个加入的状态保存
+            PlatoAssert.nullException(() -> "prePlatoNode must not null", (Object) nextPlatoNodes);
+            Arrays.stream(nextPlatoNodes).collect(Collectors.toList())
+                    .forEach(nextPlatoNodeBuilder -> super.getNextPlatoNodeMap().put(nextPlatoNodeBuilder, selfIsMust));
+            return this;
+        }
+
+        PlatoNode<P, R> build() {
+            if (PlatoNodeHolder.getPlato(getGraphId(), getUniqueNodeId()) == null) {
+                synchronized (mutex()) {
+                    if (PlatoNodeHolder.getPlato(getGraphId(), getUniqueNodeId()) == null) {
+                        PlatoNodeHolder.putPlato(getGraphId(), this);
+                        return this;
                     }
-                    platoNodeTemp.addPreNode(platoNode, must);
-                    platoNode.addNext(platoNodeTemp);
-                });
+                    return PlatoNodeHolder.getPlato(getGraphId(), getUniqueNodeId());
+                }
             }
-            return platoNode;
+            return this;
         }
 
+        private Object mutex() {
+            Object mutex = mutexLock;
+            if (mutex == null) {
+                synchronized (this) {
+                    mutex = mutexLock;
+                    if (mutex == null) {
+                        mutexLock = mutex = new Object();
+                    }
+                }
+            }
+            return mutex;
+        }
     }
 }
