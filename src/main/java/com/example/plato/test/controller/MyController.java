@@ -28,4 +28,13 @@ public class MyController {
         return "SUCCESS";
     }
 
+    @PostMapping("/serial")
+    public String serial() {
+        for (int i = 0; i < 1000; i++) {
+            new Thread(() -> iGraphService.serial()).start();
+        }
+        //iGraphService.parallel();
+        return "SUCCESS";
+    }
+
 }

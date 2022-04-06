@@ -74,11 +74,12 @@ public class PlatoNodeProxy<P, R> {
             return;
         }
         if (dependProxies.size() == 1) {
-            doDependsOneJob(fromProxy);
+            if (doDependsOneJob(fromProxy)) {
+                executor(fromProxy);
+            }
             runNext(executorService);
-        } else {
-            doDependsJobs(executorService, dependProxies, fromProxy);
         }
+        doDependsJobs(executorService, dependProxies, fromProxy);
     }
 
     private boolean checkNextProxyResult() {
@@ -111,17 +112,17 @@ public class PlatoNodeProxy<P, R> {
         }
     }
 
-    private void doDependsOneJob(PlatoNodeProxy<?, ?> dependProxy) {
+    private boolean doDependsOneJob(PlatoNodeProxy<?, ?> dependProxy) {
         if (ResultState.TIMEOUT == dependProxy.getWorkResult().getResultState()) {
             resultData = defaultResult();
             fastFail(INIT, null);
+            return false;
         } else if (ResultState.EXCEPTION == dependProxy.getWorkResult().getResultState()) {
             resultData = defaultExResult(dependProxy.getWorkResult().getEx());
             fastFail(INIT, null);
-        } else {
-            //前面任务正常完毕了，该自己了
-            executor(dependProxy);
+            return false;
         }
+        return true;
     }
 
     private synchronized void doDependsJobs(ExecutorService executorService, List<PrePlatoNodeProxy> dependProxies,

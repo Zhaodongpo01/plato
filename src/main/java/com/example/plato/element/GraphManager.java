@@ -1,8 +1,6 @@
 package com.example.plato.element;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +22,7 @@ public class GraphManager {
         this.graphId = graphId;
     }
 
-    public <P, R> void run(P p,
+    public <P, R> GraphRunningInfo run(P p,
             ThreadPoolExecutor threadPoolExecutor,
             PlatoNodeProxy<P, R> firstPlatoNodeProxy,
             Long timeOut, TimeUnit timeUnit) {
@@ -39,5 +37,6 @@ public class GraphManager {
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new PlatoException(e, "GraphManager run error");
         }
+        return graphRunningInfo;
     }
 }

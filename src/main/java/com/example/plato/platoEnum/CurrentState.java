@@ -7,7 +7,7 @@ package com.example.plato.platoEnum;
  */
 public enum CurrentState {
     INIT,
-    EXECUTING,
-    EXECUTED,
+    WORKING,
+    FINISH,
     ERROR;
 }
