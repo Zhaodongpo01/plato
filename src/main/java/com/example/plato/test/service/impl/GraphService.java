@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.plato.element.GraphManager;
 import com.example.plato.element.PlatoNodeProxy;
 import com.example.plato.handler.PreHandler;
+import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.test.beanNode.NodeA;
 import com.example.plato.test.beanNode.NodeB;
 import com.example.plato.test.beanNode.NodeC;
@@ -51,7 +52,7 @@ public class GraphService implements IGraphService {
                 .next(platoNodeProxyD)
                 .setPreHandler(new PreHandler<TestModel>() {
                     @Override
-                    public TestModel paramHandle(Map map) {
+                    public TestModel paramHandle(GraphRunningInfo graphRunningInfo) {
                         TestModel testModel = new TestModel();
                         testModel.setAge(120);
                         testModel.setUsername("zhaodongpo");
@@ -66,7 +67,7 @@ public class GraphService implements IGraphService {
                 .next(platoNodeProxyD)
                 .setPreHandler(new PreHandler<List<Integer>>() {
                     @Override
-                    public List<Integer> paramHandle(Map map) {
+                    public List<Integer> paramHandle(GraphRunningInfo graphRunningInfo) {
                         return Lists.newArrayList(1, 2, 4, 4, 5);
                     }
                 }).build();

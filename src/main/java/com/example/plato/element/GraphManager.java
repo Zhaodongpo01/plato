@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.example.plato.exception.PlatoException;
+import com.example.plato.runningData.GraphRunningInfo;
 
 /**
  * @author zhaodongpo
@@ -30,9 +31,10 @@ public class GraphManager {
             TimeUnit timeUnit) {
         firstPlatoNodeProxy.setParam(p);
         Map<String, PlatoNodeProxy> forParamUseProxies = new ConcurrentHashMap<>();
+        GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
         CompletableFuture<Void> completableFuture =
                 CompletableFuture.runAsync(
-                        () -> firstPlatoNodeProxy.work(threadPoolExecutor, null, forParamUseProxies),
+                        () -> firstPlatoNodeProxy.work(threadPoolExecutor, null, graphRunningInfo),
                         threadPoolExecutor);
         try {
             completableFuture.get(timeOut, timeUnit);

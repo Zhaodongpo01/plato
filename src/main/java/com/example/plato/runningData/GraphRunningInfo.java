@@ -1,5 +1,6 @@
 package com.example.plato.runningData;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.plato.util.PlatoAssert;
@@ -13,6 +14,12 @@ import com.example.plato.util.TraceUtil;
 public class GraphRunningInfo<R> {
 
     private final String graphTraceId = TraceUtil.getRandomTraceId();
+
+    private final Map<String, ResultData<R>> resultDataMap = new ConcurrentHashMap<>();
+
+    public ResultData<R> putUniqueResultData(String uniqueId, ResultData<R> resultData) {
+        return resultDataMap.put(uniqueId, resultData);
+    }
 
     private final ConcurrentHashMap<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
 

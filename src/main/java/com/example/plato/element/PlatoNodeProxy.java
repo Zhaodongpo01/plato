@@ -3,7 +3,6 @@ package com.example.plato.element;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -18,18 +17,18 @@ import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.runningData.ResultState;
 
-public class PlatoNodeProxy<T, V> {
+public class PlatoNodeProxy<P, R> {
 
     private String uniqueId;
-    private T param;
-    private INodeWork<T, V> iNodeWork;
+    private P param;
+    private INodeWork<P, R> iNodeWork;
     private List<PlatoNodeProxy<?, ?>> nextProxies;
     private List<PrePlatoNodeProxy> dependProxies;
     private AfterHandler afterHandler;
-    private PreHandler<T> preHandler;
+    private PreHandler<P> preHandler;
     private AtomicInteger state = new AtomicInteger(0);
-    private Map<String, PlatoNodeProxy> forParamUseProxies;
-    private volatile ResultData<V> resultData = ResultData.defaultResult();
+    private GraphRunningInfo graphRunningInfo;
+    private volatile ResultData<R> resultData = ResultData.defaultResult();
     private volatile boolean needCheckNextProxyResult = true;
 
     private static final int FINISH = 1;
@@ -37,7 +36,7 @@ public class PlatoNodeProxy<T, V> {
     private static final int WORKING = 3;
     private static final int INIT = 0;
 
-    private PlatoNodeProxy(String uniqueId, INodeWork<T, V> iNodeWork, AfterHandler afterHandler,
+    private PlatoNodeProxy(String uniqueId, INodeWork<P, R> iNodeWork, AfterHandler afterHandler,
             PreHandler preHandler) {
         if (iNodeWork == null) {
             throw new NullPointerException("async.worker is null");
@@ -49,10 +48,9 @@ public class PlatoNodeProxy<T, V> {
     }
 
     public void work(ExecutorService executorService, PlatoNodeProxy fromProxy,
-            Map<String, PlatoNodeProxy> forParamUseProxies) {
-        System.out.println(Thread.currentThread().getName());
-        this.forParamUseProxies = forParamUseProxies;
-        forParamUseProxies.put(uniqueId, this);
+            GraphRunningInfo graphRunningInfo) {
+        this.graphRunningInfo = graphRunningInfo;
+        graphRunningInfo.putUniqueResultData(uniqueId,resultData);
         if (getState() == FINISH || getState() == ERROR) {
             beginNext(executorService);
             return;
@@ -78,8 +76,8 @@ public class PlatoNodeProxy<T, V> {
     }
 
 
-    public void work(ExecutorService executorService, Map<String, PlatoNodeProxy> forParamUseProxies) {
-        work(executorService, null, forParamUseProxies);
+    public void work(ExecutorService executorService, GraphRunningInfo graphRunningInfo) {
+        work(executorService, null, graphRunningInfo);
     }
 
     public void stopNow() {
@@ -108,14 +106,14 @@ public class PlatoNodeProxy<T, V> {
             return;
         }
         if (nextProxies.size() == 1) {
-            nextProxies.get(0).work(executorService, PlatoNodeProxy.this, forParamUseProxies);
+            nextProxies.get(0).work(executorService, PlatoNodeProxy.this, graphRunningInfo);
             return;
         }
         CompletableFuture[] futures = new CompletableFuture[nextProxies.size()];
         for (int i = 0; i < nextProxies.size(); i++) {
             int finalI = i;
             futures[i] = CompletableFuture.runAsync(() -> nextProxies.get(finalI)
-                    .work(executorService, PlatoNodeProxy.this, forParamUseProxies), executorService);
+                    .work(executorService, PlatoNodeProxy.this, graphRunningInfo), executorService);
         }
         try {
             CompletableFuture.allOf(futures).get();
@@ -239,7 +237,7 @@ public class PlatoNodeProxy<T, V> {
     /**
      * 具体的单个worker执行任务
      */
-    private ResultData<V> workerDoJob(PlatoNodeProxy fromProxy) {
+    private ResultData<R> workerDoJob(PlatoNodeProxy fromProxy) {
         //避免重复执行
         if (!checkIsNullResult()) {
             return resultData;
@@ -255,7 +253,7 @@ public class PlatoNodeProxy<T, V> {
             }
 
             //执行耗时操作
-            V resultValue = iNodeWork.work(param);
+            R resultValue = iNodeWork.work(param);
 
             //如果状态不是在working,说明别的地方已经修改了
             if (!compareAndSetState(WORKING, FINISH)) {
@@ -278,15 +276,15 @@ public class PlatoNodeProxy<T, V> {
         }
     }
 
-    private T getHandlerParam() {
+    private P getHandlerParam() {
         if (this.preHandler == null) {
             return null;
         }
-        T p = this.preHandler.paramHandle(forParamUseProxies);
+        P p = this.preHandler.paramHandle(graphRunningInfo);
         return p;
     }
 
-    public ResultData<V> getWorkResult() {
+    public ResultData<R> getWorkResult() {
         return resultData;
     }
 
@@ -294,7 +292,7 @@ public class PlatoNodeProxy<T, V> {
         return nextProxies;
     }
 
-    public void setParam(T param) {
+    public void setParam(P param) {
         this.param = param;
     }
 
@@ -350,13 +348,13 @@ public class PlatoNodeProxy<T, V> {
         }
     }
 
-    private ResultData<V> defaultResult() {
+    private ResultData<R> defaultResult() {
         resultData.setResultState(ResultState.TIMEOUT);
         resultData.setResult(null);
         return resultData;
     }
 
-    private ResultData<V> defaultExResult(Exception ex) {
+    private ResultData<R> defaultExResult(Exception ex) {
         resultData.setResultState(ResultState.EXCEPTION);
         resultData.setResult(null);
         resultData.setEx(ex);

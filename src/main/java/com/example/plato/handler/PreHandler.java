@@ -1,9 +1,6 @@
 package com.example.plato.handler;
 
-import java.util.Map;
-
-import com.example.plato.element.PlatoNodeProxy;
-import com.example.plato.runningData.ResultData;
+import com.example.plato.runningData.GraphRunningInfo;
 
 /**
  * @author zhaodongpo
@@ -12,11 +9,23 @@ import com.example.plato.runningData.ResultData;
  */
 public interface PreHandler<P> {
 
-    default P paramHandle(Map<String, PlatoNodeProxy> forParamUseProxies) {
+    PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
+        @Override
+        public Object paramHandle(GraphRunningInfo graphRunningInfo) {
+            return PreHandler.super.paramHandle(graphRunningInfo);
+        }
+
+        @Override
+        public boolean suicide(GraphRunningInfo graphRunningInfo) {
+            return PreHandler.super.suicide(graphRunningInfo);
+        }
+    };
+
+    default P paramHandle(GraphRunningInfo graphRunningInfo) {
         return null;
     }
 
-    default boolean suicide(Map<String, ResultData> resultDataMap) {
+    default boolean suicide(GraphRunningInfo graphRunningInfo) {
         return false;
     }
 
