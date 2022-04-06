@@ -20,13 +20,13 @@ import com.example.plato.runningData.ResultState;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/31 11:25 下午
+ * 2022/3/31 11:25 下午
  */
 public class PlatoNodeProxy<P, R> {
 
     private P param;
-    private String uniqueId;
-    private INodeWork<P, R> iNodeWork;
+    private final String uniqueId;
+    private final INodeWork<P, R> iNodeWork;
     private List<PlatoNodeProxy<?, ?>> nextProxies;
     private List<PrePlatoNodeProxy> dependProxies;
     private AfterHandler afterHandler;
@@ -66,7 +66,7 @@ public class PlatoNodeProxy<P, R> {
             return;
         }
         if (dependProxies == null || dependProxies.size() == 0) {
-            fire(fromProxy);
+            executor(fromProxy);
             beginNext(executorService);
             return;
         }
@@ -83,17 +83,14 @@ public class PlatoNodeProxy<P, R> {
         if (nextProxies == null || nextProxies.size() != 1) {
             return getState() == INIT;
         }
-        PlatoNodeProxy nextProxy = nextProxies.get(0);
-        boolean state = nextProxy.getState() == INIT;
-        //继续校验自己的next的状态
-        return state && nextProxy.checkNextProxyResult();
+        PlatoNodeProxy<?, ?> nextProxy = nextProxies.get(0);
+        return nextProxy.getState() == INIT && nextProxy.checkNextProxyResult();
     }
 
     /**
      * 进行下一个任务
      */
     private void beginNext(ExecutorService executorService) {
-        //花费的时间
         if (nextProxies == null) {
             return;
         }
@@ -114,7 +111,7 @@ public class PlatoNodeProxy<P, R> {
         }
     }
 
-    private void doDependsOneJob(PlatoNodeProxy dependProxy) {
+    private void doDependsOneJob(PlatoNodeProxy<?, ?> dependProxy) {
         if (ResultState.TIMEOUT == dependProxy.getWorkResult().getResultState()) {
             resultData = defaultResult();
             fastFail(INIT, null);
@@ -123,12 +120,12 @@ public class PlatoNodeProxy<P, R> {
             fastFail(INIT, null);
         } else {
             //前面任务正常完毕了，该自己了
-            fire(dependProxy);
+            executor(dependProxy);
         }
     }
 
     private synchronized void doDependsJobs(ExecutorService executorService, List<PrePlatoNodeProxy> dependProxies,
-            PlatoNodeProxy fromProxy) {
+            PlatoNodeProxy<?, ?> fromProxy) {
         boolean nowDependIsMust = false;
         //创建必须完成的上游proxy集合
         Set<PrePlatoNodeProxy> mustProxy = new HashSet<>();
@@ -146,7 +143,7 @@ public class PlatoNodeProxy<P, R> {
             if (ResultState.TIMEOUT == fromProxy.getWorkResult().getResultState()) {
                 fastFail(INIT, null);
             } else {
-                fire(fromProxy);
+                executor(fromProxy);
             }
             beginNext(executorService);
             return;
@@ -163,7 +160,7 @@ public class PlatoNodeProxy<P, R> {
         //先判断前面必须要执行的依赖任务的执行结果，如果有任何一个失败，那就不用走action了，直接给自己设置为失败，进行下一步就是了
         for (PrePlatoNodeProxy dependProxy : mustProxy) {
             PlatoNodeProxy<?, ?> platoNodeProxy = dependProxy.getWorkerProxy();
-            ResultData tempResultData = platoNodeProxy.getWorkResult();
+            ResultData<?> tempResultData = platoNodeProxy.getWorkResult();
             //为null或者isWorking，说明它依赖的某个任务还没执行到或没执行完
             if (platoNodeProxy.getState() == INIT || platoNodeProxy.getState() == WORKING) {
                 existNoFinish = true;
@@ -192,16 +189,15 @@ public class PlatoNodeProxy<P, R> {
         //都finish的话
         if (!existNoFinish) {
             //上游都finish了，进行自己
-            fire(fromProxy);
+            executor(fromProxy);
             beginNext(executorService);
-            return;
         }
     }
 
     /**
      * 执行自己的job.具体的执行是在另一个线程里,但判断阻塞超时是在work线程
      */
-    private void fire(PlatoNodeProxy fromProxy) {
+    private void executor(PlatoNodeProxy fromProxy) {
         //阻塞取结果
         resultData = workerDoJob(fromProxy);
     }
@@ -269,8 +265,7 @@ public class PlatoNodeProxy<P, R> {
     }
 
     private P getHandlerParam() {
-        P p = this.preHandler.paramHandle(graphRunningInfo);
-        return p;
+        return this.preHandler.paramHandle(graphRunningInfo);
     }
 
     public ResultData<R> getWorkResult() {
@@ -407,7 +402,7 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public Builder<W, C> setPreHandler(PreHandler preHandler) {
+        public Builder<W, C> setPreHandler(PreHandler<W> preHandler) {
             this.preHandler = preHandler;
             return this;
         }
