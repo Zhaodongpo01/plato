@@ -1,7 +1,6 @@
 package com.example.plato.test.service.impl;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +63,7 @@ public class GraphService implements IGraphService {
         PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.Builder<List<Integer>, Boolean>()
                 .setINodeWork(nodeB)
                 .setUniqueId("nodeB")
-                .next(platoNodeProxyC)
+                .next(platoNodeProxyD)
                 .setPreHandler(new PreHandler<List<Integer>>() {
                     @Override
                     public List<Integer> paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -75,7 +74,7 @@ public class GraphService implements IGraphService {
         PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.Builder<String, Long>()
                 .setINodeWork(nodeA)
                 .setUniqueId("nodeA")
-                .next(platoNodeProxyB)
+                .next(platoNodeProxyB, platoNodeProxyC)
                 .build();
 
         GraphManager graphManager = new GraphManager("grapIds");

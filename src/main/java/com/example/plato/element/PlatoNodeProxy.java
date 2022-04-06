@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import com.example.plato.exception.PlatoException;
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
@@ -46,7 +47,7 @@ public class PlatoNodeProxy<P, R> {
     private PlatoNodeProxy(String uniqueId, INodeWork<P, R> iNodeWork, AfterHandler afterHandler,
             PreHandler preHandler) {
         if (iNodeWork == null) {
-            throw new NullPointerException("async.worker is null");
+            throw new PlatoException("PlatoNodeProxy iNodeWork is null");
         }
         this.iNodeWork = iNodeWork;
         this.uniqueId = uniqueId;
@@ -59,22 +60,22 @@ public class PlatoNodeProxy<P, R> {
         this.graphRunningInfo = graphRunningInfo;
         graphRunningInfo.putUniqueResultData(uniqueId, resultData);
         if (getState() == FINISH || getState() == ERROR) {
-            beginNext(executorService);
+            runNext(executorService);
             return;
         }
         if (checkNextResult && !checkNextProxyResult()) {
             fastFail(INIT, new RuntimeException());
-            beginNext(executorService);
+            runNext(executorService);
             return;
         }
         if (CollectionUtils.isEmpty(dependProxies)) {
             executor(fromProxy);
-            beginNext(executorService);
+            runNext(executorService);
             return;
         }
         if (dependProxies.size() == 1) {
             doDependsOneJob(fromProxy);
-            beginNext(executorService);
+            runNext(executorService);
         } else {
             doDependsJobs(executorService, dependProxies, fromProxy);
         }
@@ -92,7 +93,7 @@ public class PlatoNodeProxy<P, R> {
     /**
      * 进行下一个任务
      */
-    private void beginNext(ExecutorService executorService) {
+    private void runNext(ExecutorService executorService) {
         if (nextProxies.size() == 1) {
             nextProxies.get(0).work(executorService, PlatoNodeProxy.this, graphRunningInfo);
             return;
@@ -144,7 +145,7 @@ public class PlatoNodeProxy<P, R> {
             } else {
                 executor(fromProxy);
             }
-            beginNext(executorService);
+            runNext(executorService);
             return;
         }
 
@@ -180,7 +181,7 @@ public class PlatoNodeProxy<P, R> {
         //只要有失败的
         if (hasError) {
             fastFail(INIT, null);
-            beginNext(executorService);
+            runNext(executorService);
             return;
         }
 
@@ -189,17 +190,17 @@ public class PlatoNodeProxy<P, R> {
         if (!existNoFinish) {
             //上游都finish了，进行自己
             executor(fromProxy);
-            beginNext(executorService);
+            runNext(executorService);
         }
     }
 
     /**
      * 执行自己的job.具体的执行是在另一个线程里,但判断阻塞超时是在work线程
      */
-    private void executor(PlatoNodeProxy fromProxy) {
+    /*private void executor(PlatoNodeProxy fromProxy) {
         //阻塞取结果
         resultData = workerDoJob(fromProxy);
-    }
+    }*/
 
     /**
      * 快速失败
@@ -211,11 +212,7 @@ public class PlatoNodeProxy<P, R> {
         }
         //尚未处理过结果
         if (checkIsNullResult()) {
-            if (e == null) {
-                resultData = defaultResult();
-            } else {
-                resultData = defaultExResult(e);
-            }
+            resultData = e == null ? defaultResult() : defaultExResult(e);
         }
         iNodeWork.hook(p, resultData);
         return true;
@@ -224,7 +221,7 @@ public class PlatoNodeProxy<P, R> {
     /**
      * 具体的单个worker执行任务
      */
-    private ResultData<R> workerDoJob(PlatoNodeProxy fromProxy) {
+    private ResultData<R> executor(PlatoNodeProxy fromProxy) {
         //避免重复执行
         if (!checkIsNullResult()) {
             return resultData;
