@@ -44,9 +44,9 @@ public class GraphService implements IGraphService {
         NodeD nodeD = new NodeD();
 
         PlatoNodeProxy<Void, String> platoNodeProxyD =
-                new PlatoNodeProxy.Builder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
+                new PlatoNodeProxy.PlatoNodeBuilder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
 
-        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.Builder<TestModel, FirstModel>()
+        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.PlatoNodeBuilder<TestModel, FirstModel>()
                 .setINodeWork(nodeC)
                 .setUniqueId("nodeC")
                 .next(platoNodeProxyD)
@@ -61,7 +61,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.Builder<List<Integer>, Boolean>()
+        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.PlatoNodeBuilder<List<Integer>, Boolean>()
                 .setINodeWork(nodeB)
                 .setUniqueId("nodeB")
                 .next(platoNodeProxyD)
@@ -72,7 +72,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.Builder<String, Long>()
+        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.PlatoNodeBuilder<String, Long>()
                 .setINodeWork(nodeA)
                 .setUniqueId("nodeA")
                 .next(platoNodeProxyB, platoNodeProxyC)
@@ -93,9 +93,9 @@ public class GraphService implements IGraphService {
         NodeD nodeD = new NodeD();
 
         PlatoNodeProxy<Void, String> platoNodeProxyD =
-                new PlatoNodeProxy.Builder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
+                new PlatoNodeProxy.PlatoNodeBuilder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
 
-        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.Builder<TestModel, FirstModel>()
+        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.PlatoNodeBuilder<TestModel, FirstModel>()
                 .setINodeWork(nodeC)
                 .setUniqueId("nodeC")
                 .next(platoNodeProxyD)
@@ -110,7 +110,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.Builder<List<Integer>, Boolean>()
+        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.PlatoNodeBuilder<List<Integer>, Boolean>()
                 .setINodeWork(nodeB)
                 .setUniqueId("nodeB")
                 .next(platoNodeProxyC)
@@ -121,7 +121,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.Builder<String, Long>()
+        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.PlatoNodeBuilder<String, Long>()
                 .setINodeWork(nodeA)
                 .setUniqueId("nodeA")
                 .next(platoNodeProxyB)
@@ -146,9 +146,9 @@ public class GraphService implements IGraphService {
         NodeD nodeD = new NodeD();
 
         PlatoNodeProxy<Void, String> platoNodeProxyD =
-                new PlatoNodeProxy.Builder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
+                new PlatoNodeProxy.PlatoNodeBuilder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
 
-        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.Builder<TestModel, FirstModel>()
+        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.PlatoNodeBuilder<TestModel, FirstModel>()
                 .setINodeWork(nodeC)
                 .setUniqueId("nodeC")
                 .next(platoNodeProxyD)
@@ -163,7 +163,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.Builder<List<Integer>, Boolean>()
+        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.PlatoNodeBuilder<List<Integer>, Boolean>()
                 .setINodeWork(nodeB)
                 .setUniqueId("nodeB")
                 .checkNextResult(false)
@@ -175,7 +175,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.Builder<String, Long>()
+        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.PlatoNodeBuilder<String, Long>()
                 .setINodeWork(nodeA)
                 .setUniqueId("nodeA")
                 .next(platoNodeProxyB, platoNodeProxyC)

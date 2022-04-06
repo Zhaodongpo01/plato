@@ -377,7 +377,7 @@ public class PlatoNodeProxy<P, R> {
                 checkNextResult);
     }
 
-    public static class Builder<W, C> {
+    public static class PlatoNodeBuilder<W, C> {
 
         private AfterHandler afterHandler;
         private PreHandler<W> preHandler;
@@ -388,34 +388,34 @@ public class PlatoNodeProxy<P, R> {
         private Set<PlatoNodeProxy<?, ?>> selfIsMustSet;
         private boolean checkNextResult = true;
 
-        public Builder<W, C> setAfterHandler(AfterHandler afterHandler) {
+        public PlatoNodeBuilder<W, C> setAfterHandler(AfterHandler afterHandler) {
             this.afterHandler = afterHandler;
             return this;
         }
 
-        public Builder<W, C> setPreHandler(PreHandler<W> preHandler) {
+        public PlatoNodeBuilder<W, C> setPreHandler(PreHandler<W> preHandler) {
             this.preHandler = preHandler;
             return this;
         }
 
-        public Builder<W, C> setINodeWork(INodeWork<W, C> worker) {
+        public PlatoNodeBuilder<W, C> setINodeWork(INodeWork<W, C> worker) {
             this.worker = worker;
             return this;
         }
 
-        public Builder<W, C> setUniqueId(String uniqueId) {
+        public PlatoNodeBuilder<W, C> setUniqueId(String uniqueId) {
             if (uniqueId != null) {
                 this.uniqueId = uniqueId;
             }
             return this;
         }
 
-        public Builder<W, C> checkNextResult(boolean checkNextResult) {
+        public PlatoNodeBuilder<W, C> checkNextResult(boolean checkNextResult) {
             this.checkNextResult = checkNextResult;
             return this;
         }
 
-        public Builder<W, C> depend(PlatoNodeProxy<?, ?>... proxys) {
+        public PlatoNodeBuilder<W, C> depend(PlatoNodeProxy<?, ?>... proxys) {
             if (proxys == null) {
                 return this;
             }
@@ -425,11 +425,11 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public Builder<W, C> depend(PlatoNodeProxy<?, ?> proxy) {
+        public PlatoNodeBuilder<W, C> depend(PlatoNodeProxy<?, ?> proxy) {
             return depend(proxy, true);
         }
 
-        public Builder<W, C> depend(PlatoNodeProxy<?, ?> proxy, boolean isMust) {
+        public PlatoNodeBuilder<W, C> depend(PlatoNodeProxy<?, ?> proxy, boolean isMust) {
             if (proxy == null) {
                 return this;
             }
@@ -441,11 +441,11 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public Builder<W, C> next(PlatoNodeProxy<?, ?> proxy) {
+        public PlatoNodeBuilder<W, C> next(PlatoNodeProxy<?, ?> proxy) {
             return next(proxy, true);
         }
 
-        public Builder<W, C> next(PlatoNodeProxy<?, ?> proxy, boolean selfIsMust) {
+        public PlatoNodeBuilder<W, C> next(PlatoNodeProxy<?, ?> proxy, boolean selfIsMust) {
             nextProxies.add(proxy);
             //强依赖自己
             if (selfIsMust) {
@@ -457,7 +457,7 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public Builder<W, C> next(PlatoNodeProxy<?, ?>... proxys) {
+        public PlatoNodeBuilder<W, C> next(PlatoNodeProxy<?, ?>... proxys) {
             if (proxys == null) {
                 return this;
             }
