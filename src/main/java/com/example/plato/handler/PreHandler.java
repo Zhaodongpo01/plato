@@ -1,6 +1,9 @@
 package com.example.plato.handler;
 
-import com.example.plato.runningData.GraphRunningInfo;
+import java.util.Map;
+
+import com.example.plato.element.WorkerWrapper;
+import com.example.plato.runningData.ResultData;
 
 /**
  * @author zhaodongpo
@@ -9,23 +12,11 @@ import com.example.plato.runningData.GraphRunningInfo;
  */
 public interface PreHandler<P> {
 
-    PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
-        @Override
-        public Object paramHandle(GraphRunningInfo graphRunningInfo) {
-            return PreHandler.super.paramHandle(graphRunningInfo);
-        }
-
-        @Override
-        public boolean suicide(GraphRunningInfo graphRunningInfo) {
-            return PreHandler.super.suicide(graphRunningInfo);
-        }
-    };
-
-    default P paramHandle(GraphRunningInfo graphRunningInfo) {
+    default P paramHandle(Map<String, WorkerWrapper> forParamUseWrappers) {
         return null;
     }
 
-    default boolean suicide(GraphRunningInfo graphRunningInfo) {
+    default boolean suicide(Map<String, ResultData> resultDataMap) {
         return false;
     }
 

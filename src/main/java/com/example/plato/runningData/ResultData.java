@@ -39,6 +39,9 @@ public class ResultData<R> {
         return objectResultData;
     }
 
+    public static <R> ResultData<R> defaultResult() {
+        return new ResultData<>();
+    }
 
     public R getData() {
         return data;

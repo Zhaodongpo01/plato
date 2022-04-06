@@ -10,10 +10,12 @@ import com.google.common.collect.Sets;
  * @date 2022/1/7 5:25 下午
  */
 public enum NodeResultStatus {
+    DEFAULT,
     INIT,
     LIMIT_RUN,
     EXECUTING,
     EXECUTED,
+    TIMEOUT,
     ERROR,
     ;
 

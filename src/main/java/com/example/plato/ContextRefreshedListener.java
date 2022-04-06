@@ -1,13 +1,7 @@
 package com.example.plato;
 
-import com.example.plato.holder.NodeHolder;
-import com.example.plato.loader.ymlNode.AbstractYmlNode;
-import com.example.plato.util.PlatoJsonUtil;
-
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-
-import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,9 +15,6 @@ public class ContextRefreshedListener implements ApplicationListener<ContextRefr
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (event.getApplicationContext().getParent() == null) {
-            Map<String, Map<String, AbstractYmlNode>> ymlNodeMap = NodeHolder.initYmlNodeMap();
-            log.info("加载完毕ymlNodeMap:{}", PlatoJsonUtil.toJson(ymlNodeMap));
-        }
+
     }
 }

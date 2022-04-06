@@ -6,20 +6,20 @@ package com.example.plato.element;
  * @date 2022/3/31 11:17 下午
  */
 public class PrePlatoNodeProxy {
-    private PlatoNodeProxy<?, ?> platoNodeProxy;
+    private WorkerWrapper<?, ?> workerWrapper;
     private boolean must;
 
-    public PrePlatoNodeProxy(PlatoNodeProxy<?, ?> platoNodeProxy, boolean must) {
-        this.platoNodeProxy = platoNodeProxy;
+    public PrePlatoNodeProxy(WorkerWrapper<?, ?> workerWrapper, boolean must) {
+        this.workerWrapper = workerWrapper;
         this.must = must;
     }
 
-    public PlatoNodeProxy<?, ?> getPlatoNodeProxy() {
-        return platoNodeProxy;
+    public WorkerWrapper<?, ?> getWorkerWrapper() {
+        return workerWrapper;
     }
 
-    public void setPlatoNodeProxy(PlatoNodeProxy<?, ?> platoNodeProxy) {
-        this.platoNodeProxy = platoNodeProxy;
+    public void setWorkerWrapper(WorkerWrapper<?, ?> workerWrapper) {
+        this.workerWrapper = workerWrapper;
     }
 
     public boolean isMust() {

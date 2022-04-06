@@ -1,38 +1,49 @@
-graphId: 9527
-graphName: 柏拉图Test2
-graphDesc: 柏拉图的柏，柏拉图的拉，柏拉图的图
-startNode: uniqA
+graphId: 9526
+graphName: 柏拉图
+graphDesc: 柏拉图的柏拉图
+startNode: nodeA
 nodes:
   - nodeConfig:
-      uniqueId: uniqA
+      uniqueId: nodeA
       name: nodeA
-      invokeElement: firstTestYmlService:uniqAMethod
-      type: METHOD
-      desc: 测试方法unAMethod
-      next: uniqB
+      invokeElement: nodeA
+      type: BEAN
+      desc: Bean类型Node
+      next: nodeB,nodeC
+      afterHandler: afterHandlerA
   - nodeConfig:
-      uniqueId: uniqB
+      uniqueId: nodeB
       name: nodeB
-      type: METHOD
-      invokeElement: firstTestYmlService:uniqBMethod
-      desc: 测试方法uniqBMethod
-      pre: uniqA
-      next: uniqC
-      preHandler: firstServicePerHandler:perhandlerB
+      type: BEAN
+      invokeElement: nodeB
+      desc: Bean类型Node
+      pre: nodeA
+      next: nodeD
+      preHandler: prehandlerB
   - nodeConfig:
-      uniqueId: uniqC
+      uniqueId: nodeC
       name: nodeC
       type: BEAN
-      invokeElement: nodeCBean
-      desc: 测试Bean类型节点
-      pre: uniqB
-      next: uniqD
-      preHandler: firstServicePerHandler:perhandlerC
+      invokeElement: nodeC
+      desc: Bean类型节点
+      pre: nodeA
+      next: nodeD
+      preHandler: prehandlerC
   - nodeConfig:
-      uniqueId: uniqD
+      uniqueId: nodeD
       name: nodeD
-      type: SCRIPT
-      invokeElement: /Users/zhaodongpo/plato/plato/src/main/resources/python/platoTest.py
-      desc: python脚本类型节点
-      pre: uniqC
-      preHandler: firstServicePerHandler:perhandlerD
+      type: BEAN
+      invokeElement: nodeD
+      desc: Bean类型节点
+      pre: nodeB,nodeC
+      next: nodeE
+      afterHandler: afterHandlerD
+      preHandler: methodPreHandler:commonPreHandler
+  - nodeConfig:
+      uniqueId: nodeE
+      name: nodeE
+      type: BEAN
+      invokeElement: nodeE
+      desc: Bean类型节点
+      pre: nodeD
+      preHandler: prehandlerE

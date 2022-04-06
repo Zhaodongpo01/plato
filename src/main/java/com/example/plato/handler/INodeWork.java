@@ -1,6 +1,7 @@
 package com.example.plato.handler;
 
 import com.example.plato.runningData.ResultData;
+import com.example.plato.runningData.WorkResult;
 
 /**
  * @author zhaodongpo
@@ -17,7 +18,7 @@ public interface INodeWork<P, R> {
     /**
      * 实现hook方法
      */
-    void hook(P p, ResultData<R> resultData);
+    void hook(P p, WorkResult<R> resultData);
 
 
 

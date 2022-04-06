@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
+import com.example.plato.runningData.WorkResult;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +24,7 @@ public class NodeE implements INodeWork<Integer, Void> {
     }
 
     @Override
-    public void hook(Integer integer, ResultData<Void> resultData) {
+    public void hook(Integer integer, WorkResult resultData) {
         log.info("指定NodeE执行完成");
     }
 

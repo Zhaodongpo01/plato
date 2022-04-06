@@ -1,0 +1,39 @@
+graphId: 9527
+graphName: 柏拉图
+graphDesc: 柏拉图的柏拉图
+startNode: node1
+nodes:
+  - nodeConfig:
+      uniqueId: node1
+      name: node1
+      invokeElement: methodNode:node1
+      type: METHOD
+      desc: 方法类型Node
+      next: nodeB
+      afterHandler: node1AfterHandler
+  - nodeConfig:
+      uniqueId: nodeB
+      name: nodeB
+      type: BEAN
+      invokeElement: nodeB
+      desc: Bean类型Node
+      pre: node1
+      next: nodeC
+      preHandler: methodPreHandler:perhandlerB
+  - nodeConfig:
+      uniqueId: nodeC
+      name: nodeC
+      type: BEAN
+      invokeElement: nodeC
+      desc: 测试Bean类型节点
+      pre: nodeB
+      next: node4
+      preHandler: nodeCPreHandler
+  - nodeConfig:
+      uniqueId: node4
+      name: node4
+      type: METHOD
+      invokeElement: methodNode:node4
+      desc: 方法类型节点
+      pre: nodeC
+      preHandler: methodPreHandler:perhandler4
