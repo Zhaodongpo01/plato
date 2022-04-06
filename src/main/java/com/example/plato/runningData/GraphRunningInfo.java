@@ -17,7 +17,7 @@ public class GraphRunningInfo<R> {
 
     private final Map<String, ResultData<R>> resultDataMap = new ConcurrentHashMap<>();
 
-    public ResultData<R> putUniqueResultData(String uniqueId, ResultData<R> resultData) {
+    public ResultData<R> putResultData(String uniqueId, ResultData<R> resultData) {
         return resultDataMap.put(uniqueId, resultData);
     }
 

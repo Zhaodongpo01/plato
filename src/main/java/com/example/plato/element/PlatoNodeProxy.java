@@ -1,5 +1,7 @@
 package com.example.plato.element;
 
+import static org.reflections.Reflections.log;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +10,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -55,10 +60,10 @@ public class PlatoNodeProxy<P, R> {
         this.preHandler = preHandler;
     }
 
-    public void work(ExecutorService executorService, PlatoNodeProxy fromProxy,
+    public void run(ExecutorService executorService, PlatoNodeProxy fromProxy,
             GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
-        graphRunningInfo.putUniqueResultData(uniqueId, resultData);
+        graphRunningInfo.putResultData(uniqueId, resultData);
         if (getState() == FINISH || getState() == ERROR) {
             runNext(executorService);
             return;
@@ -74,12 +79,12 @@ public class PlatoNodeProxy<P, R> {
             return;
         }
         if (dependProxies.size() == 1) {
-            if (doDependsOneJob(fromProxy)) {
+            if (runPreProxy(fromProxy)) {
                 executor(fromProxy);
             }
             runNext(executorService);
         }
-        doDependsJobs(executorService, dependProxies, fromProxy);
+        runPreProxies(executorService, dependProxies, fromProxy);
     }
 
     private boolean checkNextProxyResult() {
@@ -96,23 +101,23 @@ public class PlatoNodeProxy<P, R> {
      */
     private void runNext(ExecutorService executorService) {
         if (nextProxies.size() == 1) {
-            nextProxies.get(0).work(executorService, PlatoNodeProxy.this, graphRunningInfo);
+            nextProxies.get(0).run(executorService, PlatoNodeProxy.this, graphRunningInfo);
             return;
         }
-        CompletableFuture[] futures = new CompletableFuture[nextProxies.size()];
-        for (int i = 0; i < nextProxies.size(); i++) {
-            int finalI = i;
-            futures[i] = CompletableFuture.runAsync(() -> nextProxies.get(finalI)
-                    .work(executorService, PlatoNodeProxy.this, graphRunningInfo), executorService);
-        }
+        List<CompletableFuture<Void>> completableFutureList =
+                nextProxies.stream().map(platoNodeProxy -> CompletableFuture.runAsync(
+                        () -> platoNodeProxy.run(executorService, this, graphRunningInfo), executorService)).collect(
+                        Collectors.toList());
         try {
-            CompletableFuture.allOf(futures).get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {}))
+                    .get(6000_0, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+            log.error("runNext异常{}", e.getMessage(), e);
+            throw new PlatoException("runNext异常");
         }
     }
 
-    private boolean doDependsOneJob(PlatoNodeProxy<?, ?> dependProxy) {
+    private boolean runPreProxy(PlatoNodeProxy<?, ?> dependProxy) {
         if (ResultState.TIMEOUT == dependProxy.getWorkResult().getResultState()) {
             resultData = defaultResult();
             fastFail(INIT, null);
@@ -125,7 +130,7 @@ public class PlatoNodeProxy<P, R> {
         return true;
     }
 
-    private synchronized void doDependsJobs(ExecutorService executorService, List<PrePlatoNodeProxy> dependProxies,
+    private synchronized void runPreProxies(ExecutorService executorService, List<PrePlatoNodeProxy> dependProxies,
             PlatoNodeProxy<?, ?> fromProxy) {
         boolean nowDependIsMust = false;
         //创建必须完成的上游proxy集合
@@ -194,14 +199,6 @@ public class PlatoNodeProxy<P, R> {
             runNext(executorService);
         }
     }
-
-    /**
-     * 执行自己的job.具体的执行是在另一个线程里,但判断阻塞超时是在work线程
-     */
-    /*private void executor(PlatoNodeProxy fromProxy) {
-        //阻塞取结果
-        resultData = workerDoJob(fromProxy);
-    }*/
 
     /**
      * 快速失败

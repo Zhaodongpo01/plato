@@ -11,8 +11,8 @@ public interface IGraphService {
 
     void serial();
 
-    void ymlSerial();
+    void parallel1();
 
-    void ymlSerialBean();
+    void serial1();
 
 }

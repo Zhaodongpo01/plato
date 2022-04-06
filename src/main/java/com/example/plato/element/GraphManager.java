@@ -30,7 +30,7 @@ public class GraphManager {
         GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
         CompletableFuture<Void> completableFuture =
                 CompletableFuture.runAsync(
-                        () -> firstPlatoNodeProxy.work(threadPoolExecutor, null, graphRunningInfo),
+                        () -> firstPlatoNodeProxy.run(threadPoolExecutor, null, graphRunningInfo),
                         threadPoolExecutor);
         try {
             completableFuture.get(timeOut, timeUnit);

@@ -21,8 +21,17 @@ public class MyController {
 
     @PostMapping("/parallel")
     public String parallel() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.parallel()).start();
+        }
+        //iGraphService.parallel();
+        return "SUCCESS";
+    }
+
+    @PostMapping("/parallel1")
+    public String parallel1() {
+        for (int i = 0; i < 500; i++) {
+            new Thread(() -> iGraphService.parallel1()).start();
         }
         //iGraphService.parallel();
         return "SUCCESS";
@@ -30,7 +39,7 @@ public class MyController {
 
     @PostMapping("/serial")
     public String serial() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.serial()).start();
         }
         //iGraphService.parallel();
