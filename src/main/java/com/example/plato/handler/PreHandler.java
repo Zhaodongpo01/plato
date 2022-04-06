@@ -2,7 +2,7 @@ package com.example.plato.handler;
 
 import java.util.Map;
 
-import com.example.plato.element.WorkerWrapper;
+import com.example.plato.element.PlatoNodeProxy;
 import com.example.plato.runningData.ResultData;
 
 /**
@@ -12,7 +12,7 @@ import com.example.plato.runningData.ResultData;
  */
 public interface PreHandler<P> {
 
-    default P paramHandle(Map<String, WorkerWrapper> forParamUseWrappers) {
+    default P paramHandle(Map<String, PlatoNodeProxy> forParamUseProxies) {
         return null;
     }
 

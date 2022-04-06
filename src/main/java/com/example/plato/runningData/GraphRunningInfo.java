@@ -8,25 +8,24 @@ import com.example.plato.util.TraceUtil;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/18 3:10 下午
+ * @date 2022/4/6 7:00 下午
  */
-public class GraphRunningInfo<P, R> {
+public class GraphRunningInfo<R> {
 
     private final String graphTraceId = TraceUtil.getRandomTraceId();
 
-    private final ConcurrentHashMap<String, NodeRunningInfo<P, R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NodeRunningInfo<R>> nodeRunningInfoMap = new ConcurrentHashMap<>();
 
-    public ConcurrentHashMap<String, NodeRunningInfo<P, R>> getNodeRunningInfoMap() {
+    public ConcurrentHashMap<String, NodeRunningInfo<R>> getNodeRunningInfoMap() {
         return this.nodeRunningInfoMap;
     }
 
-    public NodeRunningInfo<P, R> getNodeRunningInfo(String uniqueNodeId) {
+    public NodeRunningInfo<R> getNodeRunningInfo(String uniqueNodeId) {
         PlatoAssert.emptyException(() -> "getNodeRunningInfo uniqueNodeId is empty", uniqueNodeId);
         return nodeRunningInfoMap.get(uniqueNodeId);
     }
 
-    public void putNodeRunningInfo(String uniqueId, NodeRunningInfo<P, R> nodeRunningInfo) {
+    public void putNodeRunningInfo(String uniqueId, NodeRunningInfo<R> nodeRunningInfo) {
         nodeRunningInfoMap.put(uniqueId, nodeRunningInfo);
     }
-
 }

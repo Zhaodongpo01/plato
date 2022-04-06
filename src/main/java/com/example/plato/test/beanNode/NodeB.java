@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
-import com.example.plato.runningData.WorkResult;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +26,7 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
     }
 
     @Override
-    public void hook(List<Integer> integers, WorkResult<Boolean> resultData) {
+    public void hook(List<Integer> integers, ResultData<Boolean> resultData) {
         //log.info("NodeB结果:{}", resultData.getData());
     }
 }

@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -19,23 +18,21 @@ import com.example.plato.exception.PlatoException;
 public class GraphManager {
 
     private final String graphId;
-    private static final Long KEEP_ALIVE_TIME = 100L;
-    private static final Integer MAXIMUM_POOL_SIZE = 1000;
-    private static final Integer CAPACITY = 1_500;
-    private static ExecutorService threadPoolExecutor;
 
     public GraphManager(String graphId) {
         this.graphId = graphId;
     }
 
-    public <P, R> void run(P p, ThreadPoolExecutor COMMON_POOL, WorkerWrapper<P, R> firstPlatoNodeProxy, Long timeOut,
+    public <P, R> void run(P p,
+            ThreadPoolExecutor threadPoolExecutor,
+            PlatoNodeProxy<P, R> firstPlatoNodeProxy,
+            Long timeOut,
             TimeUnit timeUnit) {
-        GraphManager.threadPoolExecutor = COMMON_POOL;
         firstPlatoNodeProxy.setParam(p);
-        Map<String, WorkerWrapper> forParamUseWrappers = new ConcurrentHashMap<>();
+        Map<String, PlatoNodeProxy> forParamUseProxies = new ConcurrentHashMap<>();
         CompletableFuture<Void> completableFuture =
                 CompletableFuture.runAsync(
-                        () -> firstPlatoNodeProxy.work(threadPoolExecutor, null, forParamUseWrappers),
+                        () -> firstPlatoNodeProxy.work(threadPoolExecutor, null, forParamUseProxies),
                         threadPoolExecutor);
         try {
             completableFuture.get(timeOut, timeUnit);

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
 
 import com.example.plato.element.GraphManager;
-import com.example.plato.element.WorkerWrapper;
+import com.example.plato.element.PlatoNodeProxy;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.test.beanNode.NodeA;
 import com.example.plato.test.beanNode.NodeB;
@@ -42,10 +42,10 @@ public class GraphService implements IGraphService {
         NodeC nodeC = new NodeC();
         NodeD nodeD = new NodeD();
 
-        WorkerWrapper<Void, String> platoNodeProxyD =
-                new WorkerWrapper.Builder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
+        PlatoNodeProxy<Void, String> platoNodeProxyD =
+                new PlatoNodeProxy.Builder<Void, String>().setINodeWork(nodeD).setUniqueId("nodeD").build();
 
-        WorkerWrapper<TestModel, FirstModel> platoNodeProxyC = new WorkerWrapper.Builder<TestModel, FirstModel>()
+        PlatoNodeProxy<TestModel, FirstModel> platoNodeProxyC = new PlatoNodeProxy.Builder<TestModel, FirstModel>()
                 .setINodeWork(nodeC)
                 .setUniqueId("nodeC")
                 .next(platoNodeProxyD)
@@ -60,7 +60,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        WorkerWrapper<List<Integer>, Boolean> platoNodeProxyB = new WorkerWrapper.Builder<List<Integer>, Boolean>()
+        PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.Builder<List<Integer>, Boolean>()
                 .setINodeWork(nodeB)
                 .setUniqueId("nodeB")
                 .next(platoNodeProxyD)
@@ -71,7 +71,7 @@ public class GraphService implements IGraphService {
                     }
                 }).build();
 
-        WorkerWrapper<String, Long> platoNodeProxyA = new WorkerWrapper.Builder<String, Long>()
+        PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.Builder<String, Long>()
                 .setINodeWork(nodeA)
                 .setUniqueId("nodeA")
                 .next(platoNodeProxyB, platoNodeProxyC)

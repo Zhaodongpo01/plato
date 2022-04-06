@@ -24,6 +24,7 @@ public class MyController {
         for (int i = 0; i < 1000; i++) {
             new Thread(() -> iGraphService.parallel()).start();
         }
+        //iGraphService.parallel();
         return "SUCCESS";
     }
 

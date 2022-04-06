@@ -1,14 +1,6 @@
 package com.example.plato.runningData;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.example.plato.platoEnum.CurrentState;
-import com.example.plato.util.TraceUtil;
-
 import lombok.Getter;
-
 
 /**
  * @author zhaodongpo
@@ -16,31 +8,21 @@ import lombok.Getter;
  * @date 2022/3/18 3:12 下午
  */
 @Getter
-public class NodeRunningInfo<P, R> {
+public class NodeRunningInfo<R> {
 
-    private P p;
-
-    private final String traceId = TraceUtil.getRandomTraceId();
+    private final String traceId;
 
     private final String graphId;
 
     private final String uniqueId;
 
-    private final AtomicReference<CurrentState> CUR_STATUS = new AtomicReference<>(CurrentState.INIT);
+    private final ResultData<R> resultData;
 
-    private ResultData<R> resultData = ResultData.getFail(StringUtils.EMPTY);
-
-    private boolean compareAndSetState(CurrentState expect, CurrentState update) {
-        return this.CUR_STATUS.compareAndSet(expect, update);
-    }
-
-    ResultData<R> getResultData() {
-        return resultData;
-    }
-
-    public NodeRunningInfo(String graphId, String uniqueId) {
+    public NodeRunningInfo(String traceId, String graphId, String uniqueId, ResultData<R> resultData) {
+        this.traceId = traceId;
         this.graphId = graphId;
         this.uniqueId = uniqueId;
+        this.resultData = resultData;
     }
 
 }

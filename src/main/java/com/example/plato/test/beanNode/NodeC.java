@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
-import com.example.plato.runningData.WorkResult;
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
 
@@ -29,7 +28,7 @@ public class NodeC implements INodeWork<TestModel, FirstModel> {
     }
 
     @Override
-    public void hook(TestModel testModel, WorkResult<FirstModel> resultData) {
+    public void hook(TestModel testModel, ResultData<FirstModel> resultData) {
         log.info("NodeC结果:{}");
     }
 }

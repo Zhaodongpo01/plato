@@ -1,85 +1,63 @@
 package com.example.plato.runningData;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.example.plato.platoEnum.NodeResultStatus;
-
 /**
- * @author zhaodongpo
- * @version 1.0
- * @date 2022/1/23 11:02 上午
+ * 执行结果
  */
 public class ResultData<R> {
+    /**
+     * 执行的结果
+     */
+    private R result;
+    /**
+     * 结果状态
+     */
+    private ResultState resultState;
+    private Exception ex;
 
-    private R data;
-
-    private boolean success = false;
-
-    private String mes = StringUtils.EMPTY;
-
-    private long costTime = 0L;
-
-    private NodeResultStatus nodeResultStatus = NodeResultStatus.INIT;
-
-    public static <R> ResultData<R> build(R result, NodeResultStatus resultStatus, String mes, long costTime) {
-        ResultData<R> resultData = new ResultData<>();
-        resultData.setData(result);
-        resultData.setNodeResultStatus(resultStatus);
-        resultData.setMes(mes);
-        resultData.setCostTime(costTime);
-        resultData.setSuccess(!NodeResultStatus.ERROR.equals(resultStatus));
-        return resultData;
+    public ResultData(R result, ResultState resultState) {
+        this(result, resultState, null);
     }
 
-    public static <R> ResultData<R> getFail(String mes) {
-        ResultData<R> objectResultData = new ResultData<>();
-        objectResultData.setNodeResultStatus(NodeResultStatus.ERROR);
-        objectResultData.setMes(mes);
-        objectResultData.setSuccess(false);
-        return objectResultData;
+    public ResultData(R result, ResultState resultState, Exception ex) {
+        this.result = result;
+        this.resultState = resultState;
+        this.ex = ex;
     }
 
     public static <R> ResultData<R> defaultResult() {
-        return new ResultData<>();
+        return new ResultData<>(null, ResultState.DEFAULT);
     }
 
-    public R getData() {
-        return data;
+    @Override
+    public String toString() {
+        return "WorkResult{" +
+                "result=" + result +
+                ", resultState=" + resultState +
+                ", ex=" + ex +
+                '}';
     }
 
-    public void setData(R data) {
-        this.data = data;
+    public Exception getEx() {
+        return ex;
     }
 
-    public boolean isSuccess() {
-        return success;
+    public void setEx(Exception ex) {
+        this.ex = ex;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public R getResult() {
+        return result;
     }
 
-    public String getMes() {
-        return mes;
+    public void setResult(R result) {
+        this.result = result;
     }
 
-    public void setMes(String mes) {
-        this.mes = mes;
+    public ResultState getResultState() {
+        return resultState;
     }
 
-    public long getCostTime() {
-        return costTime;
-    }
-
-    public void setCostTime(long costTime) {
-        this.costTime = costTime;
-    }
-
-    public NodeResultStatus getNodeResultStatus() {
-        return nodeResultStatus;
-    }
-
-    public void setNodeResultStatus(NodeResultStatus nodeResultStatus) {
-        this.nodeResultStatus = nodeResultStatus;
+    public void setResultState(ResultState resultState) {
+        this.resultState = resultState;
     }
 }
