@@ -1,16 +1,13 @@
 package com.example.plato.runningData;
 
 /**
- * 执行结果
+ * @author zhaodongpo
+ * @version 1.0
+ * @date 2022/3/31 11:25 下午
  */
 public class ResultData<R> {
-    /**
-     * 执行的结果
-     */
+
     private R result;
-    /**
-     * 结果状态
-     */
     private ResultState resultState;
     private Exception ex;
 

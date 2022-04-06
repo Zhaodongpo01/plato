@@ -1,8 +1,9 @@
 package com.example.plato.runningData;
 
 /**
- * 结果状态
- * @author wuweifeng wrote on 2019-11-19.
+ * @author zhaodongpo
+ * @version 1.0
+ * @date 2022/3/31 11:25 下午
  */
 public enum ResultState {
     SUCCESS,

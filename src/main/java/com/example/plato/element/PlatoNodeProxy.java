@@ -17,15 +17,20 @@ import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.runningData.ResultState;
 
+/**
+ * @author zhaodongpo
+ * @version 1.0
+ * @date 2022/3/31 11:25 下午
+ */
 public class PlatoNodeProxy<P, R> {
 
-    private String uniqueId;
     private P param;
+    private String uniqueId;
     private INodeWork<P, R> iNodeWork;
     private List<PlatoNodeProxy<?, ?>> nextProxies;
     private List<PrePlatoNodeProxy> dependProxies;
     private AfterHandler afterHandler;
-    private PreHandler<P> preHandler;
+    private PreHandler<P> preHandler = PreHandler.DEFAULT_PRE_HANDLER;
     private AtomicInteger state = new AtomicInteger(0);
     private GraphRunningInfo graphRunningInfo;
     private volatile ResultData<R> resultData = ResultData.defaultResult();
@@ -50,17 +55,15 @@ public class PlatoNodeProxy<P, R> {
     public void work(ExecutorService executorService, PlatoNodeProxy fromProxy,
             GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
-        graphRunningInfo.putUniqueResultData(uniqueId,resultData);
+        graphRunningInfo.putUniqueResultData(uniqueId, resultData);
         if (getState() == FINISH || getState() == ERROR) {
             beginNext(executorService);
             return;
         }
-        if (needCheckNextProxyResult) {
-            if (!checkNextProxyResult()) {
-                fastFail(INIT, new RuntimeException());
-                beginNext(executorService);
-                return;
-            }
+        if (needCheckNextProxyResult && !checkNextProxyResult()) {
+            fastFail(INIT, new RuntimeException());
+            beginNext(executorService);
+            return;
         }
         if (dependProxies == null || dependProxies.size() == 0) {
             fire(fromProxy);
@@ -72,17 +75,6 @@ public class PlatoNodeProxy<P, R> {
             beginNext(executorService);
         } else {
             doDependsJobs(executorService, dependProxies, fromProxy);
-        }
-    }
-
-
-    public void work(ExecutorService executorService, GraphRunningInfo graphRunningInfo) {
-        work(executorService, null, graphRunningInfo);
-    }
-
-    public void stopNow() {
-        if (getState() == INIT || getState() == WORKING) {
-            fastFail(getState(), null);
         }
     }
 
@@ -277,9 +269,6 @@ public class PlatoNodeProxy<P, R> {
     }
 
     private P getHandlerParam() {
-        if (this.preHandler == null) {
-            return null;
-        }
         P p = this.preHandler.paramHandle(graphRunningInfo);
         return p;
     }
@@ -407,7 +396,6 @@ public class PlatoNodeProxy<P, R> {
         private AfterHandler afterHandler;
         private PreHandler<W> preHandler;
         private String uniqueId;
-        private W param;
         private INodeWork<W, C> worker;
         private List<PlatoNodeProxy<?, ?>> nextProxies;
         private List<PrePlatoNodeProxy> dependProxies;
@@ -512,7 +500,6 @@ public class PlatoNodeProxy<P, R> {
                     proxy.addNext(platoNodeProxy);
                 }
             }
-
             return proxy;
         }
 
