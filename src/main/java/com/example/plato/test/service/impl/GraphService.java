@@ -64,7 +64,7 @@ public class GraphService implements IGraphService {
         PlatoNodeProxy<List<Integer>, Boolean> platoNodeProxyB = new PlatoNodeProxy.Builder<List<Integer>, Boolean>()
                 .setINodeWork(nodeB)
                 .setUniqueId("nodeB")
-                .next(platoNodeProxyD)
+                .next(platoNodeProxyC)
                 .setPreHandler(new PreHandler<List<Integer>>() {
                     @Override
                     public List<Integer> paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -75,7 +75,7 @@ public class GraphService implements IGraphService {
         PlatoNodeProxy<String, Long> platoNodeProxyA = new PlatoNodeProxy.Builder<String, Long>()
                 .setINodeWork(nodeA)
                 .setUniqueId("nodeA")
-                .next(platoNodeProxyB, platoNodeProxyC)
+                .next(platoNodeProxyB)
                 .build();
 
         GraphManager graphManager = new GraphManager("grapIds");

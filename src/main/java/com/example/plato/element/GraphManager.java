@@ -27,10 +27,8 @@ public class GraphManager {
     public <P, R> void run(P p,
             ThreadPoolExecutor threadPoolExecutor,
             PlatoNodeProxy<P, R> firstPlatoNodeProxy,
-            Long timeOut,
-            TimeUnit timeUnit) {
-        firstPlatoNodeProxy.setParam(p);
-        Map<String, PlatoNodeProxy> forParamUseProxies = new ConcurrentHashMap<>();
+            Long timeOut, TimeUnit timeUnit) {
+        firstPlatoNodeProxy.setp(p);
         GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
         CompletableFuture<Void> completableFuture =
                 CompletableFuture.runAsync(

@@ -24,17 +24,17 @@ import com.example.plato.runningData.ResultState;
  */
 public class PlatoNodeProxy<P, R> {
 
-    private P param;
+    private P p;
     private final String uniqueId;
     private final INodeWork<P, R> iNodeWork;
     private List<PlatoNodeProxy<?, ?>> nextProxies;
     private List<PrePlatoNodeProxy> dependProxies;
     private AfterHandler afterHandler;
-    private PreHandler<P> preHandler = PreHandler.DEFAULT_PRE_HANDLER;
+    private PreHandler<P> preHandler;
     private AtomicInteger state = new AtomicInteger(0);
     private GraphRunningInfo graphRunningInfo;
     private volatile ResultData<R> resultData = ResultData.defaultResult();
-    private volatile boolean needCheckNextProxyResult = true;
+    private volatile boolean checkNextResult = true;
 
     private static final int FINISH = 1;
     private static final int ERROR = 2;
@@ -60,7 +60,7 @@ public class PlatoNodeProxy<P, R> {
             beginNext(executorService);
             return;
         }
-        if (needCheckNextProxyResult && !checkNextProxyResult()) {
+        if (checkNextResult && !checkNextProxyResult()) {
             fastFail(INIT, new RuntimeException());
             beginNext(executorService);
             return;
@@ -218,7 +218,7 @@ public class PlatoNodeProxy<P, R> {
                 resultData = defaultExResult(e);
             }
         }
-        iNodeWork.hook(param, resultData);
+        iNodeWork.hook(p, resultData);
         return true;
     }
 
@@ -237,11 +237,11 @@ public class PlatoNodeProxy<P, R> {
             }
 
             if (fromProxy != null) {
-                this.param = getHandlerParam();
+                this.p = getPreHandlerParam();
             }
 
             //执行耗时操作
-            R resultValue = iNodeWork.work(param);
+            R resultValue = iNodeWork.work(p);
 
             //如果状态不是在working,说明别的地方已经修改了
             if (!compareAndSetState(WORKING, FINISH)) {
@@ -251,7 +251,7 @@ public class PlatoNodeProxy<P, R> {
             resultData.setResultState(ResultState.SUCCESS);
             resultData.setResult(resultValue);
             //回调成功
-            iNodeWork.hook(param, resultData);
+            iNodeWork.hook(p, resultData);
 
             return resultData;
         } catch (Exception e) {
@@ -264,7 +264,10 @@ public class PlatoNodeProxy<P, R> {
         }
     }
 
-    private P getHandlerParam() {
+    private P getPreHandlerParam() {
+        if (this.preHandler == null) {
+            return null;
+        }
         return this.preHandler.paramHandle(graphRunningInfo);
     }
 
@@ -276,8 +279,8 @@ public class PlatoNodeProxy<P, R> {
         return nextProxies;
     }
 
-    public void setParam(P param) {
-        this.param = param;
+    public void setp(P p) {
+        this.p = p;
     }
 
     private boolean checkIsNullResult() {
@@ -358,8 +361,8 @@ public class PlatoNodeProxy<P, R> {
         return this.state.compareAndSet(expect, update);
     }
 
-    private void setNeedCheckNextProxyResult(boolean needCheckNextProxyResult) {
-        this.needCheckNextProxyResult = needCheckNextProxyResult;
+    private void setcheckNextResult(boolean checkNextResult) {
+        this.checkNextResult = checkNextResult;
     }
 
     @Override
@@ -371,8 +374,8 @@ public class PlatoNodeProxy<P, R> {
             return false;
         }
         PlatoNodeProxy<?, ?> that = (PlatoNodeProxy<?, ?>) o;
-        return needCheckNextProxyResult == that.needCheckNextProxyResult &&
-                Objects.equals(param, that.param) &&
+        return checkNextResult == that.checkNextResult &&
+                Objects.equals(p, that.p) &&
                 Objects.equals(iNodeWork, that.iNodeWork) &&
                 Objects.equals(nextProxies, that.nextProxies) &&
                 Objects.equals(dependProxies, that.dependProxies) &&
@@ -382,8 +385,8 @@ public class PlatoNodeProxy<P, R> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(param, iNodeWork, nextProxies, dependProxies, state, resultData,
-                needCheckNextProxyResult);
+        return Objects.hash(p, iNodeWork, nextProxies, dependProxies, state, resultData,
+                checkNextResult);
     }
 
     public static class Builder<W, C> {
@@ -395,7 +398,7 @@ public class PlatoNodeProxy<P, R> {
         private List<PlatoNodeProxy<?, ?>> nextProxies;
         private List<PrePlatoNodeProxy> dependProxies;
         private Set<PlatoNodeProxy<?, ?>> selfIsMustSet;
-        private boolean needCheckNextProxyResult = true;
+        private boolean checkNextResult = true;
 
         public Builder<W, C> setAfterHandler(AfterHandler afterHandler) {
             this.afterHandler = afterHandler;
@@ -419,8 +422,8 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public Builder<W, C> needCheckNextProxyResult(boolean needCheckNextProxyResult) {
-            this.needCheckNextProxyResult = needCheckNextProxyResult;
+        public Builder<W, C> checkNextResult(boolean checkNextResult) {
+            this.checkNextResult = checkNextResult;
             return this;
         }
 
@@ -482,7 +485,7 @@ public class PlatoNodeProxy<P, R> {
 
         public PlatoNodeProxy<W, C> build() {
             PlatoNodeProxy<W, C> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
-            proxy.setNeedCheckNextProxyResult(needCheckNextProxyResult);
+            proxy.setcheckNextResult(checkNextResult);
             if (dependProxies != null) {
                 for (PrePlatoNodeProxy workerProxy : dependProxies) {
                     workerProxy.getWorkerProxy().addNext(proxy);
