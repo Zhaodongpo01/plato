@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
@@ -27,8 +29,8 @@ public class PlatoNodeProxy<P, R> {
     private P p;
     private final String uniqueId;
     private final INodeWork<P, R> iNodeWork;
-    private List<PlatoNodeProxy<?, ?>> nextProxies;
-    private List<PrePlatoNodeProxy> dependProxies;
+    private List<PlatoNodeProxy<?, ?>> nextProxies = new ArrayList<>();
+    private List<PrePlatoNodeProxy> dependProxies = new ArrayList<>();
     private AfterHandler afterHandler;
     private PreHandler<P> preHandler;
     private AtomicInteger state = new AtomicInteger(0);
@@ -65,7 +67,7 @@ public class PlatoNodeProxy<P, R> {
             beginNext(executorService);
             return;
         }
-        if (dependProxies == null || dependProxies.size() == 0) {
+        if (CollectionUtils.isEmpty(dependProxies)) {
             executor(fromProxy);
             beginNext(executorService);
             return;
@@ -80,7 +82,7 @@ public class PlatoNodeProxy<P, R> {
 
     private boolean checkNextProxyResult() {
         //如果自己就是最后一个，或者后面有并行的多个，就返回true
-        if (nextProxies == null || nextProxies.size() != 1) {
+        if (nextProxies.size() != 1) {
             return getState() == INIT;
         }
         PlatoNodeProxy<?, ?> nextProxy = nextProxies.get(0);
@@ -91,9 +93,6 @@ public class PlatoNodeProxy<P, R> {
      * 进行下一个任务
      */
     private void beginNext(ExecutorService executorService) {
-        if (nextProxies == null) {
-            return;
-        }
         if (nextProxies.size() == 1) {
             nextProxies.get(0).work(executorService, PlatoNodeProxy.this, graphRunningInfo);
             return;
@@ -292,9 +291,6 @@ public class PlatoNodeProxy<P, R> {
     }
 
     private void addDepend(PrePlatoNodeProxy dependProxy) {
-        if (dependProxies == null) {
-            dependProxies = new ArrayList<>();
-        }
         //如果依赖的是重复的同一个，就不重复添加了
         for (PrePlatoNodeProxy proxy : dependProxies) {
             if (proxy.equals(dependProxy)) {
@@ -305,9 +301,6 @@ public class PlatoNodeProxy<P, R> {
     }
 
     private void addNext(PlatoNodeProxy<?, ?> platoNodeProxy) {
-        if (nextProxies == null) {
-            nextProxies = new ArrayList<>();
-        }
         //避免添加重复
         for (PlatoNodeProxy proxy : nextProxies) {
             if (platoNodeProxy.equals(proxy)) {
@@ -395,8 +388,8 @@ public class PlatoNodeProxy<P, R> {
         private PreHandler<W> preHandler;
         private String uniqueId;
         private INodeWork<W, C> worker;
-        private List<PlatoNodeProxy<?, ?>> nextProxies;
-        private List<PrePlatoNodeProxy> dependProxies;
+        private List<PlatoNodeProxy<?, ?>> nextProxies = new ArrayList<>();
+        private List<PrePlatoNodeProxy> dependProxies = new ArrayList<>();
         private Set<PlatoNodeProxy<?, ?>> selfIsMustSet;
         private boolean checkNextResult = true;
 
@@ -458,11 +451,7 @@ public class PlatoNodeProxy<P, R> {
         }
 
         public Builder<W, C> next(PlatoNodeProxy<?, ?> proxy, boolean selfIsMust) {
-            if (nextProxies == null) {
-                nextProxies = new ArrayList<>();
-            }
             nextProxies.add(proxy);
-
             //强依赖自己
             if (selfIsMust) {
                 if (selfIsMustSet == null) {
@@ -486,17 +475,13 @@ public class PlatoNodeProxy<P, R> {
         public PlatoNodeProxy<W, C> build() {
             PlatoNodeProxy<W, C> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
             proxy.setcheckNextResult(checkNextResult);
-            if (dependProxies != null) {
-                for (PrePlatoNodeProxy workerProxy : dependProxies) {
-                    workerProxy.getWorkerProxy().addNext(proxy);
-                    proxy.addDepend(workerProxy);
-                }
+            for (PrePlatoNodeProxy workerProxy : dependProxies) {
+                workerProxy.getWorkerProxy().addNext(proxy);
+                proxy.addDepend(workerProxy);
             }
-            if (nextProxies != null) {
-                for (PlatoNodeProxy<?, ?> platoNodeProxy : nextProxies) {
-                    platoNodeProxy.addDepend(proxy, selfIsMustSet != null && selfIsMustSet.contains(platoNodeProxy));
-                    proxy.addNext(platoNodeProxy);
-                }
+            for (PlatoNodeProxy<?, ?> platoNodeProxy : nextProxies) {
+                platoNodeProxy.addDepend(proxy, selfIsMustSet != null && selfIsMustSet.contains(platoNodeProxy));
+                proxy.addNext(platoNodeProxy);
             }
             return proxy;
         }
