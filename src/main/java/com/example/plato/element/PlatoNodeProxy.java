@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -330,10 +332,6 @@ public class PlatoNodeProxy<P, R> {
         return state.get();
     }
 
-    public String getUniqueId() {
-        return uniqueId;
-    }
-
     private boolean compareAndSetState(int expect, int update) {
         return this.state.compareAndSet(expect, update);
     }
@@ -373,8 +371,9 @@ public class PlatoNodeProxy<P, R> {
         private String graphId;
         private String uniqueId;
         private INodeWork<W, C> worker;
-        private List<PlatoNodeProxy<?, ?>> nextProxies = new ArrayList<>();
-        private Set<PlatoNodeProxy<?, ?>> selfIsMustSet = new HashSet<>();
+        private AtomicBoolean reBuild = new AtomicBoolean(false);  // B到D。C也到D。那么创建的时候就会出现D呗创建两次，加上这个属性保证D在并发时只创建一次
+        private Set<PlatoNodeBuilder<?, ?>> nextProxies = new HashSet<>();
+        private Set<PlatoNodeBuilder<?, ?>> selfIsMustSet = new HashSet<>();
         private boolean checkNextResult = true;
 
         public PlatoNodeBuilder<W, C> setAfterHandler(AfterHandler afterHandler) {
@@ -409,11 +408,11 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public PlatoNodeBuilder<W, C> next(PlatoNodeProxy<?, ?> proxy) {
+        public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?> proxy) {
             return next(proxy, true);
         }
 
-        public PlatoNodeBuilder<W, C> next(PlatoNodeProxy<?, ?> proxy, boolean selfIsMust) {
+        public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?> proxy, boolean selfIsMust) {
             nextProxies.add(proxy);
             if (selfIsMust) {
                 selfIsMustSet.add(proxy);
@@ -421,23 +420,38 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public PlatoNodeBuilder<W, C> next(PlatoNodeProxy<?, ?>... proxies) {
+        public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?>... proxies) {
             PlatoAssert.nullException(() -> "next param must not null", proxies);
-            for (PlatoNodeProxy<?, ?> proxy : proxies) {
+            for (PlatoNodeBuilder<?, ?> proxy : proxies) {
                 next(proxy);
             }
             return this;
         }
 
-        public PlatoNodeProxy<W, C> build() {
+        PlatoNodeProxy<W, C> build() {
+            if (!reBuild.compareAndSet(false, true)) {
+                return null;
+            }
             PlatoNodeProxy<W, C> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
             proxy.setcheckNextResult(checkNextResult);
-            for (PlatoNodeProxy<?, ?> platoNodeProxy : nextProxies) {
-                platoNodeProxy.addPreProxy(proxy, selfIsMustSet != null && selfIsMustSet.contains(platoNodeProxy));
-                proxy.addNextProxy(platoNodeProxy);
+            if (CollectionUtils.isNotEmpty(this.nextProxies)) {
+                convertBuild2Bean(proxy, this.nextProxies);
             }
             return proxy;
         }
 
+        private void convertBuild2Bean(PlatoNodeProxy<W, C> proxy,
+                Set<PlatoNodeBuilder<?, ?>> nextProxies) {
+            nextProxies.forEach(platoNodeBuilder -> {
+                if (!platoNodeBuilder.reBuild.get()) {
+                    PlatoNodeProxy<?, ?> platoNodeProxy = platoNodeBuilder.build();
+                    if (Optional.ofNullable(platoNodeProxy).isPresent()) {
+                        platoNodeProxy.addPreProxy(proxy,
+                                selfIsMustSet != null && selfIsMustSet.contains(platoNodeProxy));
+                        proxy.addNextProxy(platoNodeProxy);
+                    }
+                }
+            });
+        }
     }
 }

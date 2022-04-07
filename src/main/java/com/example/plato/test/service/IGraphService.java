@@ -13,6 +13,6 @@ public interface IGraphService {
 
     void parallel1();
 
-    void serial1();
+    void testt();
 
 }
