@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-public class NodeConfig extends PlatoConfig{
+public class NodeConfig extends PlatoConfig {
 
     private String uniqueId;
 

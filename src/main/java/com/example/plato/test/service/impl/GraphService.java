@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GraphService implements IGraphService {
 
-    private static final ThreadPoolExecutor COMMON_POOL = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    //private static final ThreadPoolExecutor COMMON_POOL = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
     @Override
     public void parallel() {
@@ -80,7 +80,7 @@ public class GraphService implements IGraphService {
 
         GraphManager graphManager = new GraphManager("grapIds");
         GraphRunningInfo runningInfo =
-                graphManager.run(TraceUtil.getRandomTraceId(), COMMON_POOL, platoNodeProxyA, 100000L, TimeUnit.SECONDS);
+                graphManager.run(TraceUtil.getRandomTraceId(), platoNodeProxyA, 100000L, TimeUnit.SECONDS);
         log.info("parallel#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
@@ -129,7 +129,7 @@ public class GraphService implements IGraphService {
 
         GraphManager graphManager = new GraphManager("grapIds");
         GraphRunningInfo runningInfo =
-                graphManager.run(TraceUtil.getRandomTraceId(), COMMON_POOL, platoNodeProxyA, 100000L, TimeUnit.SECONDS);
+                graphManager.run(TraceUtil.getRandomTraceId(), platoNodeProxyA, 100000L, TimeUnit.SECONDS);
         log.info("serial#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
@@ -183,7 +183,7 @@ public class GraphService implements IGraphService {
 
         GraphManager graphManager = new GraphManager("grapIds");
         GraphRunningInfo runningInfo =
-                graphManager.run(TraceUtil.getRandomTraceId(), COMMON_POOL, platoNodeProxyA, 100000L, TimeUnit.SECONDS);
+                graphManager.run(TraceUtil.getRandomTraceId(), platoNodeProxyA, 100000L, TimeUnit.SECONDS);
         log.info("parallel#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
+import com.example.plato.exception.PlatoException;
 import com.example.plato.loader.loaderConfig.GraphConfig;
 import com.example.plato.loader.loaderConfig.NodeConfig;
 import com.example.plato.loader.loaderConfig.SubFlowConfig;
@@ -59,7 +60,7 @@ public class YmlRegistry implements GraphRegistry {
         try {
             getGraphConfigs();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new PlatoException(e, "registry error");
         }
         return resultMap;
     }
@@ -109,8 +110,9 @@ public class YmlRegistry implements GraphRegistry {
             subFlows.forEach(subFlowTemp -> {
                 Map<String, Object> subFlowJsonMap = PlatoJsonUtil.fromJson(PlatoJsonUtil.toJson(subFlowTemp));
                 if (MapUtils.isNotEmpty(subFlowJsonMap) && subFlowJsonMap.containsKey(SUB_FLOW)) {
-                    SubFlowConfig subFlowConfig = PlatoJsonUtil.fromJson(PlatoJsonUtil.toJson(subFlowJsonMap.get(SUB_FLOW)),
-                            SubFlowConfig.class);
+                    SubFlowConfig subFlowConfig =
+                            PlatoJsonUtil.fromJson(PlatoJsonUtil.toJson(subFlowJsonMap.get(SUB_FLOW)),
+                                    SubFlowConfig.class);
                     nodeConfig.getSubFlows().add(subFlowConfig);
                 }
             });

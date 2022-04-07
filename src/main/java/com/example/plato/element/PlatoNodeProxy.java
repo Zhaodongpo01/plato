@@ -52,9 +52,8 @@ public class PlatoNodeProxy<P, R> {
 
     private PlatoNodeProxy(String uniqueId, INodeWork<P, R> iNodeWork, AfterHandler afterHandler,
             PreHandler preHandler) {
-        if (iNodeWork == null) {
-            throw new PlatoException("PlatoNodeProxy iNodeWork is null");
-        }
+        PlatoAssert.nullException(() -> "PlatoNodeProxy param error", iNodeWork);
+        PlatoAssert.emptyException(() -> "PlatoNodeProxy param error", uniqueId);
         this.iNodeWork = iNodeWork;
         this.uniqueId = uniqueId;
         this.afterHandler = afterHandler;
@@ -371,6 +370,7 @@ public class PlatoNodeProxy<P, R> {
 
         private AfterHandler afterHandler;
         private PreHandler<W> preHandler;
+        private String graphId;
         private String uniqueId;
         private INodeWork<W, C> worker;
         private List<PlatoNodeProxy<?, ?>> nextProxies = new ArrayList<>();
@@ -394,9 +394,18 @@ public class PlatoNodeProxy<P, R> {
         }
 
         public PlatoNodeBuilder<W, C> setUniqueId(String uniqueId) {
-            if (uniqueId != null) {
-                this.uniqueId = uniqueId;
-            }
+            PlatoAssert.emptyException(() -> "setUniqueId uniqueId error", uniqueId);
+            this.uniqueId = uniqueId;
+            return this;
+        }
+
+        public String getUniqueId() {
+            return this.uniqueId;
+        }
+
+        public PlatoNodeBuilder<W, C> setGraphId(String graphId) {
+            PlatoAssert.emptyException(() -> "setGraphId graphId error", graphId);
+            this.graphId = graphId;
             return this;
         }
 
