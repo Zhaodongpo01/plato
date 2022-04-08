@@ -86,7 +86,7 @@ public class PlatoNodeProxy<P, R> {
             }
             runNext(executorService);
         }
-        runPreProxies(executorService, preProxies, fromProxy);
+        runPreProxies(executorService, fromProxy);
     }
 
     private boolean checkNextProxyResult() {
@@ -132,12 +132,11 @@ public class PlatoNodeProxy<P, R> {
         return true;
     }
 
-    private synchronized void runPreProxies(ExecutorService executorService, List<PrePlatoNodeProxy> dependProxies,
-            PlatoNodeProxy<?, ?> fromProxy) {
+    private synchronized void runPreProxies(ExecutorService executorService, PlatoNodeProxy<?, ?> fromProxy) {
         boolean nowDependIsMust = false;
         //创建必须完成的上游proxy集合
         Set<PrePlatoNodeProxy> mustProxy = new HashSet<>();
-        for (PrePlatoNodeProxy dependProxy : dependProxies) {
+        for (PrePlatoNodeProxy dependProxy : preProxies) {
             if (dependProxy.isMust()) {
                 mustProxy.add(dependProxy);
             }
