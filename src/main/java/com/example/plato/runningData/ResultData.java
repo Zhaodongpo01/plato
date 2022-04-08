@@ -7,28 +7,31 @@ package com.example.plato.runningData;
  */
 public class ResultData<R> {
 
+    private String uniqueId;
     private R result;
     private ResultState resultState;
     private Exception ex;
 
-    public ResultData(R result, ResultState resultState) {
-        this(result, resultState, null);
+    public ResultData(String uniqueId, R result, ResultState resultState) {
+        this(uniqueId, result, resultState, null);
     }
 
-    public ResultData(R result, ResultState resultState, Exception ex) {
+    public ResultData(String uniqueId, R result, ResultState resultState, Exception ex) {
+        this.uniqueId = uniqueId;
         this.result = result;
         this.resultState = resultState;
         this.ex = ex;
     }
 
-    public static <R> ResultData<R> defaultResult() {
-        return new ResultData<>(null, ResultState.DEFAULT);
+    public static <R> ResultData<R> defaultResult(String uniqueId) {
+        return new ResultData<>(uniqueId, null, ResultState.DEFAULT);
     }
 
     @Override
     public String toString() {
-        return "WorkResult{" +
-                "result=" + result +
+        return "ResultData{" +
+                "uniqueId='" + uniqueId + '\'' +
+                ", result=" + result +
                 ", resultState=" + resultState +
                 ", ex=" + ex +
                 '}';
@@ -56,5 +59,13 @@ public class ResultData<R> {
 
     public void setResultState(ResultState resultState) {
         this.resultState = resultState;
+    }
+
+    public String getUniqueId() {
+        return uniqueId;
+    }
+
+    public void setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
     }
 }

@@ -33,7 +33,7 @@ public class BeanNode<P, R> extends AbstractNode<P, R> {
 
     @Override
     public void hook(P p, ResultData<R> resultData) {
-        log.info("BeanNode#hook p参数:{},resultData结果:{}", PlatoJsonUtil.toJson(p),
+        log.info("uniqueId:{},BeanNode#hook p参数:{},resultData结果:{}", resultData.getUniqueId(), PlatoJsonUtil.toJson(p),
                 PlatoJsonUtil.toJson(resultData.getResult()));
     }
 }

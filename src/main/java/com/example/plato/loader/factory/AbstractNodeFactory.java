@@ -22,8 +22,6 @@ public abstract class AbstractNodeFactory<P, R> {
 
     public abstract INodeWork<P, R> createINodeWork(NodeConfig nodeConfig);
 
-    private static final String SPILIT = ",";
-
     public PlatoNodeBuilder<P, R> createPlatoNodeBuilder(String graphId, NodeConfig nodeConfig) {
         PlatoNodeBuilder<P, R> nodeBuilder = new PlatoNodeBuilder<>();
         nodeBuilder.setINodeWork(createINodeWork(nodeConfig));

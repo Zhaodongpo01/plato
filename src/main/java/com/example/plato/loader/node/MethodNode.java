@@ -6,6 +6,7 @@ import com.example.plato.loader.loaderConfig.NodeConfig;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.util.ClassUtil;
 import com.example.plato.util.PlatoAssert;
+import com.example.plato.util.PlatoJsonUtil;
 import com.example.plato.util.SpringUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,8 @@ public class MethodNode<P, R> extends AbstractNode<P, R> {
 
     @Override
     public void hook(P p, ResultData<R> resultData) {
-
+        log.info("uniqueId:{},MethodNode#hook p参数:{},resultData结果:{}", resultData.getUniqueId(),
+                PlatoJsonUtil.toJson(p),
+                PlatoJsonUtil.toJson(resultData.getResult()));
     }
 }

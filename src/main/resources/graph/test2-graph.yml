@@ -19,7 +19,7 @@ nodes:
       desc: Bean类型Node
       pre: nodeA
       next: nodeD
-      preHandler: prehandlerB
+      preHandler: preHandlerB
   - nodeConfig:
       uniqueId: nodeC
       name: nodeC
@@ -28,7 +28,7 @@ nodes:
       desc: Bean类型节点
       pre: nodeA
       next: nodeD
-      preHandler: prehandlerC
+      preHandler: preHandlerC
   - nodeConfig:
       uniqueId: nodeD
       name: nodeD
@@ -46,4 +46,4 @@ nodes:
       invokeElement: nodeE
       desc: Bean类型节点
       pre: nodeD
-      preHandler: prehandlerE
+      preHandler: preHandlerE

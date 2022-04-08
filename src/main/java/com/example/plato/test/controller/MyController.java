@@ -55,4 +55,10 @@ public class MyController {
         return "SUCCESS";
     }
 
+
+    @PostMapping("/yml")
+    public String yml() {
+        iGraphService.yml();
+        return "SUCCESS";
+    }
 }

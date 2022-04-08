@@ -3,7 +3,6 @@ package com.example.plato.runningData;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.example.plato.util.PlatoAssert;
 import com.example.plato.util.TraceUtil;
 
 /**
@@ -19,6 +18,10 @@ public class GraphRunningInfo<R> {
 
     public ResultData<R> putResultData(String uniqueId, ResultData<R> resultData) {
         return resultDataMap.put(uniqueId, resultData);
+    }
+
+    public ResultData<R> getResultData(String uniqueId) {
+        return resultDataMap.get(uniqueId);
     }
 
     public Map<String, ResultData<R>> getResultDataMap() {

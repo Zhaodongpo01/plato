@@ -7,7 +7,7 @@ import com.example.plato.runningData.GraphRunningInfo;
  * @version 1.0
  * @date 2022/4/1 12:23 上午
  */
-public interface PreHandler<P> {
+public interface PreHandler<P> extends IHandler {
 
     PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
         @Override

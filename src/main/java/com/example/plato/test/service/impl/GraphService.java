@@ -180,6 +180,14 @@ public class GraphService implements IGraphService {
     }
 
     @Override
+    public void yml() {
+        GraphManager graphManager = new GraphManager("9526");
+        GraphRunningInfo graphRunningInfo =
+                graphManager.run(TraceUtil.getRandomTraceId(), "nodeA", 10000L, TimeUnit.SECONDS);
+        log.info("yml#graphRunningInfo:{}", PlatoJsonUtil.toJson(graphRunningInfo));
+    }
+
+    @Override
     public void parallel1() {
         NodeA nodeA = new NodeA();
         NodeB nodeB = new NodeB();

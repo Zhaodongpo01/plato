@@ -44,7 +44,7 @@ public class PlatoNodeProxy<P, R> {
     private PreHandler<P> preHandler;
     private AtomicInteger state = new AtomicInteger(0);
     private GraphRunningInfo graphRunningInfo;
-    private volatile ResultData<R> resultData = ResultData.defaultResult();
+    private volatile ResultData<R> resultData;
     private volatile boolean checkNextResult = true;
 
     private static final int FINISH = 1;
@@ -60,6 +60,7 @@ public class PlatoNodeProxy<P, R> {
         this.uniqueId = uniqueId;
         this.afterHandler = afterHandler;
         this.preHandler = preHandler;
+        resultData = ResultData.defaultResult(uniqueId);
     }
 
     public void run(ExecutorService executorService, PlatoNodeProxy fromProxy,
@@ -251,6 +252,7 @@ public class PlatoNodeProxy<P, R> {
             return resultData;
         } catch (Exception e) {
             //避免重复回调
+            log.error("executor error {}", e.getMessage(), e);
             if (!checkIsNullResult()) {
                 return resultData;
             }
@@ -274,7 +276,7 @@ public class PlatoNodeProxy<P, R> {
         return nextProxies;
     }
 
-    public void setp(P p) {
+    public void setP(P p) {
         this.p = p;
     }
 
@@ -335,7 +337,7 @@ public class PlatoNodeProxy<P, R> {
         return this.state.compareAndSet(expect, update);
     }
 
-    private void setcheckNextResult(boolean checkNextResult) {
+    private void setCheckNextResult(boolean checkNextResult) {
         this.checkNextResult = checkNextResult;
     }
 
@@ -432,7 +434,7 @@ public class PlatoNodeProxy<P, R> {
                 return null;
             }
             PlatoNodeProxy<W, C> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
-            proxy.setcheckNextResult(checkNextResult);
+            proxy.setCheckNextResult(checkNextResult);
             if (CollectionUtils.isNotEmpty(this.nextProxies)) {
                 convertBuild2Bean(proxy, this.nextProxies);
             }

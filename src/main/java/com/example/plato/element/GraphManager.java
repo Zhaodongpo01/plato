@@ -43,7 +43,7 @@ public class GraphManager {
             PlatoNodeBuilder<P, R> platoNodeBuilder,
             Long timeOut, TimeUnit timeUnit) {
         PlatoNodeProxy<P, R> firstPlatoNodeProxy = platoNodeBuilder.build();
-        firstPlatoNodeProxy.setp(p);
+        firstPlatoNodeProxy.setP(p);
         GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
         CompletableFuture<Void> completableFuture =
                 CompletableFuture.runAsync(
@@ -68,7 +68,7 @@ public class GraphManager {
 
     public <P, R> GraphRunningInfo run(P p, String startNode, ThreadPoolExecutor threadPoolExecutor, Long timeOut,
             TimeUnit timeUnit) {
-        PlatoNodeBuilder<P, R> firstPlatoNodeBuilder = nodeFactory.buildProxy(startNode, graphId);
+        PlatoNodeBuilder<P, R> firstPlatoNodeBuilder = new NodeFactory().buildProxy(startNode, graphId);
         return run(p, threadPoolExecutor, firstPlatoNodeBuilder, timeOut, timeUnit);
     }
 

@@ -15,4 +15,5 @@ public interface IGraphService {
 
     void testt();
 
+    void yml();
 }
