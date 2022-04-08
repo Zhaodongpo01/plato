@@ -14,11 +14,11 @@ public class PrePlatoNodeProxy {
         this.must = must;
     }
 
-    public PlatoNodeProxy<?, ?> getWorkerProxy() {
+    public PlatoNodeProxy<?, ?> getPlatoNodeProxy() {
         return platoNodeProxy;
     }
 
-    public void setWorkerProxy(PlatoNodeProxy<?, ?> platoNodeProxy) {
+    public void setPlatoNodeProxy(PlatoNodeProxy<?, ?> platoNodeProxy) {
         this.platoNodeProxy = platoNodeProxy;
     }
 

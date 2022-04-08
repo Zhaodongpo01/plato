@@ -24,6 +24,6 @@ public class NodeD implements INodeWork<Void, String> {
 
     @Override
     public void hook(Void unused,  ResultData<String> resultData) {
-        log.info("NodeD#结果:{}", resultData);
+        log.info("NodeD#结果:{}", resultData.getResult());
     }
 }

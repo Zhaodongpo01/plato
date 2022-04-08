@@ -140,7 +140,7 @@ public class PlatoNodeProxy<P, R> {
             if (dependProxy.isMust()) {
                 mustProxy.add(dependProxy);
             }
-            if (dependProxy.getWorkerProxy().equals(fromProxy)) {
+            if (dependProxy.getPlatoNodeProxy().equals(fromProxy)) {
                 nowDependIsMust = dependProxy.isMust();
             }
         }
@@ -166,7 +166,7 @@ public class PlatoNodeProxy<P, R> {
         boolean hasError = false;
         //先判断前面必须要执行的依赖任务的执行结果，如果有任何一个失败，那就不用走action了，直接给自己设置为失败，进行下一步就是了
         for (PrePlatoNodeProxy dependProxy : mustProxy) {
-            PlatoNodeProxy<?, ?> platoNodeProxy = dependProxy.getWorkerProxy();
+            PlatoNodeProxy<?, ?> platoNodeProxy = dependProxy.getPlatoNodeProxy();
             ResultData<?> tempResultData = platoNodeProxy.getWorkResult();
             //为null或者isWorking，说明它依赖的某个任务还没执行到或没执行完
             if (platoNodeProxy.getState() == INIT || platoNodeProxy.getState() == WORKING) {

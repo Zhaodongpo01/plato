@@ -6,6 +6,7 @@ import com.example.plato.handler.INodeWork;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
+import com.example.plato.util.PlatoJsonUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,12 +24,11 @@ public class NodeC implements INodeWork<TestModel, FirstModel> {
         FirstModel firstModel = new FirstModel();
         firstModel.setName("赵东坡");
         firstModel.setIdf(19000L);
-        log.info("NodeC");
         return firstModel;
     }
 
     @Override
     public void hook(TestModel testModel, ResultData<FirstModel> resultData) {
-        log.info("NodeC结果:{}");
+        log.info("NodeC结果:{}", PlatoJsonUtil.toJson(resultData.getResult()));
     }
 }

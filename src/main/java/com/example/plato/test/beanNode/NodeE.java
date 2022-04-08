@@ -18,7 +18,7 @@ public class NodeE implements INodeWork<Integer, Void> {
 
     @Override
     public Void work(Integer integer) throws InterruptedException {
-        log.info("指定到NodeE节点了");
+        Thread.sleep(1000L);
         return null;
     }
 

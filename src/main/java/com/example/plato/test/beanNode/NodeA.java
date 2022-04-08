@@ -23,6 +23,6 @@ public class NodeA implements INodeWork<String, Long> {
 
     @Override
     public void hook(String s, ResultData<Long> resultData) {
-        log.info("NodeA结果:{}");
+        log.info("NodeA结果:{}",resultData.getResult());
     }
 }

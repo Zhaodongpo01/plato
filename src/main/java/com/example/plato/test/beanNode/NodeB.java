@@ -21,12 +21,11 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
 
     @Override
     public Boolean work(List<Integer> integers) {
-        log.info("知道到NodeB");
         return CollectionUtils.isEmpty(integers);
     }
 
     @Override
     public void hook(List<Integer> integers, ResultData<Boolean> resultData) {
-        //log.info("NodeB结果:{}", resultData.getData());
+        log.info("NodeB结果:{}", resultData.getResult());
     }
 }
