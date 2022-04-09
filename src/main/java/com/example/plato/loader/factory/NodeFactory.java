@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +33,7 @@ public class NodeFactory {
 
     private static final String SPLIT = ",";
 
-    private Map<String, AtomicBoolean> reBuilder = new ConcurrentHashMap<>();
+    private final Map<String, PlatoNodeBuilder<?, ?>> platoNodeBuilderMap = new ConcurrentHashMap<>();
 
     public void createNode() {
         Map<String, GraphConfig> registryMap = new YmlRegistry().registry();
@@ -75,7 +74,16 @@ public class NodeFactory {
             Set<String> preSet = Sets.newConcurrentHashSet();
             if (StringUtils.isNotBlank(pre)) {
                 String[] split = pre.split(SPLIT);
-                preSet.contains(Stream.of(split).collect(Collectors.toList()));
+                preSet.addAll(Stream.of(split).collect(Collectors.toSet()));
+            }
+            if (!platoNodeBuilderMap.containsKey(nextNode)) {
+                PlatoNodeBuilder nextPlatoNodeBuilder =
+                        convertConfig2Builder(nextNodeConfig, nextNodeConfig.getGraphId());
+                platoNodeBuilderMap.put(nextNode, nextPlatoNodeBuilder);
+                platoNodeBuilder.next(nextPlatoNodeBuilder, preSet.contains(nodeConfig.getUniqueId()));
+                buildProxy(nextPlatoNodeBuilder, nextNodeConfig, nodeMap);
+            } else {
+                platoNodeBuilder.next(platoNodeBuilderMap.get(nextNode), preSet.contains(nodeConfig.getUniqueId()));
             }
         });
     }

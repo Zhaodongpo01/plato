@@ -58,7 +58,9 @@ public class MyController {
 
     @PostMapping("/yml")
     public String yml() {
-        iGraphService.yml();
+        for (int i = 0; i < 500; i++) {
+            new Thread(() -> iGraphService.yml()).start();
+        }
         return "SUCCESS";
     }
 }
