@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.example.plato.element.PlatoNodeProxy.PlatoNodeBuilder;
 import com.example.plato.exception.PlatoException;
@@ -22,13 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/31 11:25 下午
+ * 2022/3/31 11:25 下午
  */
 @Slf4j
 public class GraphManager {
-
-    @Autowired
-    private NodeFactory nodeFactory;
 
     private final String graphId;
 
