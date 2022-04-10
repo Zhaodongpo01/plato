@@ -24,7 +24,7 @@ public class NodeE implements INodeWork<Integer, Void> {
 
     @Override
     public void hook(Integer integer, ResultData resultData) {
-        log.info("指定NodeE执行完成");
+        log.info("NodeE结果:{}", resultData.getResult());
     }
 
 }

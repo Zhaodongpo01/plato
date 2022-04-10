@@ -9,11 +9,11 @@ public interface IGraphService {
 
     void parallel();
 
-    void serial();
+    /*void serial();
 
     void parallel1();
 
     void testt();
 
-    void yml();
+    void yml();*/
 }

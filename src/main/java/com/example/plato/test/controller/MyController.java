@@ -19,38 +19,41 @@ public class MyController {
     @Autowired
     private IGraphService iGraphService;
 
+    /**
+     * 测试并行执行方案
+     * */
     @PostMapping("/parallel")
     public String parallel() {
-        for (int i = 0; i < 500; i++) {
+        /*for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.parallel()).start();
-        }
-        //iGraphService.parallel();
+        }*/
+        iGraphService.parallel();
         return "SUCCESS";
     }
 
     @PostMapping("/parallel1")
     public String parallel1() {
-        for (int i = 0; i < 500; i++) {
+        /*for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.parallel1()).start();
-        }
+        }*/
         //iGraphService.parallel();
         return "SUCCESS";
     }
 
     @PostMapping("/serial")
     public String serial() {
-        for (int i = 0; i < 500; i++) {
+        /*for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.serial()).start();
-        }
+        }*/
         //iGraphService.parallel();
         return "SUCCESS";
     }
 
     @PostMapping("/testt")
     public String testt() {
-        for (int i = 0; i < 500; i++) {
+        /*for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.testt()).start();
-        }
+        }*/
         //iGraphService.parallel();
         return "SUCCESS";
     }
@@ -58,9 +61,9 @@ public class MyController {
 
     @PostMapping("/yml")
     public String yml() {
-        for (int i = 0; i < 500; i++) {
+        /*for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.yml()).start();
-        }
+        }*/
         return "SUCCESS";
     }
 }

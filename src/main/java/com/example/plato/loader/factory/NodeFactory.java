@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/20 12:02 下午
+ * create 2022/3/20 12:02 下午
  */
 @Slf4j
 public class NodeFactory {
@@ -47,11 +47,11 @@ public class NodeFactory {
 
     private void parser(Map<String, GraphConfig> registryMap) {
         registryMap.forEach((graphId, graphInfo) -> graphInfo.getNodes()
-                .forEach(nodeConfig -> NodeHolder.putNodeConfig(nodeConfig)));
+                .forEach(NodeHolder::putNodeConfig));
         log.info("properties parser done...............");
     }
 
-    public <R, P> PlatoNodeBuilder<P, R> buildProxy(String startNode, String graphId) {
+    public PlatoNodeBuilder buildProxy(String startNode, String graphId) {
         Map<String, NodeConfig> nodeMap = NodeHolder.getNodeMap(graphId);
         NodeConfig firstNodeConfig = nodeMap.get(startNode);
         PlatoNodeBuilder firstPlatoNodeBuilder = convertConfig2Builder(firstNodeConfig, graphId);

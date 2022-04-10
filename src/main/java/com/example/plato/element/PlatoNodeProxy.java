@@ -38,12 +38,12 @@ public class PlatoNodeProxy<P, R> {
     private P p;
     private final String uniqueId;
     private final INodeWork<P, R> iNodeWork;
-    private List<PlatoNodeProxy<?, ?>> nextProxies = new ArrayList<>();
-    private List<PrePlatoNodeProxy> preProxies = new ArrayList<>();
-    private AfterHandler afterHandler;
-    private PreHandler<P> preHandler;
-    private AtomicInteger state = new AtomicInteger(0);
-    private GraphRunningInfo graphRunningInfo;
+    private final List<PlatoNodeProxy<?, ?>> nextProxies = new ArrayList<>();
+    private final List<PrePlatoNodeProxy> preProxies = new ArrayList<>();
+    private final AfterHandler afterHandler;
+    private final PreHandler<P> preHandler;
+    private final AtomicInteger state = new AtomicInteger(0);
+    private GraphRunningInfo<R> graphRunningInfo;
     private volatile ResultData<R> resultData;
     private volatile boolean checkNextResult = true;
 
@@ -53,7 +53,7 @@ public class PlatoNodeProxy<P, R> {
     private static final int INIT = 0;
 
     private PlatoNodeProxy(String uniqueId, INodeWork<P, R> iNodeWork, AfterHandler afterHandler,
-            PreHandler preHandler) {
+            PreHandler<P> preHandler) {
         PlatoAssert.nullException(() -> "PlatoNodeProxy param error", iNodeWork);
         PlatoAssert.emptyException(() -> "PlatoNodeProxy param error", uniqueId);
         this.iNodeWork = iNodeWork;
@@ -234,13 +234,6 @@ public class PlatoNodeProxy<P, R> {
                 return resultData;
             }
             if (fromProxy != null) {
-                if (fromProxy.getAfterHandler() != null) {
-                    AfterHandler afterHandler = fromProxy.getAfterHandler();
-                    Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
-                    if (notShouldRunNodes.contains(uniqueId)) {
-                        //代码调整，该proxy不执行。被comingNode禁止执行。
-                    }
-                }
                 this.p = getPreHandlerParam();
             }
             //执行耗时操作
@@ -294,13 +287,13 @@ public class PlatoNodeProxy<P, R> {
 
     private void addPreProxy(PrePlatoNodeProxy prePlatoNodeProxy) {
         //如果依赖的是重复的同一个，就不重复添加了
-        if (!preProxies.stream().filter(this::equals).findFirst().isPresent()) {
+        if (preProxies.stream().noneMatch(this::equals)) {
             preProxies.add(prePlatoNodeProxy);
         }
     }
 
     private void addNextProxy(PlatoNodeProxy<?, ?> nextPlatoNodeProxy) {
-        if (!nextProxies.stream().filter(this::equals).findFirst().isPresent()) {
+        if (nextProxies.stream().noneMatch(this::equals)) {
             nextProxies.add(nextPlatoNodeProxy);
         }
     }
@@ -376,9 +369,10 @@ public class PlatoNodeProxy<P, R> {
         private String graphId;
         private String uniqueId;
         private INodeWork<W, C> worker;
-        private AtomicBoolean reBuild = new AtomicBoolean(false);  // B到D。C也到D。那么创建的时候就会出现D呗创建两次，加上这个属性保证D在并发时只创建一次
-        private Set<PlatoNodeBuilder<?, ?>> nextProxies = new HashSet<>();
-        private Set<PlatoNodeBuilder<?, ?>> selfIsMustSet = new HashSet<>();
+        private final AtomicBoolean reBuild = new AtomicBoolean(false);
+                // B到D。C也到D。那么创建的时候就会出现D呗创建两次，加上这个属性保证D在并发时只创建一次
+        private final Set<PlatoNodeBuilder<?, ?>> nextProxies = new HashSet<>();
+        private final Set<PlatoNodeBuilder<?, ?>> selfIsMustSet = new HashSet<>();
         private boolean checkNextResult = true;
 
         public PlatoNodeBuilder<W, C> setAfterHandler(AfterHandler afterHandler) {
@@ -426,7 +420,7 @@ public class PlatoNodeProxy<P, R> {
         }
 
         public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?>... proxies) {
-            PlatoAssert.nullException(() -> "next param must not null", proxies);
+            PlatoAssert.nullException(() -> "next param must not null", (Object) proxies);
             for (PlatoNodeBuilder<?, ?> proxy : proxies) {
                 next(proxy);
             }
@@ -451,8 +445,7 @@ public class PlatoNodeProxy<P, R> {
                 if (!platoNodeBuilder.reBuild.get()) {
                     PlatoNodeProxy<?, ?> platoNodeProxy = platoNodeBuilder.build();
                     if (Optional.ofNullable(platoNodeProxy).isPresent()) {
-                        platoNodeProxy.addPreProxy(proxy,
-                                selfIsMustSet != null && selfIsMustSet.contains(platoNodeProxy));
+                        platoNodeProxy.addPreProxy(proxy, selfIsMustSet.contains(platoNodeProxy));
                         proxy.addNextProxy(platoNodeProxy);
                     }
                 }
