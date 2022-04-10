@@ -63,6 +63,10 @@ public class PlatoNodeProxy<P, R> {
         resultData = ResultData.defaultResult(uniqueId);
     }
 
+    private AfterHandler getAfterHandler() {
+        return this.afterHandler;
+    }
+
     public void run(ExecutorService executorService, PlatoNodeProxy fromProxy,
             GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
@@ -184,7 +188,6 @@ public class PlatoNodeProxy<P, R> {
                 hasError = true;
                 break;
             }
-
         }
         //只要有失败的
         if (hasError) {
@@ -192,7 +195,6 @@ public class PlatoNodeProxy<P, R> {
             runNext(executorService);
             return;
         }
-
         //如果上游都没有失败，分为两种情况，一种是都finish了，一种是有的在working
         //都finish的话
         if (!existNoFinish) {
@@ -231,11 +233,16 @@ public class PlatoNodeProxy<P, R> {
             if (!compareAndSetState(INIT, WORKING)) {
                 return resultData;
             }
-
             if (fromProxy != null) {
+                if (fromProxy.getAfterHandler() != null) {
+                    AfterHandler afterHandler = fromProxy.getAfterHandler();
+                    Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
+                    if(notShouldRunNodes.contains(uniqueId)) {
+                        //代码调整，该proxy不执行。被comingNode禁止执行。
+                    }
+                }
                 this.p = getPreHandlerParam();
             }
-
             //执行耗时操作
             R resultValue = iNodeWork.work(p);
 
@@ -243,12 +250,9 @@ public class PlatoNodeProxy<P, R> {
             if (!compareAndSetState(WORKING, FINISH)) {
                 return resultData;
             }
-
             resultData.setResultState(ResultState.SUCCESS);
             resultData.setResult(resultValue);
-            //回调成功
             iNodeWork.hook(p, resultData);
-
             return resultData;
         } catch (Exception e) {
             //避免重复回调

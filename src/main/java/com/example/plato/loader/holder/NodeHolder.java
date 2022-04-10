@@ -18,10 +18,6 @@ public class NodeHolder {
         return NODE_MAP.get(graphId);
     }
 
-    public static NodeConfig getNodeConfig(String graphId, String uniqueId) {
-        return NODE_MAP.containsKey(graphId) ? NODE_MAP.get(graphId).get(uniqueId) : null;
-    }
-
     public static NodeConfig putNodeConfig(NodeConfig nodeConfig) {
         if (NODE_MAP.containsKey(nodeConfig.getGraphId())) {
             return NODE_MAP.get(nodeConfig.getGraphId()).put(nodeConfig.getUniqueId(), nodeConfig);
