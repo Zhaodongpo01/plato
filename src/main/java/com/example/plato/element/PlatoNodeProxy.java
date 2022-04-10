@@ -237,7 +237,7 @@ public class PlatoNodeProxy<P, R> {
                 if (fromProxy.getAfterHandler() != null) {
                     AfterHandler afterHandler = fromProxy.getAfterHandler();
                     Set<String> notShouldRunNodes = afterHandler.notShouldRunNodes(graphRunningInfo);
-                    if(notShouldRunNodes.contains(uniqueId)) {
+                    if (notShouldRunNodes.contains(uniqueId)) {
                         //代码调整，该proxy不执行。被comingNode禁止执行。
                     }
                 }
