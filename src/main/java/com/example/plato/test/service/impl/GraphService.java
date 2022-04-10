@@ -107,7 +107,7 @@ public class GraphService implements IGraphService {
 
     @Override
     public void parallel() {
-        GraphManager graphManager = new GraphManager("graphId");
+        GraphManager graphManager = new GraphManager("graphId_parallel");
         PlatoNodeBuilder<String, Long> platoNodeBuilderA = getPlatoNodeBuilderA();
         PlatoNodeBuilder<List<Integer>, Boolean> platoNodeBuilderB = getPlatoNodeBuilderB();
         PlatoNodeBuilder<TestModel, FirstModel> platoNodeBuilderC = getPlatoNodeBuilderC();
@@ -125,4 +125,47 @@ public class GraphService implements IGraphService {
                 graphManager.run(TraceUtil.getRandomTraceId(), platoNodeBuilderA, 100000L, TimeUnit.SECONDS);
         log.info("parallel#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
+
+    @Override
+    public void parallelOther() {
+        GraphManager graphManager = new GraphManager("graphId_parallelOther");
+        PlatoNodeBuilder<String, Long> platoNodeBuilderA = getPlatoNodeBuilderA();
+        PlatoNodeBuilder<List<Integer>, Boolean> platoNodeBuilderB = getPlatoNodeBuilderB();
+        PlatoNodeBuilder<TestModel, FirstModel> platoNodeBuilderC = getPlatoNodeBuilderC();
+        PlatoNodeBuilder<Void, String> platoNodeBuilderD = getPlatoNodeBuilderD();
+        PlatoNodeBuilder<Integer, Void> platoNodeBuilderE = getPlatoNodeBuilderE();
+        PlatoNodeBuilder<Integer, NodeFModel> platoNodeBuilderF = getPlatoNodeBuilderF();
+        graphManager
+                .linkNodes(platoNodeBuilderA, platoNodeBuilderB)
+                .linkNodes(platoNodeBuilderA, platoNodeBuilderC)
+                .linkNodes(platoNodeBuilderA, platoNodeBuilderD)
+                .linkNodes(platoNodeBuilderB, platoNodeBuilderE)
+                .linkNodes(platoNodeBuilderC, platoNodeBuilderE)
+                .linkNodes(platoNodeBuilderD, platoNodeBuilderE)
+                .linkNodes(platoNodeBuilderE, platoNodeBuilderF);
+        GraphRunningInfo runningInfo =
+                graphManager.run(TraceUtil.getRandomTraceId(), platoNodeBuilderA, 100000L, TimeUnit.SECONDS);
+        log.info("parallelOther#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
+    }
+
+    @Override
+    public void serial() {
+        GraphManager graphManager = new GraphManager("graphId_serial");
+        PlatoNodeBuilder<String, Long> platoNodeBuilderA = getPlatoNodeBuilderA();
+        PlatoNodeBuilder<List<Integer>, Boolean> platoNodeBuilderB = getPlatoNodeBuilderB();
+        PlatoNodeBuilder<TestModel, FirstModel> platoNodeBuilderC = getPlatoNodeBuilderC();
+        PlatoNodeBuilder<Void, String> platoNodeBuilderD = getPlatoNodeBuilderD();
+        PlatoNodeBuilder<Integer, Void> platoNodeBuilderE = getPlatoNodeBuilderE();
+        PlatoNodeBuilder<Integer, NodeFModel> platoNodeBuilderF = getPlatoNodeBuilderF();
+        graphManager
+                .linkNodes(platoNodeBuilderA, platoNodeBuilderB)
+                .linkNodes(platoNodeBuilderB, platoNodeBuilderC)
+                .linkNodes(platoNodeBuilderC, platoNodeBuilderD)
+                .linkNodes(platoNodeBuilderD, platoNodeBuilderE)
+                .linkNodes(platoNodeBuilderE, platoNodeBuilderF);
+        GraphRunningInfo runningInfo =
+                graphManager.run(TraceUtil.getRandomTraceId(), platoNodeBuilderA, 100000L, TimeUnit.SECONDS);
+        log.info("serial#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
+    }
+
 }

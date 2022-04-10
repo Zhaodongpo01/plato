@@ -18,6 +18,11 @@ public class NodeD implements INodeWork<Void, String> {
 
     @Override
     public String work(Void unused) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return "不需要参数单纯想返回值";
     }
 

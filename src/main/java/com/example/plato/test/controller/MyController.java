@@ -20,8 +20,10 @@ public class MyController {
     private IGraphService iGraphService;
 
     /**
-     * 测试并行执行方案
-     * */
+     * ---> B
+     * A    --> D -> E -> F
+     * ---> C
+     */
     @PostMapping("/parallel")
     public String parallel() {
         /*for (int i = 0; i < 500; i++) {
@@ -31,33 +33,31 @@ public class MyController {
         return "SUCCESS";
     }
 
-    @PostMapping("/parallel1")
-    public String parallel1() {
+    /**
+     * --->B
+     * A ->C -->E ->F
+     * --->D
+     */
+    @PostMapping("/parallelOther")
+    public String parallelOther() {
         /*for (int i = 0; i < 500; i++) {
-            new Thread(() -> iGraphService.parallel1()).start();
+            new Thread(() -> iGraphService.parallelOther()).start();
         }*/
-        //iGraphService.parallel();
+        iGraphService.parallelOther();
         return "SUCCESS";
     }
 
+    /**
+     * A -> B -> C ->D -> E -> F
+     */
     @PostMapping("/serial")
     public String serial() {
         /*for (int i = 0; i < 500; i++) {
             new Thread(() -> iGraphService.serial()).start();
         }*/
-        //iGraphService.parallel();
+        iGraphService.serial();
         return "SUCCESS";
     }
-
-    @PostMapping("/testt")
-    public String testt() {
-        /*for (int i = 0; i < 500; i++) {
-            new Thread(() -> iGraphService.testt()).start();
-        }*/
-        //iGraphService.parallel();
-        return "SUCCESS";
-    }
-
 
     @PostMapping("/yml")
     public String yml() {
