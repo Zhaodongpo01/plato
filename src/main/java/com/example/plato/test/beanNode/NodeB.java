@@ -21,6 +21,11 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
 
     @Override
     public Boolean work(List<Integer> integers) {
+        try {
+            Thread.sleep(100L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return CollectionUtils.isEmpty(integers);
     }
 

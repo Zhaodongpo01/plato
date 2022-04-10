@@ -63,10 +63,6 @@ public class PlatoNodeProxy<P, R> {
         resultData = ResultData.defaultResult(uniqueId);
     }
 
-    private AfterHandler getAfterHandler() {
-        return this.afterHandler;
-    }
-
     public void run(ExecutorService executorService, PlatoNodeProxy fromProxy,
             GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
@@ -269,10 +265,6 @@ public class PlatoNodeProxy<P, R> {
         return resultData;
     }
 
-    public List<PlatoNodeProxy<?, ?>> getNextProxies() {
-        return nextProxies;
-    }
-
     public void setP(P p) {
         this.p = p;
     }
@@ -295,20 +287,6 @@ public class PlatoNodeProxy<P, R> {
     private void addNextProxy(PlatoNodeProxy<?, ?> nextPlatoNodeProxy) {
         if (nextProxies.stream().noneMatch(this::equals)) {
             nextProxies.add(nextPlatoNodeProxy);
-        }
-    }
-
-    private void addNextProxies(List<PlatoNodeProxy<?, ?>> nextProxies) {
-        PlatoAssert.nullException(() -> "addNextProxies nextProxies must not null", nextProxies);
-        for (PlatoNodeProxy<?, ?> proxy : nextProxies) {
-            addNextProxy(proxy);
-        }
-    }
-
-    private void addPreProxies(List<PrePlatoNodeProxy> preNodeProxies) {
-        PlatoAssert.nullException(() -> "addNextProxies preNodeProxies must not null", preNodeProxies);
-        for (PrePlatoNodeProxy proxy : preNodeProxies) {
-            addPreProxy(proxy);
         }
     }
 
@@ -370,7 +348,7 @@ public class PlatoNodeProxy<P, R> {
         private String uniqueId;
         private INodeWork<W, C> worker;
         private final AtomicBoolean reBuild = new AtomicBoolean(false);
-                // B到D。C也到D。那么创建的时候就会出现D呗创建两次，加上这个属性保证D在并发时只创建一次
+        // B到D。C也到D。那么创建的时候就会出现D呗创建两次，加上这个属性保证D在并发时只创建一次
         private final Set<PlatoNodeBuilder<?, ?>> nextProxies = new HashSet<>();
         private final Set<PlatoNodeBuilder<?, ?>> selfIsMustSet = new HashSet<>();
         private boolean checkNextResult = true;
@@ -407,22 +385,10 @@ public class PlatoNodeProxy<P, R> {
             return this;
         }
 
-        public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?> proxy) {
-            return next(proxy, true);
-        }
-
         public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?> proxy, boolean selfIsMust) {
             nextProxies.add(proxy);
             if (selfIsMust) {
                 selfIsMustSet.add(proxy);
-            }
-            return this;
-        }
-
-        public PlatoNodeBuilder<W, C> next(PlatoNodeBuilder<?, ?>... proxies) {
-            PlatoAssert.nullException(() -> "next param must not null", (Object) proxies);
-            for (PlatoNodeBuilder<?, ?> proxy : proxies) {
-                next(proxy);
             }
             return this;
         }
@@ -433,9 +399,7 @@ public class PlatoNodeProxy<P, R> {
             }
             PlatoNodeProxy<W, C> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
             proxy.setCheckNextResult(checkNextResult);
-            if (CollectionUtils.isNotEmpty(this.nextProxies)) {
-                convertBuild2Bean(proxy, this.nextProxies);
-            }
+            convertBuild2Bean(proxy, this.nextProxies);
             return proxy;
         }
 
