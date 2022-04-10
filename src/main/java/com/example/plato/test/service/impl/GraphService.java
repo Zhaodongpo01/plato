@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.plato.element.GraphManager;
-import com.example.plato.element.PlatoNodeProxy.PlatoNodeBuilder;
+import com.example.plato.element.PlatoNodeBuilder;
 import com.example.plato.handler.PreHandler;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.test.beanNode.NodeA;

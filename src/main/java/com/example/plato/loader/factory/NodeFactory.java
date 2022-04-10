@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.example.plato.element.PlatoNodeProxy.PlatoNodeBuilder;
+import com.example.plato.element.PlatoNodeBuilder;
 import com.example.plato.exception.PlatoException;
 import com.example.plato.loader.holder.NodeHolder;
 import com.example.plato.loader.loaderConfig.GraphConfig;
@@ -97,6 +97,4 @@ public class NodeFactory {
             throw new PlatoException("NodeType error");
         }
     }
-
 }
-
