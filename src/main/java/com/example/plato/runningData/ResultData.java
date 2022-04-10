@@ -27,6 +27,20 @@ public class ResultData<R> {
         return new ResultData<>(uniqueId, null, ResultState.DEFAULT);
     }
 
+    public ResultData<R> defaultResult() {
+        this.setResultState(ResultState.TIMEOUT);
+        this.setResult(null);
+        return this;
+    }
+
+    public ResultData<R> defaultExResult(Exception ex) {
+        this.setResultState(ResultState.EXCEPTION);
+        this.setResult(null);
+        this.setEx(ex);
+        return this;
+    }
+
+
     @Override
     public String toString() {
         return "ResultData{" +

@@ -122,11 +122,11 @@ public class PlatoNodeProxy<P, R> {
 
     private boolean runPreProxy(PlatoNodeProxy<?, ?> dependProxy) {
         if (ResultState.TIMEOUT == dependProxy.getWorkResult().getResultState()) {
-            resultData = defaultResult();
+            resultData.defaultResult();
             fastFail(INIT, null);
             return false;
         } else if (ResultState.EXCEPTION == dependProxy.getWorkResult().getResultState()) {
-            resultData = defaultExResult(dependProxy.getWorkResult().getEx());
+            resultData.defaultExResult(dependProxy.getWorkResult().getEx());
             fastFail(INIT, null);
             return false;
         }
@@ -175,12 +175,12 @@ public class PlatoNodeProxy<P, R> {
                 break;
             }
             if (ResultState.TIMEOUT == tempResultData.getResultState()) {
-                resultData = defaultResult();
+                resultData.defaultResult();
                 hasError = true;
                 break;
             }
             if (ResultState.EXCEPTION == tempResultData.getResultState()) {
-                resultData = defaultExResult(platoNodeProxy.getWorkResult().getEx());
+                resultData.defaultExResult(platoNodeProxy.getWorkResult().getEx());
                 hasError = true;
                 break;
             }
@@ -210,7 +210,7 @@ public class PlatoNodeProxy<P, R> {
         }
         //尚未处理过结果
         if (checkIsNullResult()) {
-            resultData = e == null ? defaultResult() : defaultExResult(e);
+            resultData = e == null ? resultData.defaultResult() : resultData.defaultExResult(e);
         }
         iNodeWork.hook(p, resultData);
         return true;
@@ -289,20 +289,6 @@ public class PlatoNodeProxy<P, R> {
             nextProxies.add(nextPlatoNodeProxy);
         }
     }
-
-    private ResultData<R> defaultResult() {
-        resultData.setResultState(ResultState.TIMEOUT);
-        resultData.setResult(null);
-        return resultData;
-    }
-
-    private ResultData<R> defaultExResult(Exception ex) {
-        resultData.setResultState(ResultState.EXCEPTION);
-        resultData.setResult(null);
-        resultData.setEx(ex);
-        return resultData;
-    }
-
 
     private int getState() {
         return state.get();

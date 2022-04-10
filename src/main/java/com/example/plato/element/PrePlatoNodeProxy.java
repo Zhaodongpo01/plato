@@ -3,7 +3,7 @@ package com.example.plato.element;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/31 11:17 下午
+ * create 2022/3/31 11:17 下午
  */
 public class PrePlatoNodeProxy {
     private PlatoNodeProxy<?, ?> platoNodeProxy;
