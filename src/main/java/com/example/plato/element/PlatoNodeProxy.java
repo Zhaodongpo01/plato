@@ -87,7 +87,6 @@ public class PlatoNodeProxy<P, R> {
     }
 
     private boolean checkNextProxyResult() {
-        //如果自己就是最后一个，或者后面有并行的多个，就返回true
         if (nextProxies.size() != 1) {
             return getState() == CurrentState.INIT;
         }

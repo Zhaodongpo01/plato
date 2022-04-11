@@ -40,26 +40,6 @@ public class GraphManager {
      */
     public <P, R> GraphRunningInfo run(P p,
             ThreadPoolExecutor nodeThreadPoolExecutor,
-            PlatoNodeBuilder<P, R> platoNodeBuilder,
-            Long timeOut, TimeUnit timeUnit) {
-        PlatoNodeProxy<P, R> firstPlatoNodeProxy = platoNodeBuilder.build();
-        firstPlatoNodeProxy.setP(p);
-        GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
-        CompletableFuture<Void> completableFuture =
-                CompletableFuture.runAsync(
-                        () -> firstPlatoNodeProxy.run(nodeThreadPoolExecutor, null, graphRunningInfo),
-                        COMMON_POOL);
-        try {
-            completableFuture.get(timeOut, timeUnit);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            throw new PlatoException(e, "GraphManager run error");
-        }
-        return graphRunningInfo;
-    }
-
-
-    public <P, R> GraphRunningInfo run(P p,
-            ThreadPoolExecutor nodeThreadPoolExecutor,
             ThreadPoolExecutor graphThreadPoolExecutor,
             PlatoNodeBuilder<P, R> platoNodeBuilder,
             Long timeOut, TimeUnit timeUnit) {
@@ -76,6 +56,13 @@ public class GraphManager {
             throw new PlatoException(e, "GraphManager run error");
         }
         return graphRunningInfo;
+    }
+
+    public <P, R> GraphRunningInfo run(P p,
+            ThreadPoolExecutor nodeThreadPoolExecutor,
+            PlatoNodeBuilder<P, R> platoNodeBuilder,
+            Long timeOut, TimeUnit timeUnit) {
+        return run(p, nodeThreadPoolExecutor, COMMON_POOL, platoNodeBuilder, timeOut, timeUnit);
     }
 
     public <P, R> GraphRunningInfo run(P p, PlatoNodeBuilder<P, R> platoNodeBuilder,
