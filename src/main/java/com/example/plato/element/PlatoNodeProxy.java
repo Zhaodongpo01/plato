@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -21,6 +21,7 @@ import com.example.plato.exception.PlatoException;
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
+import com.example.plato.platoEnum.CurrentState;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.runningData.ResultData;
 import com.example.plato.runningData.ResultState;
@@ -42,15 +43,10 @@ public class PlatoNodeProxy<P, R> {
     private final List<PrePlatoNodeProxy> preProxies = new ArrayList<>();
     private final AfterHandler afterHandler;
     private final PreHandler<P> preHandler;
-    private final AtomicInteger state = new AtomicInteger(0);
+    private final AtomicReference<CurrentState> state = new AtomicReference<>(CurrentState.INIT);
     private GraphRunningInfo<R> graphRunningInfo;
     private volatile ResultData<R> resultData;
     private volatile boolean checkNextResult = true;
-
-    private static final int FINISH = 1;
-    private static final int ERROR = 2;
-    private static final int WORKING = 3;
-    private static final int INIT = 0;
 
     PlatoNodeProxy(String uniqueId, INodeWork<P, R> iNodeWork, AfterHandler afterHandler,
             PreHandler<P> preHandler) {
@@ -67,12 +63,12 @@ public class PlatoNodeProxy<P, R> {
             GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
         graphRunningInfo.putResultData(uniqueId, resultData);
-        if (getState() == FINISH || getState() == ERROR) {
+        if (getState() == CurrentState.FINISH || getState() == CurrentState.ERROR) {
             runNext(executorService);
             return;
         }
         if (checkNextResult && !checkNextProxyResult()) {
-            fastFail(INIT, new RuntimeException());
+            fastFail(CurrentState.INIT, new RuntimeException());
             runNext(executorService);
             return;
         }
@@ -93,10 +89,10 @@ public class PlatoNodeProxy<P, R> {
     private boolean checkNextProxyResult() {
         //如果自己就是最后一个，或者后面有并行的多个，就返回true
         if (nextProxies.size() != 1) {
-            return getState() == INIT;
+            return getState() == CurrentState.INIT;
         }
         PlatoNodeProxy<?, ?> nextProxy = nextProxies.get(0);
-        return nextProxy.getState() == INIT && nextProxy.checkNextProxyResult();
+        return nextProxy.getState() == CurrentState.INIT && nextProxy.checkNextProxyResult();
     }
 
     /**
@@ -120,14 +116,14 @@ public class PlatoNodeProxy<P, R> {
         }
     }
 
-    private boolean runPreProxy(PlatoNodeProxy<?, ?> dependProxy) {
-        if (ResultState.TIMEOUT == dependProxy.getWorkResult().getResultState()) {
+    private boolean runPreProxy(PlatoNodeProxy<?, ?> preProxy) {
+        if (ResultState.TIMEOUT == preProxy.getResult().getResultState()) {
             resultData.defaultResult();
-            fastFail(INIT, null);
+            fastFail(CurrentState.INIT, null);
             return false;
-        } else if (ResultState.EXCEPTION == dependProxy.getWorkResult().getResultState()) {
-            resultData.defaultExResult(dependProxy.getWorkResult().getEx());
-            fastFail(INIT, null);
+        } else if (ResultState.EXCEPTION == preProxy.getResult().getResultState()) {
+            resultData.defaultExResult(preProxy.getResult().getEx());
+            fastFail(CurrentState.INIT, null);
             return false;
         }
         return true;
@@ -148,8 +144,8 @@ public class PlatoNodeProxy<P, R> {
 
         //如果全部是不必须的条件，那么只要到了这里，就执行自己。
         if (mustProxy.size() == 0) {
-            if (ResultState.TIMEOUT == fromProxy.getWorkResult().getResultState()) {
-                fastFail(INIT, null);
+            if (ResultState.TIMEOUT == fromProxy.getResult().getResultState()) {
+                fastFail(CurrentState.INIT, null);
             } else {
                 executor(fromProxy);
             }
@@ -168,9 +164,9 @@ public class PlatoNodeProxy<P, R> {
         //先判断前面必须要执行的依赖任务的执行结果，如果有任何一个失败，那就不用走action了，直接给自己设置为失败，进行下一步就是了
         for (PrePlatoNodeProxy dependProxy : mustProxy) {
             PlatoNodeProxy<?, ?> platoNodeProxy = dependProxy.getPlatoNodeProxy();
-            ResultData<?> tempResultData = platoNodeProxy.getWorkResult();
+            ResultData<?> tempResultData = platoNodeProxy.getResult();
             //为null或者isWorking，说明它依赖的某个任务还没执行到或没执行完
-            if (platoNodeProxy.getState() == INIT || platoNodeProxy.getState() == WORKING) {
+            if (platoNodeProxy.getState() == CurrentState.INIT || platoNodeProxy.getState() == CurrentState.WORKING) {
                 existNoFinish = true;
                 break;
             }
@@ -180,14 +176,14 @@ public class PlatoNodeProxy<P, R> {
                 break;
             }
             if (ResultState.EXCEPTION == tempResultData.getResultState()) {
-                resultData.defaultExResult(platoNodeProxy.getWorkResult().getEx());
+                resultData.defaultExResult(platoNodeProxy.getResult().getEx());
                 hasError = true;
                 break;
             }
         }
         //只要有失败的
         if (hasError) {
-            fastFail(INIT, null);
+            fastFail(CurrentState.INIT, null);
             runNext(executorService);
             return;
         }
@@ -203,9 +199,9 @@ public class PlatoNodeProxy<P, R> {
     /**
      * 快速失败
      */
-    private boolean fastFail(int expect, Exception e) {
+    private boolean fastFail(CurrentState expect, Exception e) {
         //试图将它从expect状态,改成Error
-        if (!compareAndSetState(expect, ERROR)) {
+        if (!compareAndSetState(expect, CurrentState.ERROR)) {
             return false;
         }
         //尚未处理过结果
@@ -226,7 +222,7 @@ public class PlatoNodeProxy<P, R> {
         }
         try {
             //如果已经不是init状态了，说明正在被执行或已执行完毕。这一步很重要，可以保证任务不被重复执行
-            if (!compareAndSetState(INIT, WORKING)) {
+            if (!compareAndSetState(CurrentState.INIT, CurrentState.WORKING)) {
                 return resultData;
             }
             if (fromProxy != null) {
@@ -236,7 +232,7 @@ public class PlatoNodeProxy<P, R> {
             R resultValue = iNodeWork.work(p);
 
             //如果状态不是在working,说明别的地方已经修改了
-            if (!compareAndSetState(WORKING, FINISH)) {
+            if (!compareAndSetState(CurrentState.WORKING, CurrentState.FINISH)) {
                 return resultData;
             }
             resultData.setResultState(ResultState.SUCCESS);
@@ -249,7 +245,7 @@ public class PlatoNodeProxy<P, R> {
             if (!checkIsNullResult()) {
                 return resultData;
             }
-            fastFail(WORKING, e);
+            fastFail(CurrentState.WORKING, e);
             return resultData;
         }
     }
@@ -261,7 +257,7 @@ public class PlatoNodeProxy<P, R> {
         return this.preHandler.paramHandle(graphRunningInfo);
     }
 
-    public ResultData<R> getWorkResult() {
+    public ResultData<R> getResult() {
         return resultData;
     }
 
@@ -290,11 +286,11 @@ public class PlatoNodeProxy<P, R> {
         }
     }
 
-    private int getState() {
+    private CurrentState getState() {
         return state.get();
     }
 
-    private boolean compareAndSetState(int expect, int update) {
+    private boolean compareAndSetState(CurrentState expect, CurrentState update) {
         return this.state.compareAndSet(expect, update);
     }
 

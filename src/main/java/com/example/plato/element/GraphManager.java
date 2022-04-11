@@ -33,7 +33,7 @@ public class GraphManager {
         this.graphId = graphId;
     }
 
-    public <P, R> GraphRunningInfo run(P p,
+    private <P, R> GraphRunningInfo run(P p,
             ThreadPoolExecutor threadPoolExecutor,
             PlatoNodeBuilder<P, R> platoNodeBuilder,
             Long timeOut, TimeUnit timeUnit) {
