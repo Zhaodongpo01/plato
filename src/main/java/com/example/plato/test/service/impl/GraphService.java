@@ -55,8 +55,12 @@ public class GraphService implements IGraphService {
     @Autowired
     private NodeF nodeF;
 
-    private static final ThreadPoolExecutor executor =
-            new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2, 1000, 1000L, TimeUnit.MILLISECONDS,
+    private static final ThreadPoolExecutor nodeExecutor =
+            new ThreadPoolExecutor(1, 10, 1000L, TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<>(1000));
+
+    private static final ThreadPoolExecutor graphExecutor =
+            new ThreadPoolExecutor(2, 20, 1000L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>(1000));
 
     private PlatoNodeBuilder<String, Long> getPlatoNodeBuilderA() {
@@ -128,7 +132,8 @@ public class GraphService implements IGraphService {
                 .linkNodes(platoNodeBuilderD, platoNodeBuilderE)
                 .linkNodes(platoNodeBuilderE, platoNodeBuilderF);
         GraphRunningInfo runningInfo =
-                graphManager.run(TraceUtil.getRandomTraceId(), executor, platoNodeBuilderA, 100000L, TimeUnit.SECONDS);
+                graphManager.run(TraceUtil.getRandomTraceId(), nodeExecutor, graphExecutor, platoNodeBuilderA, 100000L,
+                        TimeUnit.SECONDS);
         log.info("parallel#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
@@ -150,7 +155,8 @@ public class GraphService implements IGraphService {
                 .linkNodes(platoNodeBuilderD, platoNodeBuilderE)
                 .linkNodes(platoNodeBuilderE, platoNodeBuilderF);
         GraphRunningInfo runningInfo =
-                graphManager.run(TraceUtil.getRandomTraceId(), executor, platoNodeBuilderA, 100000L, TimeUnit.SECONDS);
+                graphManager.run(TraceUtil.getRandomTraceId(), nodeExecutor, graphExecutor, platoNodeBuilderA, 100000L,
+                        TimeUnit.SECONDS);
         log.info("parallelOther#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
@@ -170,7 +176,8 @@ public class GraphService implements IGraphService {
                 .linkNodes(platoNodeBuilderD, platoNodeBuilderE)
                 .linkNodes(platoNodeBuilderE, platoNodeBuilderF);
         GraphRunningInfo runningInfo =
-                graphManager.run(TraceUtil.getRandomTraceId(), executor, platoNodeBuilderA, 100000L, TimeUnit.SECONDS);
+                graphManager.run(TraceUtil.getRandomTraceId(), nodeExecutor, graphExecutor, platoNodeBuilderA, 100000L,
+                        TimeUnit.SECONDS);
         log.info("serial#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
