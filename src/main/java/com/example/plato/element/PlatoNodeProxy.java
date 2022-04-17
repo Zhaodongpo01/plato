@@ -82,8 +82,9 @@ public class PlatoNodeProxy<P, R> {
                 executor(fromProxy);
             }
             runNext(executorService);
+        } else {
+            runPreProxies(executorService, fromProxy);
         }
-        runPreProxies(executorService, fromProxy);
     }
 
     private boolean checkNextProxyResult() {
