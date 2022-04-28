@@ -56,13 +56,11 @@ public class GraphService implements IGraphService {
     private NodeF nodeF;
 
     private static final ThreadPoolExecutor nodeExecutor =
-            new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-                    Runtime.getRuntime().availableProcessors() * 8, 1000L, TimeUnit.MILLISECONDS,
+            new ThreadPoolExecutor(2, 4, 1000L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>(1000));
 
     private static final ThreadPoolExecutor graphExecutor =
-            new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-                    Runtime.getRuntime().availableProcessors() * 4, 1000L, TimeUnit.MILLISECONDS,
+            new ThreadPoolExecutor(1, 2, 1000L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>(1000));
 
     private PlatoNodeBuilder<String, Long> getPlatoNodeBuilderA() {

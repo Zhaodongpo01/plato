@@ -18,7 +18,7 @@ public class NodeE implements INodeWork<Integer, Void> {
 
     @Override
     public Void work(Integer integer) throws InterruptedException {
-        Thread.sleep(1000L);
+        Thread.sleep(100L);
         return null;
     }
 

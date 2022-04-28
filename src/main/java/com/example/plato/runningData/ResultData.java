@@ -23,6 +23,10 @@ public class ResultData<R> {
         this.ex = ex;
     }
 
+    public boolean checkIsNullResult() {
+        return ResultState.DEFAULT == this.getResultState();
+    }
+
     public static <R> ResultData<R> defaultResult(String uniqueId) {
         return new ResultData<>(uniqueId, null, ResultState.DEFAULT);
     }

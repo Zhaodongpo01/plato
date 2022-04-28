@@ -1,9 +1,11 @@
 package com.example.plato.element;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.commons.lang3.ObjectUtils;
 
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
@@ -20,6 +22,7 @@ public class PlatoNodeBuilder<T, R> {
     private final AtomicBoolean reBuild = new AtomicBoolean(false);
     private final Set<PlatoNodeBuilder<?, ?>> nextProxies = new HashSet<>();
     private final Set<PlatoNodeBuilder<?, ?>> selfIsMustSet = new HashSet<>();
+    private AtomicReference<PlatoNodeProxy<T, R>> proxyAtomicReference = new AtomicReference<>(null);
     private boolean checkNextResult = true;
 
     public PlatoNodeBuilder<T, R> setAfterHandler(AfterHandler afterHandler) {
@@ -63,10 +66,10 @@ public class PlatoNodeBuilder<T, R> {
     }
 
     PlatoNodeProxy<T, R> build() {
-        if (!reBuild.compareAndSet(false, true)) {
+        PlatoNodeProxy<T, R> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
+        if (!proxyAtomicReference.compareAndSet(null, proxy)) {
             return null;
         }
-        PlatoNodeProxy<T, R> proxy = new PlatoNodeProxy<>(uniqueId, worker, afterHandler, preHandler);
         proxy.setCheckNextResult(checkNextResult);
         convertBuild2Bean(proxy, this.nextProxies);
         return proxy;
@@ -75,13 +78,10 @@ public class PlatoNodeBuilder<T, R> {
     private void convertBuild2Bean(PlatoNodeProxy<T, R> proxy,
             Set<PlatoNodeBuilder<?, ?>> nextProxies) {
         nextProxies.forEach(platoNodeBuilder -> {
-            if (!platoNodeBuilder.reBuild.get()) {
-                PlatoNodeProxy<?, ?> platoNodeProxy = platoNodeBuilder.build();
-                if (Optional.ofNullable(platoNodeProxy).isPresent()) {
-                    platoNodeProxy.addPreProxy(proxy, selfIsMustSet.contains(platoNodeBuilder));
-                    proxy.addNextProxy(platoNodeProxy);
-                }
-            }
+            PlatoNodeProxy<?, ?> platoNodeProxy =
+                    ObjectUtils.defaultIfNull(platoNodeBuilder.build(), platoNodeBuilder.proxyAtomicReference.get());
+            platoNodeProxy.addPreProxy(proxy, selfIsMustSet.contains(platoNodeBuilder));
+            proxy.addNextProxy(platoNodeProxy);
         });
     }
 }

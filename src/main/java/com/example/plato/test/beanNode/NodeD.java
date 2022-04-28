@@ -19,7 +19,7 @@ public class NodeD implements INodeWork<Void, String> {
     @Override
     public String work(Void unused) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
