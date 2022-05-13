@@ -9,7 +9,7 @@ import com.example.plato.loader.node.BeanNode;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/3/20 4:41 下午
+ * create 2022/3/20 4:41 下午
  */
 @Component
 public class BeanNodeFactory<P, R> extends AbstractNodeFactory<P, R> {

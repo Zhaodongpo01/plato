@@ -2,7 +2,6 @@ package com.example.plato.element;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -19,7 +18,6 @@ public class PlatoNodeBuilder<T, R> {
     private String graphId;
     private String uniqueId;
     private INodeWork<T, R> worker;
-    private final AtomicBoolean reBuild = new AtomicBoolean(false);
     private final Set<PlatoNodeBuilder<?, ?>> nextProxies = new HashSet<>();
     private final Set<PlatoNodeBuilder<?, ?>> selfIsMustSet = new HashSet<>();
     private AtomicReference<PlatoNodeProxy<T, R>> proxyAtomicReference = new AtomicReference<>(null);

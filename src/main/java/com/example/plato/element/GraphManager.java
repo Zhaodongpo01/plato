@@ -36,7 +36,7 @@ public class GraphManager {
     /**
      * CompletableFuture<Void> completableFuture =
      * CompletableFuture.runAsync(() -> firstPlatoNodeProxy.run(t0, null, graphRunningInfo),t1);
-     * t0和t1使用一个的话，核心线程数设置的小，会超时。为了防止客户端传过来这样的线程池导致超时异常。这里不使用一个线程池。
+     * t0和t1使用一个的话，核心线程数设置的小，会超时。父线程等待子线程完成，子线程又没有可用的线程执行，死锁。为了防止客户端传过来这样的线程池导致超时异常。这里不使用一个线程池。
      */
     public <P, R> GraphRunningInfo run(P p,
             ThreadPoolExecutor nodeThreadPoolExecutor,

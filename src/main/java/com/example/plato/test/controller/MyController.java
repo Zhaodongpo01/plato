@@ -5,7 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.plato.test.service.IGraphService;
+import com.example.plato.test.service.GraphService;
 
 /**
  * @author zhaodongpo
@@ -17,7 +17,7 @@ import com.example.plato.test.service.IGraphService;
 public class MyController {
 
     @Autowired
-    private IGraphService iGraphService;
+    private GraphService iGraphService;
 
     /**
      * ---> B
@@ -52,10 +52,10 @@ public class MyController {
      */
     @PostMapping("/serial")
     public String serial() {
-        for (int i = 0; i < 100; i++) {
+        /*for (int i = 0; i < 100; i++) {
             new Thread(() -> iGraphService.serial()).start();
-        }
-        //iGraphService.serial();
+        }*/
+        iGraphService.serial();
         return "SUCCESS";
     }
 

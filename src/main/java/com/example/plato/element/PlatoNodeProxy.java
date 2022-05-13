@@ -60,10 +60,7 @@ public class PlatoNodeProxy<P, R> {
     public void run(ExecutorService executorService, PlatoNodeProxy comingNode, GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
         graphRunningInfo.putResultData(uniqueId, resultData);
-        if (getState() == CurrentState.ERROR) {
-            log.info("节点异常禁止执行");
-            return;
-        } else if (getState() == CurrentState.FINISH) {
+        if (getState() == CurrentState.FINISH || getState() == CurrentState.ERROR) {
             runNext(executorService);
             return;
         }
@@ -91,18 +88,17 @@ public class PlatoNodeProxy<P, R> {
         }
         if (nextProxies.size() == 1) {
             nextProxies.get(0).run(executorService, PlatoNodeProxy.this, graphRunningInfo);
-        } else {
-            List<CompletableFuture<Void>> completableFutureList =
-                    nextProxies.stream().map(platoNodeProxy -> CompletableFuture.runAsync(
-                                    () -> platoNodeProxy.run(executorService, this, graphRunningInfo), executorService))
-                            .collect(Collectors.toList());
-            try {
-                CompletableFuture
-                        .allOf(completableFutureList.toArray(new CompletableFuture[] {})).get();  //这里不加超时限制，加了也没有多大意义。
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("runNext异常{}", e.getMessage(), e);
-                throw new PlatoException("runNext异常");
-            }
+            return;
+        }
+        List<CompletableFuture<Void>> completableFutureList =
+                nextProxies.stream().map(platoNodeProxy -> CompletableFuture.runAsync(
+                                () -> platoNodeProxy.run(executorService, this, graphRunningInfo), executorService))
+                        .collect(Collectors.toList());
+        try {
+            CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {})).get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("runNext异常{}", e.getMessage(), e);
+            throw new PlatoException("runNext异常");
         }
     }
 

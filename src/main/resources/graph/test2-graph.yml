@@ -1,6 +1,6 @@
-graphId: 9526
-graphName: 柏拉图
-graphDesc: 柏拉图的柏拉图
+graphId: 9527
+graphName: 图名称
+graphDesc: 图描述
 startNode: nodeA
 nodes:
   - nodeConfig:

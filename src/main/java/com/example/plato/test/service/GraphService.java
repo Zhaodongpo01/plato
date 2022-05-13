@@ -1,4 +1,4 @@
-package com.example.plato.test.service.impl;
+package com.example.plato.test.service;
 
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,7 +21,6 @@ import com.example.plato.test.beanNode.NodeF;
 import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.NodeFModel;
 import com.example.plato.test.model.TestModel;
-import com.example.plato.test.service.IGraphService;
 import com.example.plato.util.PlatoJsonUtil;
 import com.example.plato.util.TraceUtil;
 import com.google.common.collect.Lists;
@@ -35,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-public class GraphService implements IGraphService {
+public class GraphService {
 
     @Autowired
     private NodeA nodeA;
@@ -60,7 +59,7 @@ public class GraphService implements IGraphService {
                     new LinkedBlockingQueue<>(1000));
 
     private static final ThreadPoolExecutor graphExecutor =
-            new ThreadPoolExecutor(1, 2, 1000L, TimeUnit.MILLISECONDS,
+            new ThreadPoolExecutor(4, 12, 1000L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>(1000));
 
     private PlatoNodeBuilder<String, Long> getPlatoNodeBuilderA() {
@@ -115,7 +114,6 @@ public class GraphService implements IGraphService {
                 .setUniqueId("nodeF");
     }
 
-    @Override
     public void parallel() {
         GraphManager graphManager = new GraphManager("graphId_parallel");
         PlatoNodeBuilder<String, Long> platoNodeBuilderA = getPlatoNodeBuilderA();
@@ -137,7 +135,6 @@ public class GraphService implements IGraphService {
         log.info("parallel#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
-    @Override
     public void parallelOther() {
         GraphManager graphManager = new GraphManager("graphId_parallelOther");
         PlatoNodeBuilder<String, Long> platoNodeBuilderA = getPlatoNodeBuilderA();
@@ -160,7 +157,6 @@ public class GraphService implements IGraphService {
         log.info("parallelOther#runningInfo:{}", PlatoJsonUtil.toJson(runningInfo.getResultDataMap()));
     }
 
-    @Override
     public void serial() {
         GraphManager graphManager = new GraphManager("graphId_serial");
         PlatoNodeBuilder<String, Long> platoNodeBuilderA = getPlatoNodeBuilderA();
