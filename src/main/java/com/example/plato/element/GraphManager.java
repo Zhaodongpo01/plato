@@ -1,11 +1,15 @@
 package com.example.plato.element;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.BooleanUtils;
 
+import com.example.plato.exception.PlatoException;
 import com.example.plato.loader.factory.NodeFactory;
 import com.example.plato.runningData.GraphRunningInfo;
 import com.example.plato.util.PlatoAssert;
@@ -27,13 +31,20 @@ public class GraphManager {
     }
 
     public <P, R> GraphRunningInfo run(P p,
-            ThreadPoolExecutor nodeThreadPoolExecutor,
+            ThreadPoolExecutor graphThreadPoolExecutor,
             PlatoNodeBuilder<P, R> platoNodeBuilder,
             Long timeOut, TimeUnit timeUnit) {
         PlatoNodeProxy<P, R> firstPlatoNodeProxy = platoNodeBuilder.build();
         firstPlatoNodeProxy.setP(p);
         GraphRunningInfo graphRunningInfo = new GraphRunningInfo();
-        firstPlatoNodeProxy.run(nodeThreadPoolExecutor, null, graphRunningInfo);
+        CompletableFuture<Void> completableFuture =
+                CompletableFuture.runAsync(() -> firstPlatoNodeProxy.run(null, graphRunningInfo),
+                        graphThreadPoolExecutor);
+        try {
+            completableFuture.get(timeOut, timeUnit);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw new PlatoException(e, "GraphManager run error");
+        }
         return graphRunningInfo;
     }
 

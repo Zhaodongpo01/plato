@@ -7,8 +7,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -53,50 +55,43 @@ public class PlatoNodeProxy<P, R> {
         resultData = ResultData.defaultResult(uniqueId);
     }
 
-    public void run(ExecutorService executorService, PlatoNodeProxy comingNode, GraphRunningInfo graphRunningInfo) {
+    public void run(PlatoNodeProxy comingNode, GraphRunningInfo graphRunningInfo) {
         this.graphRunningInfo = graphRunningInfo;
         graphRunningInfo.putResultData(uniqueId, resultData);
         if (getState() == CurrentState.FINISH || getState() == CurrentState.ERROR) {
-            runNext(executorService);
+            runNext();
             return;
         }
         if (CollectionUtils.isNotEmpty(preProxies)) {
             if (preProxies.size() == 1) {
                 if (runPreProxy(comingNode)) {
-                    normalRun(executorService, comingNode);
+                    normalRun(comingNode);
                 }
             } else {
-                runPreProxies(executorService, comingNode);
+                runPreProxies(comingNode);
             }
         } else {
-            normalRun(executorService, comingNode);
+            normalRun(comingNode);
         }
     }
 
-    private void normalRun(ExecutorService executorService, PlatoNodeProxy comingNode) {
+    private void normalRun(PlatoNodeProxy comingNode) {
         executor(comingNode);
-        runNext(executorService);
+        runNext();
     }
 
-    private void runNext(ExecutorService executorService) {
+    private void runNext() {
         if (CollectionUtils.isEmpty(nextProxies)) {
             return;
         }
         if (nextProxies.size() == 1) {
-            nextProxies.get(0).run(executorService, PlatoNodeProxy.this, graphRunningInfo);
+            nextProxies.get(0).run(PlatoNodeProxy.this, graphRunningInfo);
             return;
         }
-        nextProxies.forEach(platoNodeProxy -> platoNodeProxy.run(executorService, this, graphRunningInfo));
-        /*List<CompletableFuture<Void>> completableFutureList =
-                nextProxies.stream().map(platoNodeProxy -> CompletableFuture.runAsync(
-                                () -> platoNodeProxy.run(executorService, this, graphRunningInfo), executorService))
-                        .collect(Collectors.toList());
-        try {
-            CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {})).get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("runNext异常{}", e.getMessage(), e);
-            throw new PlatoException("runNext异常");
-        }*/
+        List<ForkJoinNodeAction> forkJoinNodeActions = nextProxies.stream().map(platoNodeProxy ->
+                        new ForkJoinNodeAction(platoNodeProxy, this, graphRunningInfo))
+                .collect(Collectors.toList());
+        ForkJoinTask.invokeAll(forkJoinNodeActions);
     }
 
     private boolean runPreProxy(PlatoNodeProxy<?, ?> preProxy) {
@@ -113,7 +108,7 @@ public class PlatoNodeProxy<P, R> {
         return result;
     }
 
-    private synchronized void runPreProxies(ExecutorService executorService, PlatoNodeProxy<?, ?> comingNode) {
+    private synchronized void runPreProxies(PlatoNodeProxy<?, ?> comingNode) {
         boolean nowDependIsMust = false;
         Set<PrePlatoNodeProxy> mustProxy = new HashSet<>();
         for (PrePlatoNodeProxy prePlatoNodeProxy : preProxies) {
@@ -129,7 +124,7 @@ public class PlatoNodeProxy<P, R> {
                 fastFail(CurrentState.INIT, null);
             } else {
                 executor(comingNode);
-                runNext(executorService);
+                runNext();
             }
             return;
         }
@@ -147,18 +142,18 @@ public class PlatoNodeProxy<P, R> {
             if (ResultState.TIMEOUT == tempResultData.getResultState()) {
                 resultData.defaultResult();
                 fastFail(CurrentState.INIT, null);
-                runNext(executorService);
+                runNext();
                 break;
             }
             if (ResultState.EXCEPTION == tempResultData.getResultState()) {
                 resultData.defaultExResult(platoNodeProxy.getResult().getEx());
                 fastFail(CurrentState.INIT, null);
-                runNext(executorService);
+                runNext();
                 break;
             }
         }
         if (!existNoFinish) {
-            normalRun(executorService, comingNode);
+            normalRun(comingNode);
         }
     }
 
