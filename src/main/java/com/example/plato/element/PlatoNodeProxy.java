@@ -7,15 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.example.plato.exception.PlatoException;
 import com.example.plato.handler.AfterHandler;
 import com.example.plato.handler.INodeWork;
 import com.example.plato.handler.PreHandler;
@@ -90,7 +86,8 @@ public class PlatoNodeProxy<P, R> {
             nextProxies.get(0).run(executorService, PlatoNodeProxy.this, graphRunningInfo);
             return;
         }
-        List<CompletableFuture<Void>> completableFutureList =
+        nextProxies.forEach(platoNodeProxy -> platoNodeProxy.run(executorService, this, graphRunningInfo));
+        /*List<CompletableFuture<Void>> completableFutureList =
                 nextProxies.stream().map(platoNodeProxy -> CompletableFuture.runAsync(
                                 () -> platoNodeProxy.run(executorService, this, graphRunningInfo), executorService))
                         .collect(Collectors.toList());
@@ -99,7 +96,7 @@ public class PlatoNodeProxy<P, R> {
         } catch (InterruptedException | ExecutionException e) {
             log.error("runNext异常{}", e.getMessage(), e);
             throw new PlatoException("runNext异常");
-        }
+        }*/
     }
 
     private boolean runPreProxy(PlatoNodeProxy<?, ?> preProxy) {
