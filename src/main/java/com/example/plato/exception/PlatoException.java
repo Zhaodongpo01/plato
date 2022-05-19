@@ -3,7 +3,7 @@ package com.example.plato.exception;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/1/21 3:01 下午
+ * create 2022/1/21 3:01 下午
  */
 public class PlatoException extends RuntimeException {
 

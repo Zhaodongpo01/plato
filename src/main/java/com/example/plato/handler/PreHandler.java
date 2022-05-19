@@ -1,13 +1,13 @@
 package com.example.plato.handler;
 
-import com.example.plato.runningData.GraphRunningInfo;
+import com.example.plato.runningInfo.GraphRunningInfo;
 
 /**
  * @author zhaodongpo
+ * create  2022/5/16 10:28 上午
  * @version 1.0
- * @date 2022/4/1 12:23 上午
  */
-public interface PreHandler<P> extends IHandler {
+public interface PreHandler<P> {
 
     PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
         @Override
@@ -28,6 +28,5 @@ public interface PreHandler<P> extends IHandler {
     default boolean suicide(GraphRunningInfo graphRunningInfo) {
         return false;
     }
-
 
 }

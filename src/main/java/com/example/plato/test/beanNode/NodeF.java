@@ -2,8 +2,8 @@ package com.example.plato.test.beanNode;
 
 import org.springframework.stereotype.Service;
 
-import com.example.plato.handler.INodeWork;
-import com.example.plato.runningData.ResultData;
+import com.example.plato.element.INodeWork;
+import com.example.plato.runningInfo.ResultData;
 import com.example.plato.test.model.NodeFModel;
 import com.example.plato.util.PlatoJsonUtil;
 import com.google.common.collect.Lists;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NodeF implements INodeWork<Integer, NodeFModel> {
 
     @Override
-    public NodeFModel work(Integer integer) throws InterruptedException {
+    public NodeFModel work(Integer integer) {
         NodeFModel nodeFModel = new NodeFModel();
         nodeFModel.setA((short) 10);
         nodeFModel.setCharacters(new Character[2]);

@@ -5,8 +5,8 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import com.example.plato.handler.INodeWork;
-import com.example.plato.runningData.ResultData;
+import com.example.plato.element.INodeWork;
+import com.example.plato.runningInfo.ResultData;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,16 +21,12 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
 
     @Override
     public Boolean work(List<Integer> integers) {
-        try {
-            Thread.sleep(1000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        System.out.println("NodeB的正在执行");
         return CollectionUtils.isEmpty(integers);
     }
 
     @Override
     public void hook(List<Integer> integers, ResultData<Boolean> resultData) {
-        log.info("NodeB结果:{}", resultData.getResult());
+        System.out.println("NodeB的执行结果");
     }
 }
