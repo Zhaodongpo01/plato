@@ -21,12 +21,16 @@ public class NodeB implements INodeWork<List<Integer>, Boolean> {
 
     @Override
     public Boolean work(List<Integer> integers) {
-        System.out.println("NodeB的正在执行");
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return CollectionUtils.isEmpty(integers);
     }
 
     @Override
     public void hook(List<Integer> integers, ResultData<Boolean> resultData) {
-        System.out.println("NodeB的执行结果");
+        log.info("NodeB#结果");
     }
 }

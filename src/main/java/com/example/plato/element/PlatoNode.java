@@ -2,8 +2,6 @@ package com.example.plato.element;
 
 import java.util.Set;
 
-import com.example.plato.handler.AfterHandler;
-import com.example.plato.handler.PreHandler;
 import com.example.plato.holder.Holder;
 
 /**
@@ -18,10 +16,6 @@ public class PlatoNode<P, V> {
     private String graphId;
 
     private INodeWork<P, V> iNodeWork;
-
-    private PreHandler<P> preHandler;
-
-    private AfterHandler afterHandler;
 
     private Set<String> perPlatoNodes;
 
@@ -41,32 +35,21 @@ public class PlatoNode<P, V> {
         return iNodeWork;
     }
 
-    public PreHandler<P> getPreHandler() {
-        return preHandler;
-    }
-
-    public AfterHandler getAfterHandler() {
-        return afterHandler;
-    }
-
     private static volatile PlatoNode platoNode = null;
 
-    private PlatoNode(String uniqueId, String graphId, INodeWork<P, V> iNodeWork,
-            PreHandler<P> preHandler, AfterHandler afterHandler, long timeLimit) {
+    private PlatoNode(String uniqueId, String graphId, INodeWork<P, V> iNodeWork, long timeLimit) {
         this.uniqueId = uniqueId;
         this.graphId = graphId;
         this.iNodeWork = iNodeWork;
-        this.preHandler = preHandler;
-        this.afterHandler = afterHandler;
         this.timeLimit = timeLimit;
     }
 
     public static <P, V> PlatoNode<P, V> getInstance(String uniqueId, String graphId, INodeWork<P, V> iNodeWork,
-            PreHandler<P> preHandler, AfterHandler afterHandler, long timeLimit) {
+            long timeLimit) {
         if (Holder.getPlatoNode(graphId, uniqueId) == null) {
             synchronized (PlatoNode.class) {
-                if(Holder.getPlatoNode(graphId, uniqueId) == null) {
-                    platoNode = new PlatoNode(uniqueId, graphId, iNodeWork, preHandler, afterHandler, timeLimit);
+                if (Holder.getPlatoNode(graphId, uniqueId) == null) {
+                    platoNode = new PlatoNode(uniqueId, graphId, iNodeWork, timeLimit);
                     Holder.putPlatoNode(platoNode);
                 }
             }

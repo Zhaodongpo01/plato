@@ -18,12 +18,16 @@ public class NodeA implements INodeWork<String, Long> {
 
     @Override
     public Long work(String s) {
-        System.out.println("NodeA的正在执行");
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return s.hashCode() + 0L;
     }
 
     @Override
     public void hook(String s, ResultData<Long> resultData) {
-        System.out.println("NodeA的执行结果");
+        log.info("NodeA#结果");
     }
 }

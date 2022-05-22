@@ -18,6 +18,8 @@ public class DefaultGraph<N, R> implements Graph<N, R> {
 
     @Override
     public void putRelation(N fromNode, R relation, N toNode) {
+        ((NodeWorkBuilder) fromNode).setGraph(this);
+        ((NodeWorkBuilder) toNode).setGraph(this);
         if (FROM_MAP.containsKey(fromNode)) {
             FROM_MAP.get(fromNode).add(new DefaultEntry<>(fromNode, toNode, relation));
         } else {

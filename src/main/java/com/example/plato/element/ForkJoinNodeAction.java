@@ -11,15 +11,15 @@ import com.example.plato.runningInfo.GraphRunningInfo;
  */
 public class ForkJoinNodeAction extends RecursiveAction {
 
-    private final AbstractNodeProxy platoNodeProxy;
+    private final AbstractNodeWork platoNodeProxy;
 
-    private final AbstractNodeProxy prePlatoNodeProxy;
+    private final AbstractNodeWork prePlatoNodeProxy;
 
     private final GraphRunningInfo graphRunningInfo;
 
     private final long remainTime;
 
-    public ForkJoinNodeAction(AbstractNodeProxy platoNodeProxy, AbstractNodeProxy prePlatoNodeProxy,
+    public ForkJoinNodeAction(AbstractNodeWork platoNodeProxy, AbstractNodeWork prePlatoNodeProxy,
             GraphRunningInfo graphRunningInfo, long remainTime) {
         this.platoNodeProxy = platoNodeProxy;
         this.prePlatoNodeProxy = prePlatoNodeProxy;
@@ -29,6 +29,6 @@ public class ForkJoinNodeAction extends RecursiveAction {
 
     @Override
     protected void compute() {
-        this.platoNodeProxy.run(null, prePlatoNodeProxy, remainTime, graphRunningInfo);
+        this.platoNodeProxy.run(null, prePlatoNodeProxy, graphRunningInfo);
     }
 }

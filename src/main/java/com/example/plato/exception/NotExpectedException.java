@@ -1,6 +1,6 @@
 package com.example.plato.exception;
 
-import com.example.plato.element.AbstractNodeProxy;
+import com.example.plato.element.AbstractNodeWork;
 
 /**
  * @author zhaodongpo
@@ -8,7 +8,7 @@ import com.example.plato.element.AbstractNodeProxy;
  * @version 1.0
  */
 public class NotExpectedException extends Exception {
-    public NotExpectedException(Throwable cause, AbstractNodeProxy<?, ?> wrapper) {
+    public NotExpectedException(Throwable cause, AbstractNodeWork<?, ?> wrapper) {
         super("It's should not happened Exception . wrapper is " + wrapper, cause);
     }
 }

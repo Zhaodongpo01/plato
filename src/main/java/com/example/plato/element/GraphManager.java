@@ -23,14 +23,13 @@ public class GraphManager<P> {
         this.graphId = graphId;
     }
 
-    public GraphRunningInfo run(ExecutorService executorService, P param, NodeProxyBuilder<P, ?> startProxyBuilder,
+    public GraphRunningInfo run(ExecutorService executorService, P param, NodeWorkBuilder<P, ?> startProxyBuilder,
             long graphLimitTime) {
         GraphRunningInfo graphRunningInfo =
                 new GraphRunningInfo(UUID.randomUUID().toString(), graphId, SystemClock.now(), graphLimitTime);
         startProxyBuilder.setParam(param);
-        CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
-            startProxyBuilder.run(executorService, null, graphLimitTime, graphRunningInfo);
-        });
+        CompletableFuture<Void> completableFuture =
+                CompletableFuture.runAsync(() -> startProxyBuilder.run(executorService, null, graphRunningInfo));
         try {
             completableFuture.get(graphLimitTime, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -42,7 +41,6 @@ public class GraphManager<P> {
         }
         return graphRunningInfo;
     }
-
 
 
 }

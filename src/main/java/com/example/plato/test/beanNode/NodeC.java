@@ -24,12 +24,16 @@ public class NodeC implements INodeWork<TestModel, FirstModel> {
         FirstModel firstModel = new FirstModel();
         firstModel.setName("赵东坡");
         firstModel.setIdf(19000L);
-        System.out.println("NodeC的正在执行");
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return firstModel;
     }
 
     @Override
     public void hook(TestModel testModel, ResultData<FirstModel> resultData) {
-        System.out.println("NodeC的执行结果"+PlatoJsonUtil.toJson(resultData));
+        log.info("NodeC#结果");
     }
 }

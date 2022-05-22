@@ -8,13 +8,9 @@ package com.example.plato.runningInfo;
 public class ResultData<V> {
 
     private String uniqueId;
-
     private V result;
-
     private ResultState resultState;
-
     private Exception ex;
-
 
     public String getUniqueId() {
         return uniqueId;
@@ -24,16 +20,36 @@ public class ResultData<V> {
         return result;
     }
 
+    public void setResult(V result) {
+        this.result = result;
+    }
+
     public ResultState getResultState() {
         return resultState;
+    }
+
+    public void setResultState(ResultState resultState) {
+        this.resultState = resultState;
     }
 
     public Exception getEx() {
         return ex;
     }
 
+    public void setEx(Exception ex) {
+        this.ex = ex;
+    }
+
     public static ResultData defaultResultData(String uniqueId) {
         return new ResultData(uniqueId, ResultState.DEFAULT, null);
+    }
+
+    public static ResultData defaultResultTimeOut(String uniqueId) {
+        return new ResultData(uniqueId, ResultState.TIMEOUT, null);
+    }
+
+    public static ResultData defaultExResultEx(String uniqueId, Exception ex) {
+        return new ResultData(uniqueId, null, ResultState.EXCEPTION, ex);
     }
 
     public ResultData(String uniqueId, ResultState resultState, V result) {
