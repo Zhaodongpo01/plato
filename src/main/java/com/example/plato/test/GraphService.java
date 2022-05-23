@@ -57,11 +57,8 @@ public class GraphService {
 
 
     public void serial() {
-        for (int i = 0; i < 10; i++) {
-            fuction();
-            /*new Thread(() -> {
-                fuction();
-            }).start();*/
+        for (int i = 0; i < 500; i++) {
+            new Thread(() -> fuction()).start();
         }
     }
 

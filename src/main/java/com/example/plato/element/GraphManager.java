@@ -32,11 +32,7 @@ public class GraphManager<P> {
                 CompletableFuture.runAsync(() -> startProxyBuilder.run(executorService, null, graphRunningInfo));
         try {
             completableFuture.get(graphLimitTime, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
         }
         return graphRunningInfo;

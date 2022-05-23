@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author zhaodongpo
  * @version 1.0
- * @date 2022/2/3 2:26 下午
+ * create 2022/2/3 2:26 下午
  */
 @Component
 public class SpringUtils implements ApplicationContextAware {

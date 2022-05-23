@@ -64,7 +64,6 @@ public abstract class AbstractNodeWork<P, V> {
 
     public void run(ExecutorService executorService, AbstractNodeWork<?, ?> comingNode,
             GraphRunningInfo<V> graphRunningInfo) {
-        System.out.println("执行到..." + platoNode.getUniqueId());
         if (State.inStates(state, State.states_of_finish)) {
             runNext(executorService, graphRunningInfo);
             return;
@@ -73,12 +72,12 @@ public abstract class AbstractNodeWork<P, V> {
         if (CollectionUtils.isNotEmpty(preNodeProxies)) {
             if (preNodeProxies.size() == 1 && runPreProxy(comingNode)) {
                 normalRun(executorService, graphRunningInfo, comingNode);
-            } else if (preNodeProxies.size() > 1) {
-                runPreProxies(executorService, comingNode, graphRunningInfo);
+            } else if (preNodeProxies.size() > 1 && runPreProxies(comingNode)) {
+                normalRun(executorService, graphRunningInfo, comingNode);
             }
-        } else {
-            normalRun(executorService, graphRunningInfo, comingNode);
+            return;
         }
+        normalRun(executorService, graphRunningInfo, comingNode);
     }
 
     private void runNext(ExecutorService executorService, GraphRunningInfo graphRunningInfo) {
@@ -150,7 +149,7 @@ public abstract class AbstractNodeWork<P, V> {
         return true;
     }
 
-    public ResultData<V> getResult() {
+    private ResultData<V> getResult() {
         ResultData<V> res = resultDataReference.get();
         return res == null ? ResultData.defaultResultData(platoNode.getUniqueId()) : res;
     }
@@ -169,8 +168,7 @@ public abstract class AbstractNodeWork<P, V> {
             resultDataReference.compareAndSet(null, resultData);
             platoNode.getiNodeWork().hook(param, resultData);
         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            throw new PlatoException(e, "执行异常" + platoNode.getUniqueId());
         }
         return true;
     }
@@ -188,10 +186,9 @@ public abstract class AbstractNodeWork<P, V> {
         }
     }
 
-    private void runPreProxies(ExecutorService executorService, AbstractNodeWork<?, ?> comingNode,
-            GraphRunningInfo<V> graphRunningInfo) {
+    private boolean runPreProxies(AbstractNodeWork<?, ?> comingNode) {
         Set<AbstractNodeWork<?, ?>> preEntryNodeProxies = getPreEntryNodeProxies(RelationEnum.STRONG_RELATION);
-        boolean exists = preEntryNodeProxies.stream().anyMatch(temp -> {
+        return !preEntryNodeProxies.stream().anyMatch(temp -> {
             AtomicInteger state = temp.state;
             if (State.isState(state, INIT) || State.isState(state, WORKING)) {
                 return true;
@@ -203,22 +200,15 @@ public abstract class AbstractNodeWork<P, V> {
             }
             return false;
         });
-        if (!exists) {
-            normalRun(executorService, graphRunningInfo, comingNode);
-        } else {
-            System.out.println("当前线程是1" + platoNode.getUniqueId() + Thread.currentThread().getName());
-            stopThread();
-            System.out.println("当前线程是2" + platoNode.getUniqueId() + Thread.currentThread().getName());
-        }
     }
 
-    public abstract Set<AbstractNodeWork<?, ?>> getNextNodeProxies();
+    protected abstract Set<AbstractNodeWork<?, ?>> getNextNodeProxies();
 
-    public abstract Set<AbstractNodeWork<?, ?>> getPreNodeProxies();
+    protected abstract Set<AbstractNodeWork<?, ?>> getPreNodeProxies();
 
-    public abstract Set<AbstractNodeWork<?, ?>> getPreEntryNodeProxies(RelationEnum relationEnum);
+    protected abstract Set<AbstractNodeWork<?, ?>> getPreEntryNodeProxies(RelationEnum relationEnum);
 
-    public abstract Set<AbstractNodeWork<?, ?>> getNextEntryNodeProxies(RelationEnum relationEnum);
+    protected abstract Set<AbstractNodeWork<?, ?>> getNextEntryNodeProxies(RelationEnum relationEnum);
 
     @Override
     public boolean equals(Object o) {
@@ -237,14 +227,9 @@ public abstract class AbstractNodeWork<P, V> {
         return Objects.hash(traceId);
     }
 
-    public void gz() {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                System.out.println("执行钩子方法");
-            }
-        }, "bb thread"));
+    private void shutDownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("执行钩子方法"), "shut down hook"));
     }
-
 
     public enum State {
         /**
