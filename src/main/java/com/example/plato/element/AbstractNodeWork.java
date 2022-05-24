@@ -46,18 +46,15 @@ public abstract class AbstractNodeWork<P, V> {
     protected PreHandler<P> preHandler;
     protected AfterHandler afterHandler;
     protected final AtomicInteger state = new AtomicInteger(BUILDING.id);
-    private final AtomicReference<Thread> doWorkingThread = new AtomicReference<>();
     private final AtomicReference<ResultData<V>> resultDataReference = new AtomicReference(null);
 
     AbstractNodeWork(INodeWork<P, V> iNodeWork, String uniqueId, String graphId, long timeLimit) {
         platoNode = PlatoNode.getInstance(uniqueId, graphId, iNodeWork, timeLimit);
-        //resultDataReference.compareAndSet(null, ResultData.defaultResultData(platoNode.getUniqueId()));
     }
 
-    private void normalRun(ExecutorService executorService, GraphRunningInfo<V> graphRunningInfo,
+    private void normalRun(ExecutorService executorService, GraphRunningInfo graphRunningInfo,
             AbstractNodeWork<?, ?> comingNode) {
         if (executor(comingNode, graphRunningInfo)) {
-            graphRunningInfo.putResult(resultDataReference.get());
             runNext(executorService, graphRunningInfo);
         }
     }
@@ -74,6 +71,8 @@ public abstract class AbstractNodeWork<P, V> {
                 normalRun(executorService, graphRunningInfo, comingNode);
             } else if (preNodeProxies.size() > 1 && runPreProxies(comingNode)) {
                 normalRun(executorService, graphRunningInfo, comingNode);
+            } else {
+                fastFail(INIT, null);
             }
             return;
         }
@@ -85,9 +84,7 @@ public abstract class AbstractNodeWork<P, V> {
         if (CollectionUtils.isEmpty(nextNodeProxies)) {
             return;
         }
-        if (nextNodeProxies.size() == 1) {
-            nextNodeProxies.stream().findFirst().get().run(executorService, this, graphRunningInfo);
-        } else {
+        if (nextNodeProxies.size() > 1) {
             if (executorService == null) {
                 List<ForkJoinNodeAction> forkJoinNodeActions = nextNodeProxies.stream().map(abstractNodeWork ->
                                 new ForkJoinNodeAction(abstractNodeWork, this, graphRunningInfo, 1000L))
@@ -104,14 +101,15 @@ public abstract class AbstractNodeWork<P, V> {
                     CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[] {}))
                             .get(6000_0, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException | TimeoutException | ExecutionException e) {
-                    throw new PlatoException("runNext异常");
+                    throw new PlatoException(e, "runNext异常");
                 }
             }
+            return;
         }
+        nextNodeProxies.stream().findFirst().get().run(executorService, this, graphRunningInfo);
     }
 
     protected boolean fastFail(State expect, Exception e) {
-        stopThread();
         if (!State.setState(state, expect, State.ERROR)) {
             return false;
         }
@@ -123,16 +121,8 @@ public abstract class AbstractNodeWork<P, V> {
                 resultState = ResultState.EXCEPTION;
             }
         }
-        resultDataReference.compareAndSet(null, new ResultData(platoNode.getUniqueId(), resultState, null));
+        resultDataReference.compareAndSet(null, new ResultData(platoNode.getUniqueId(), null, resultState, e));
         return true;
-    }
-
-    private void stopThread() {
-        Thread _doWorkingThread;
-        if ((_doWorkingThread = this.doWorkingThread.get()) != null
-                && !Objects.equals(Thread.currentThread(), _doWorkingThread)) {
-            _doWorkingThread.interrupt();
-        }
     }
 
     private boolean runPreProxy(AbstractNodeWork<?, ?> comingNode) {
@@ -155,20 +145,25 @@ public abstract class AbstractNodeWork<P, V> {
     }
 
     private boolean executor(AbstractNodeWork<?, ?> comingNode, GraphRunningInfo graphRunningInfo) {
+        ResultData<V> resultData = resultDataReference.get();
         try {
             if (!State.setState(state, INIT, WORKING)) {
                 return false;
             }
             convert(comingNode, graphRunningInfo);
             V resultValue = platoNode.getiNodeWork().work(param);
+            resultData = new ResultData<>(platoNode.getUniqueId(), ResultState.SUCCESS, resultValue);
+            platoNode.getiNodeWork().hook(param, resultData);
             if (!State.setState(state, WORKING, SUCCESS)) {
                 return false;
             }
-            ResultData resultData = new ResultData(platoNode.getUniqueId(), ResultState.SUCCESS, resultValue);
-            resultDataReference.compareAndSet(null, resultData);
-            platoNode.getiNodeWork().hook(param, resultData);
         } catch (Exception e) {
-            throw new PlatoException(e, "执行异常" + platoNode.getUniqueId());
+            fastFail(WORKING, e);
+            resultData = new ResultData(platoNode.getUniqueId(), ResultState.EXCEPTION, e);
+            return false;
+        } finally {
+            resultDataReference.compareAndSet(null, resultData);
+            graphRunningInfo.putResult(resultDataReference.get());
         }
         return true;
     }

@@ -30,9 +30,9 @@ public class NodeWorkBuilder<P, V> extends AbstractNodeWork<P, V> {
     public NodeWorkBuilder(String uniqueId, INodeWork<P, V> iNodeWork, String graphId, long timeLimit,
             PreHandler<P> preHandler, AfterHandler afterHandler) {
         super(iNodeWork, uniqueId, graphId, timeLimit);
-        super.traceId = UUID.randomUUID().toString();
         super.preHandler = preHandler;
         super.afterHandler = afterHandler;
+        super.traceId = UUID.randomUUID().toString();
         State.setState(state, State.BUILDING, State.INIT);
     }
 

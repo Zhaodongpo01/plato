@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -28,6 +29,7 @@ import com.example.plato.test.model.FirstModel;
 import com.example.plato.test.model.TestModel;
 import com.example.plato.util.PlatoJsonUtil;
 
+import io.netty.util.HashedWheelTimer;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -57,12 +59,15 @@ public class GraphService {
 
 
     public void serial() {
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1; i++) {
             new Thread(() -> fuction()).start();
         }
     }
 
     private void fuction() {
+
+        delayTimer();
+
         String graphId = "graphIdSerial";
         AfterHandler afterHandler = new AfterHandler() {
             @Override
@@ -121,6 +126,28 @@ public class GraphService {
         GraphRunningInfo nodeAParam =
                 graphManager.run(executorService, UUID.randomUUID().toString(), nodeProxyBuilderA, 10000000L);
         log.info("结果:{}", PlatoJsonUtil.toJson(nodeAParam));
+    }
+
+    private void delayTimer() {
+        CountDownLatch countDownLatch = new CountDownLatch(2);
+        HashedWheelTimer timer = new HashedWheelTimer(1, TimeUnit.MILLISECONDS, 16);
+        //把任务加到HashedWheelTimer里，到了延迟的时间就会自动执行
+        timer.newTimeout((timeout) -> {
+            log.info("task1 execute");
+            countDownLatch.countDown();
+        }, 500, TimeUnit.MILLISECONDS);
+
+        timer.newTimeout((timeout) -> {
+            log.info("task2 execute");
+            countDownLatch.countDown();
+        }, 2, TimeUnit.MILLISECONDS);
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        timer.stop();
     }
 
 }
