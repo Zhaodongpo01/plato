@@ -46,6 +46,7 @@ public abstract class AbstractNodeWork<P, V> {
     protected PreHandler<P> preHandler;
     protected AfterHandler afterHandler;
     protected final AtomicInteger state = new AtomicInteger(BUILDING.id);
+    protected final AtomicReference<Thread> workingThread = new AtomicReference<>();
     private final AtomicReference<ResultData<V>> resultDataReference = new AtomicReference(null);
 
     AbstractNodeWork(INodeWork<P, V> iNodeWork, String uniqueId, String graphId, long timeLimit) {
@@ -151,6 +152,7 @@ public abstract class AbstractNodeWork<P, V> {
                 return false;
             }
             convert(comingNode, graphRunningInfo);
+            workingThread.set(Thread.currentThread());
             V resultValue = platoNode.getiNodeWork().work(param);
             resultData = new ResultData<>(platoNode.getUniqueId(), ResultState.SUCCESS, resultValue);
             platoNode.getiNodeWork().hook(param, resultData);
@@ -162,6 +164,7 @@ public abstract class AbstractNodeWork<P, V> {
             resultData = new ResultData(platoNode.getUniqueId(), ResultState.EXCEPTION, e);
             return false;
         } finally {
+            workingThread.set(null);
             resultDataReference.compareAndSet(null, resultData);
             graphRunningInfo.putResult(resultDataReference.get());
         }

@@ -65,9 +65,6 @@ public class GraphService {
     }
 
     private void fuction() {
-
-        delayTimer();
-
         String graphId = "graphIdSerial";
         AfterHandler afterHandler = new AfterHandler() {
             @Override
@@ -75,9 +72,6 @@ public class GraphService {
                 return AfterHandler.super.notShouldRunNodes(graphRunningInfo);
             }
         };
-        NodeWorkBuilder<String, Long> nodeProxyBuilderA =
-                new NodeWorkBuilder("nodeA", nodeA, graphId, 100000, null, afterHandler);
-
         PreHandler<List<Integer>> preHandlerB = new PreHandler<List<Integer>>() {
             @Override
             public List<Integer> paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -88,9 +82,6 @@ public class GraphService {
                 return list;
             }
         };
-        NodeWorkBuilder<List<Integer>, Boolean> nodeProxyBuilderB =
-                new NodeWorkBuilder("nodeB", nodeB, graphId, 100000L, preHandlerB, null);
-
         PreHandler<TestModel> preHandlerC = new PreHandler<TestModel>() {
             @Override
             public TestModel paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -103,9 +94,6 @@ public class GraphService {
                 return testModel;
             }
         };
-        NodeWorkBuilder<TestModel, FirstModel> nodeProxyBuilderC =
-                new NodeWorkBuilder("nodeC", nodeC, graphId, 100000L, preHandlerC, null);
-
         PreHandler<Void> preHandlerD = new PreHandler<Void>() {
             @Override
             public Void paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -113,18 +101,22 @@ public class GraphService {
                 return null;
             }
         };
-        NodeWorkBuilder<Void, String> nodeProxyBuilderD =
-                new NodeWorkBuilder("nodeD", nodeD, graphId, 100000L, preHandlerD, null);
 
+        NodeWorkBuilder<String, Long> nodeProxyBuilderA =
+                new NodeWorkBuilder("nodeA", nodeA, graphId, 100L, null, afterHandler);
+        NodeWorkBuilder<List<Integer>, Boolean> nodeProxyBuilderB =
+                new NodeWorkBuilder("nodeB", nodeB, graphId, 500L, preHandlerB, null);
+        NodeWorkBuilder<TestModel, FirstModel> nodeProxyBuilderC =
+                new NodeWorkBuilder("nodeC", nodeC, graphId, 200L, preHandlerC, null);
+        NodeWorkBuilder<Void, String> nodeProxyBuilderD =
+                new NodeWorkBuilder("nodeD", nodeD, graphId, 100L, preHandlerD, null);
         DefaultGraph defaultGraph = new DefaultGraph();
         defaultGraph.putRelation(nodeProxyBuilderA, RelationEnum.STRONG_RELATION, nodeProxyBuilderB);
         defaultGraph.putRelation(nodeProxyBuilderA, RelationEnum.STRONG_RELATION, nodeProxyBuilderC);
         defaultGraph.putRelation(nodeProxyBuilderB, RelationEnum.STRONG_RELATION, nodeProxyBuilderD);
         defaultGraph.putRelation(nodeProxyBuilderC, RelationEnum.STRONG_RELATION, nodeProxyBuilderD);
-
         GraphManager graphManager = new GraphManager(graphId);
-        GraphRunningInfo nodeAParam =
-                graphManager.run(executorService, UUID.randomUUID().toString(), nodeProxyBuilderA, 10000000L);
+        GraphRunningInfo nodeAParam = graphManager.run(executorService, UUID.randomUUID().toString(), nodeProxyBuilderA, 10000000L);
         log.info("结果:{}", PlatoJsonUtil.toJson(nodeAParam));
     }
 

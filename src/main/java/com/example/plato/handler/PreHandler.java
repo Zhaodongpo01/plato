@@ -8,7 +8,6 @@ import com.example.plato.runningInfo.GraphRunningInfo;
  * @version 1.0
  */
 public interface PreHandler<P> {
-
     PreHandler DEFAULT_PRE_HANDLER = new PreHandler() {
         @Override
         public Object paramHandle(GraphRunningInfo graphRunningInfo) {
@@ -20,13 +19,10 @@ public interface PreHandler<P> {
             return PreHandler.super.suicide(graphRunningInfo);
         }
     };
-
     default P paramHandle(GraphRunningInfo graphRunningInfo) {
         return null;
     }
-
     default boolean suicide(GraphRunningInfo graphRunningInfo) {
         return false;
     }
-
 }

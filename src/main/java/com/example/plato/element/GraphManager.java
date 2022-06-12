@@ -26,7 +26,7 @@ public class GraphManager<P> {
     public GraphRunningInfo run(ExecutorService executorService, P param, NodeWorkBuilder<P, ?> startProxyBuilder,
             long graphLimitTime) {
         GraphRunningInfo graphRunningInfo =
-                new GraphRunningInfo(UUID.randomUUID().toString(), graphId, SystemClock.now(), graphLimitTime);
+                new GraphRunningInfo(UUID.randomUUID().toString(), graphId, SystemClock.now());
         startProxyBuilder.setParam(param);
         CompletableFuture<Void> completableFuture =
                 CompletableFuture.runAsync(() -> startProxyBuilder.run(executorService, null, graphRunningInfo));
