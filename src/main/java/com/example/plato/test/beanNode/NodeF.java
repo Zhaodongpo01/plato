@@ -24,10 +24,6 @@ public class NodeF implements INodeWork<Integer, NodeFModel> {
     @Override
     public NodeFModel work(Integer integer) {
         NodeFModel nodeFModel = new NodeFModel();
-        nodeFModel.setA((short) 10);
-        nodeFModel.setCharacters(new Character[2]);
-        nodeFModel.setIds(Lists.newArrayList(1L, 2L, 3L));
-        nodeFModel.setMap(Maps.asMap(Sets.newHashSet(1, 2, 3), a -> ok(a)));
         return nodeFModel;
     }
 

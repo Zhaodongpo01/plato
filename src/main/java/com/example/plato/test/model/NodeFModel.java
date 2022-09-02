@@ -17,13 +17,4 @@ public class NodeFModel {
 
     private List<Long> ids = new ArrayList<>();
 
-    private Map<Integer, Integer> map = new ConcurrentHashMap<>();
-
-    private Short a = 1;
-
-    private Character[] characters;
-
-    {
-        characters = new Character[10];
-    }
 }

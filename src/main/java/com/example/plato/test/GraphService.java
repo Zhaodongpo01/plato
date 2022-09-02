@@ -119,27 +119,4 @@ public class GraphService {
         GraphRunningInfo nodeAParam = graphManager.run(executorService, UUID.randomUUID().toString(), nodeProxyBuilderA, 10000000L);
         log.info("结果:{}", PlatoJsonUtil.toJson(nodeAParam));
     }
-
-    private void delayTimer() {
-        CountDownLatch countDownLatch = new CountDownLatch(2);
-        HashedWheelTimer timer = new HashedWheelTimer(1, TimeUnit.MILLISECONDS, 16);
-        //把任务加到HashedWheelTimer里，到了延迟的时间就会自动执行
-        timer.newTimeout((timeout) -> {
-            log.info("task1 execute");
-            countDownLatch.countDown();
-        }, 500, TimeUnit.MILLISECONDS);
-
-        timer.newTimeout((timeout) -> {
-            log.info("task2 execute");
-            countDownLatch.countDown();
-        }, 2, TimeUnit.MILLISECONDS);
-
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        timer.stop();
-    }
-
 }
